@@ -1,5 +1,6 @@
 package hello;
 
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,9 +31,14 @@ public class MediaController {
 	}
 	
 	@GetMapping(path="/all")
-	public @ResponseBody Iterable<Media> getAllProducto() {
+	public @ResponseBody Iterable<Media> getAllMedia() {
 		// Devuelve JSON con ficheros multimedia
 		return medias.findAll();
 	}
 	
+	@GetMapping(path="/media")
+	public @ResponseBody Optional<Media> getMedia(@RequestParam Integer id) {
+		// Devuelve JSON con un fichero multimedia
+		return medias.findById(id);
+	}
 }

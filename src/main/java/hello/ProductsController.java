@@ -2,6 +2,7 @@ package hello;
 
 import java.awt.geom.Point2D;
 import java.util.LinkedList;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -50,5 +51,11 @@ public class ProductsController {
 			}
 		}
 		return prods;
+	}
+	
+	@GetMapping(path="/product")
+	public @ResponseBody Optional<Producto> getProducto(@RequestParam Integer id) {
+		// Devuelve JSON con un producto
+		return productos.findById(id);
 	}
 }

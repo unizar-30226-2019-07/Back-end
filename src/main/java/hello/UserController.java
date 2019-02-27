@@ -1,5 +1,7 @@
 package hello;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,5 +35,11 @@ public class UserController {
 	public @ResponseBody Iterable<Usuario> getAllProducto() {
 		// Devuelve JSON con usuarios
 		return usuarios.findAll();
+	}
+	
+	@GetMapping(path="/user")
+	public @ResponseBody Optional<Usuario> getUsuario(@RequestParam Integer id) {
+		// Devuelve JSON con un usuario
+		return usuarios.findById(id);
 	}
 }
