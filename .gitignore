@@ -27,4 +27,11 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
+# Directorios eclipse
+.settings
+.project
+.classpath
+target/
+test-output/
+.orig
 # End of https://www.gitignore.io/api/java
