@@ -1,4 +1,4 @@
-package hello;
+package main.java.hello;
 
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import hello.Media;
-import hello.MediaRepositorio;
+
 
 @Controller    // Clase controladora
 @RequestMapping(path="/media") // URL's empiezan con /media

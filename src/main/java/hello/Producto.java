@@ -1,4 +1,4 @@
-package hello;
+package main.java.hello;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
