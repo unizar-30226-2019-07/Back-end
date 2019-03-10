@@ -1,46 +1,82 @@
 package main.java.hello;
 
-import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import main.java.media.Media;
-import main.java.media.MediaRepositorio;
-
-
 @Controller    // Clase controladora
-@RequestMapping(path="/media") // URL's empiezan con /media
+@RequestMapping(path="/") // URL's empiezan con /
 public class MainControlador {
 	
-	@Autowired 
-	private MediaRepositorio medias;
+	// Atributos
 	
-	@PutMapping(path="/add") // Solo peticiones de tipo PUT
-	public @ResponseBody String addNewMedia (@RequestParam String type, @RequestParam String mime
-			, @RequestParam String href) {
+	//@Autowired
+	//private UsuarioRepositorio usuarios;
+	
+	/*
+	 * Falta poner cabeceras a todo
+	 */
+	@PostMapping(path="/registro") // Solo peticiones de tipo POST
+	public @ResponseBody String registro (@RequestParam String nombre, @RequestParam String apellidos
+			, @RequestParam String email, @RequestParam String contrasenya, @RequestParam String ubicacion
+			, @RequestParam String sexo, @RequestParam String fecha) {
 		
-		Media m = new Media();
-		m.setType(type);
-		m.setMime(mime);
-		m.setHref(href);
-		medias.save(m);
-		return "Saved";
+		// Registrar usuario
+		
+		return "Usuario registrado correctamente o incorrectamente";
 	}
 	
-	@GetMapping(path="/all")
-	public @ResponseBody Iterable<Media> getAllMedia() {
-		// Devuelve JSON con ficheros multimedia
-		return medias.findAll();
+	@GetMapping(path="/sesion")
+	public @ResponseBody String sesion (@RequestParam String email, @RequestParam String contrasenya) {
+		
+		// Obtener sesion
+		
+		return "Sesion";
 	}
 	
-	@GetMapping(path="/media")
-	public @ResponseBody Optional<Media> getMedia(@RequestParam Integer id) {
-		// Devuelve JSON con un fichero multimedia
-		return medias.findById(id);
+	@GetMapping(path="/productosEnVentaUsuario")
+	public @ResponseBody String productosEnVentaUsuario (@RequestParam String sesion, @RequestParam String id) {
+		
+		// Obtener productos
+		
+		return "Productos del usuario "+id;
+	}
+	
+	@GetMapping(path="/productos")
+	public @ResponseBody String obtenerProductos () {
+		
+		// Obtener productos
+		
+		return "Lista de productos";
+	}
+	
+	@PostMapping(path="/annadirObjeto")
+	public @ResponseBody String insertarProducto () {
+		
+		// Insertar producto
+		
+		return "Insercion del producto correcta o incorrecta";
+	}
+	
+	@PutMapping(path="/annadirProducto")
+	public @ResponseBody String modificarProducto () {
+		
+		// Modificar producto
+		
+		return "Modificacion del producto correcta o incorrecta";
+	}
+	
+	@PostMapping(path="/salaChat")
+	public @ResponseBody String crearChat (@RequestParam String idUsuarioComprador, @RequestParam String idUsuarioVendedor
+										, @RequestParam String idProducto) {
+		
+		// Insertar chat
+		
+		return "Creacion del chat correcta o incorrecta";
 	}
 }
