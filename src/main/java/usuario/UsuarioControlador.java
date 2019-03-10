@@ -1,4 +1,4 @@
-package main.java.hello;
+package main.java.usuario;
 
 import java.util.Optional;
 
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller    // Clase controladora
 @RequestMapping(path="/users") // URL's empiezan con /users
-public class UserController {
+public class UsuarioControlador {
 	
 	@Autowired 
 	private UsuarioRepositorio usuarios;

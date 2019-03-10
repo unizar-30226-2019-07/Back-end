@@ -1,4 +1,4 @@
-package main.java.hello;
+package main.java.usuario;
 
 import org.springframework.data.repository.CrudRepository;
 

@@ -1,4 +1,4 @@
-package main.java.hello;
+package main.java.producto;
 
 import java.awt.geom.Point2D;
 import java.util.LinkedList;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller    // Clase controladora
 @RequestMapping(path="/products") // URL's empiezan con /products
-public class ProductsController {
+public class ProductoControlador {
 	
 	@Autowired 
 	private ProductoRepositorio productos;

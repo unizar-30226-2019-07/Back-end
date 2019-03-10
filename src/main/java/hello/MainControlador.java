@@ -9,10 +9,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import main.java.media.Media;
+import main.java.media.MediaRepositorio;
+
 
 @Controller    // Clase controladora
 @RequestMapping(path="/media") // URL's empiezan con /media
-public class MediaController {
+public class MainControlador {
 	
 	@Autowired 
 	private MediaRepositorio medias;
