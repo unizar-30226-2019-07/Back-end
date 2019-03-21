@@ -73,6 +73,22 @@ public class Usuario {
 		this.birth_date = birth_date;
 	}
 
+	public float getPosX() {
+		return posX;
+	}
+
+	public void setPosX(float posX) {
+		this.posX = posX;
+	}
+
+	public float getPosY() {
+		return posY;
+	}
+
+	public void setPosY(float posY) {
+		this.posY = posY;
+	}
+
 	public long getRating() {
 		return rating;
 	}
@@ -93,8 +109,8 @@ public class Usuario {
 		return password;
 	}
 
-	public void setPassword(String contrasenya) {
-		this.password = contrasenya;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public String getEmail() {
@@ -120,30 +136,14 @@ public class Usuario {
 	public void setFirst_name(String first_name) {
 		this.first_name = first_name;
 	}
-	
-	 public float getPosX() {
-			return posX;
-		}
 
-		public void setPosX(float posX) {
-			this.posX = posX;
-		}
+	public String getTipo() {
+		return tipo;
+	}
 
-		public float getPosY() {
-			return posY;
-		}
-
-		public void setPosY(float posY) {
-			this.posY = posY;
-		}
-
-		public String getTipo() {
-			return tipo;
-		}
-
-		public void setTipo(String tipo) {
-			this.tipo = tipo;
-		}
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
 	
 }
 
