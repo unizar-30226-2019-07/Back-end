@@ -1,4 +1,4 @@
-package com.autentia.demo.jwt.usuario;
+package selit.usuario;
 
 import static java.util.Collections.emptyList;
 

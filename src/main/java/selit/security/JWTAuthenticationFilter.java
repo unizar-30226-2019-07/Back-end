@@ -1,10 +1,10 @@
-package com.autentia.demo.jwt.security;
+package selit.security;
 
-import static com.autentia.demo.jwt.security.Constants.HEADER_AUTHORIZACION_KEY;
-import static com.autentia.demo.jwt.security.Constants.ISSUER_INFO;
-import static com.autentia.demo.jwt.security.Constants.SUPER_SECRET_KEY;
-import static com.autentia.demo.jwt.security.Constants.TOKEN_BEARER_PREFIX;
-import static com.autentia.demo.jwt.security.Constants.TOKEN_EXPIRATION_TIME;
+import static selit.security.Constants.HEADER_AUTHORIZACION_KEY;
+import static selit.security.Constants.ISSUER_INFO;
+import static selit.security.Constants.SUPER_SECRET_KEY;
+import static selit.security.Constants.TOKEN_BEARER_PREFIX;
+import static selit.security.Constants.TOKEN_EXPIRATION_TIME;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.autentia.demo.jwt.usuario.Usuario;
+import selit.usuario.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Jwts;

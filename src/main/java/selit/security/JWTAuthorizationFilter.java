@@ -1,8 +1,8 @@
-package com.autentia.demo.jwt.security;
+package selit.security;
 
-import static com.autentia.demo.jwt.security.Constants.HEADER_AUTHORIZACION_KEY;
-import static com.autentia.demo.jwt.security.Constants.SUPER_SECRET_KEY;
-import static com.autentia.demo.jwt.security.Constants.TOKEN_BEARER_PREFIX;
+import static selit.security.Constants.HEADER_AUTHORIZACION_KEY;
+import static selit.security.Constants.SUPER_SECRET_KEY;
+import static selit.security.Constants.TOKEN_BEARER_PREFIX;
 
 import java.io.IOException;
 import java.util.ArrayList;

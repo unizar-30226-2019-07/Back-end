@@ -1,4 +1,4 @@
-package com.autentia.demo.jwt.security;
+package selit.security;
 
 public class Constants {
 

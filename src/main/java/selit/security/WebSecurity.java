@@ -1,6 +1,6 @@
-package com.autentia.demo.jwt.security;
+package selit.security;
 
-import static com.autentia.demo.jwt.security.Constants.LOGIN_URL;
+import static selit.security.Constants.LOGIN_URL;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
