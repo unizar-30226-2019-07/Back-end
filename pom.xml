@@ -7,10 +7,10 @@
     <artifactId>gs-mysql-data</artifactId>
     <version>0.1.0</version>
     
-    <groupId2>com.autentia.demo.jwt</groupId2>
+    <!--  <groupId2>com.autentia.demo.jwt</groupId2>
 	<artifactId2>demo-jwt</artifactId2>
 	<version2>0.0.1-SNAPSHOT</version2>
-	<packaging>jar</packaging>
+	<packaging>jar</packaging>-->
 
 	<name>demo-jwt</name>
 	<description>Demo JWT</description>
@@ -62,17 +62,17 @@
 			<version>${jwt.version}</version>
 		</dependency>
 		
-		<dependency2>
+		<!--<dependency2>
 			<groupId2>org.hsqldb</groupId2>
 			<artifactId2>hsqldb</artifactId2>
 			<scope>runtime</scope>
-		</dependency2>
+		</dependency2> 
 
 		<dependency2>
 			<groupId2>org.springframework.security</groupId2>
 			<artifactId2>spring-security-test</artifactId2>
 			<scope>test</scope>
-		</dependency2>
+		</dependency2> -->
     </dependencies>
 
     <properties>
