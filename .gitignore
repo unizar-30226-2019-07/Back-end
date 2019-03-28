@@ -36,3 +36,4 @@ test-output/
 .orig
 ./src/main/resources/application.properties
 # End of https://www.gitignore.io/api/java
+src/main/resources/application.properties
