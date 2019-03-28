@@ -34,4 +34,5 @@ hs_err_pid*
 target/
 test-output/
 .orig
+./src/main/resources/application.properties
 # End of https://www.gitignore.io/api/java
