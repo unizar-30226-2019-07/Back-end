@@ -2,7 +2,7 @@ package selit.security;
 
 import static selit.security.Constants.LOGIN_URL;
 import static selit.security.Constants.REGISTER_URL;
-
+import selit.security.customAuthenticationManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -48,9 +48,10 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 			.authorizeRequests().antMatchers(HttpMethod.POST, LOGIN_URL).permitAll().and()
 			.authorizeRequests().antMatchers(HttpMethod.POST, REGISTER_URL).permitAll()
 			.anyRequest().authenticated().and()
-				.addFilter(new JWTAuthenticationFilter(authenticationManager()))
-				.addFilter(new JWTAuthorizationFilter(authenticationManager()));
+				.addFilter(new JWTAuthenticationFilter( new customAuthenticationManager()))
+				.addFilter(new JWTAuthorizationFilter( new customAuthenticationManager()));
 	}
+
 
 	@Override
 	public void configure(AuthenticationManagerBuilder auth) throws Exception {

@@ -34,15 +34,16 @@ import io.jsonwebtoken.Jwts;
 @RequestMapping(path="/users") 
 public class UsuarioController {
 	
-	@Autowired 
-	private UsuarioRepository usuarios;
+	@Autowired
+	public 
+	static UsuarioRepository usuarios;
 	
 	
 	
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
 	public UsuarioController(UsuarioRepository usuarios, BCryptPasswordEncoder bCryptPasswordEncoder) {
-		this.usuarios = usuarios;
+		UsuarioController.usuarios = usuarios;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
 
