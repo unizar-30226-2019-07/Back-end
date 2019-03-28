@@ -3,23 +3,15 @@ package selit.usuario;
 import static selit.security.Constants.HEADER_AUTHORIZACION_KEY;
 import static selit.security.Constants.SUPER_SECRET_KEY;
 import static selit.security.Constants.TOKEN_BEARER_PREFIX;
-
-import java.util.List;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.Optional;
-
 import javax.servlet.http.HttpServletRequest;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,11 +32,11 @@ public class UsuarioController {
 	
 	
 	
-	private BCryptPasswordEncoder bCryptPasswordEncoder;
+	public static BCryptPasswordEncoder bCryptPasswordEncoder;
 
 	public UsuarioController(UsuarioRepository usuarios, BCryptPasswordEncoder bCryptPasswordEncoder) {
 		UsuarioController.usuarios = usuarios;
-		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+		UsuarioController.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
 
 	
@@ -79,6 +71,8 @@ public class UsuarioController {
 				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
 				.getBody()
 				.getSubject();
+		
+		System.out.println("Token: " + token +"\nUsuario: "+user);
 
 		// Se devuelve con la lista de usuarios en la base de datos.
 		return usuarios.findAll();
