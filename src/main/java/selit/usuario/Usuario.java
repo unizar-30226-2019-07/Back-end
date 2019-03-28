@@ -16,9 +16,6 @@ public class Usuario {
     @Column(name="id_usuario")
     private Long idUsuario;
     
-	@Column(name="username")
-    private String username;
-    
     @Column(name="sexo", columnDefinition="ENUM('hombre', 'mujer')")
     private String gender;
     
@@ -58,14 +55,6 @@ public class Usuario {
 
 	public void setIdUsuario(Long idUsuario) {
 		this.idUsuario = idUsuario;
-	}
-
-	public String getUsername() {
-		return username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
 	}
 	
 	public String getGender() {
