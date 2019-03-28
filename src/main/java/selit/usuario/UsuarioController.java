@@ -10,10 +10,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,14 +47,13 @@ public class UsuarioController {
 
 	
 	@PostMapping(path="")
-	public @ResponseBody String anyadirUsuario (@RequestBody Usuario usuario) {
+	public @ResponseBody String anyadirUsuario (@RequestBody Usuario usuario, HttpServletResponse response) {
 		
 		// El objeto usuario pasado en el cuerpo de la peticion tiene los 
 		// atributos email, password y first_name. El resto de los atributos no 
 		// nulos se deben rellenar.
 
 		usuario.setPassword(bCryptPasswordEncoder.encode(usuario.getPassword()));
-		usuario.setLast_name("");
 		usuario.setStatus("activa");
 		usuario.setTipo("usuario");
 		usuario.setRating(0);
@@ -62,11 +64,12 @@ public class UsuarioController {
 		usuarios.save(usuario);
 		
 		// Se contesta a la peticion con un mensaje de exito.
+		response.setStatus(201);
 		return "Nuevo usuario creado";
 	}
 	
 	@GetMapping(path="")
-	public @ResponseBody Iterable<Usuario> obtenerUsuarios(HttpServletRequest request) {
+	public @ResponseBody Iterable<Usuario> obtenerUsuarios(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
@@ -76,27 +79,28 @@ public class UsuarioController {
 				.getSubject();
 		
 		Usuario u = new Usuario();
-
+		
 		u = usuarios.buscarPorEmail(user);
 		if(u != null) {
 			// Se devuelve con la lista de usuarios en la base de datos.
-			if(u.getTipo().equals("administrador")) {
+			if(u.getTipo().equals("administrador")) { 
 				return usuarios.findAll();
-			}else {
-				return usuarios.findAllCommon(user);
+			}
+			else {
+				return usuarios.findAllCommon();
 			}
 		}
 		else {
-			List<Usuario> user_list = new ArrayList<Usuario>();
-			return user_list;
+			String error = "The user credentials does not exist.";
+			response.sendError(401, error);
+			return null;
 		}
 		
 		
 	}
 	
-	/* ARREGLAR CODIGO DE ERROR SI NO ENCUENTRA */
 	@GetMapping(path="/{user_id}")
-	public @ResponseBody Optional<Usuario> obtenerUsuario(@PathVariable String user_id, HttpServletRequest request) {
+	public @ResponseBody Optional<Usuario> obtenerUsuario(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 				String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 				String user = Jwts.parser()
@@ -114,20 +118,35 @@ public class UsuarioController {
 					// Se devuelve con la lista de usuarios en la base de datos.
 					if(u.getTipo().equals("administrador")) {
 						// Se devuelve el usuario con el id indicado en la ruta.
-						return usuarios.findById(Long.parseLong(user_id));
+						Optional<Usuario> userOptional = usuarios.findById(Long.parseLong(user_id));
+						if(!userOptional.isPresent()) {
+							String error = "The user " + user_id.toString() + " does not exist.";
+							response.sendError(404, error);
+						}
+						return userOptional;
 					}
 					else if(u.getEmail().equals(u2.getEmail())){
 						// Se devuelve el usuario con el id indicado en la ruta.
 						Optional<Usuario> userOptional = Optional.of(u2);
+						if(!userOptional.isPresent()) {
+							String error = "The user " + user_id.toString() + " does not exist.";
+							response.sendError(404, error);
+						}
 						return userOptional;
 					}
 					else {
-						return usuarios.findUserCommon(user_id);
+						Optional<Usuario> userOptional =usuarios.findUserCommon(user_id);
+						if(!userOptional.isPresent()) {
+							String error = "The user " + user_id.toString() + " does not exist.";
+							response.sendError(404, error);
+						}
+						return userOptional;
 					}
 				}
 				else {
-					Optional<Usuario> user_list = null;
-					return user_list;
+					String error = "The user credentials does not exist.";
+					response.sendError(401, error);
+					return null;
 				}
 	}
 	
@@ -146,17 +165,12 @@ public class UsuarioController {
 		usuarios.deleteById(Long.parseLong(user_id));
 		
 		// Se devuelve mensaje de confirmacion.
-		return "OK";
+		return "OK";	
 	}
 	
-	// NO LO PIDEN, ESTA DE EJEMPLO.
-	
-	@GetMapping(path="/nombre")
-	public @ResponseBody Iterable<Usuario> obtenerUsuarios(@RequestParam String nombre) {
-		
-		// Se devuelve con la lista de usuarios cuyo nombre es nombre de la
-		// base de datos.
-		return usuarios.buscarPorNombre(nombre);
+	@PostMapping(path="/{user_id}/change_password")
+	public @ResponseBody String changePass(@PathVariable String user_id, @RequestParam (name = "old", required = false) String oldPass, @RequestParam(name = "new") String newPass) {
+		return null;
 	}
 	
 }

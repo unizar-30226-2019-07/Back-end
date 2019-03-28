@@ -17,8 +17,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	@Query("from Usuario where id_usuario=:id_usuario")
 	public Usuario buscarPorId(@Param("id_usuario") String id_usuario);
 	
-	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name)  from Usuario where email=:email")
-	public Iterable<Usuario> findAllCommon(@Param("email") String nombre);
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name)  from Usuario")
+	public Iterable<Usuario> findAllCommon();
 	
 	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name)  from Usuario where id_usuario=:id_usuario")
 	public Optional<Usuario> findUserCommon(@Param("id_usuario") String id_usuario);
