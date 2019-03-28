@@ -48,7 +48,18 @@ public class Usuario {
     
     @Column(name="tipo", columnDefinition="ENUM('administrador', 'usuario')")
     private String tipo;
+    
+    public Usuario() {
+    	
+    }
 
+    public Usuario(String birth_date, long rating, String last_name, String first_name) {
+    	this.birth_date = birth_date;
+    	this.rating = rating;
+    	this.last_name = last_name;
+    	this.first_name = first_name;
+    }
+    
 	public Long getIdUsuario() {
 		return idUsuario;
 	}

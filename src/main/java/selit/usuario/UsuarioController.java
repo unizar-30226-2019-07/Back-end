@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,10 +74,23 @@ public class UsuarioController {
 				.getBody()
 				.getSubject();
 		
-		System.out.println("Token: " + token +"\nUsuario: "+user);
+		Usuario u = new Usuario();
 
-		// Se devuelve con la lista de usuarios en la base de datos.
-		return usuarios.findAll();
+		u = usuarios.buscarPorEmail(user);
+		if(u != null) {
+			// Se devuelve con la lista de usuarios en la base de datos.
+			if(u.getTipo().equals("administrador")) {
+				return usuarios.findAll();
+			}else {
+				return usuarios.findAllCommon(user);
+			}
+		}
+		else {
+			Iterable<Usuario> user_list = null;
+			return user_list;
+		}
+		
+		
 	}
 	
 	
