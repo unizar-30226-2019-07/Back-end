@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -86,19 +87,48 @@ public class UsuarioController {
 			}
 		}
 		else {
-			Iterable<Usuario> user_list = null;
+			List<Usuario> user_list = new ArrayList<Usuario>();
 			return user_list;
 		}
 		
 		
 	}
 	
-	
+	/* ARREGLAR CODIGO DE ERROR SI NO ENCUENTRA */
 	@GetMapping(path="/{user_id}")
-	public @ResponseBody Optional<Usuario> obtenerUsuario(@PathVariable String user_id) {
-		
-		// Se devuelve el usuario con el id indicado en la ruta.
-		return usuarios.findById(Long.parseLong(user_id));
+	public @ResponseBody Optional<Usuario> obtenerUsuario(@PathVariable String user_id, HttpServletRequest request) {
+		//Obtengo que usuario es el que realiza la petición
+				String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+				String user = Jwts.parser()
+						.setSigningKey(SUPER_SECRET_KEY)
+						.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+						.getBody()
+						.getSubject();
+				
+				Usuario u = new Usuario();
+				u = usuarios.buscarPorEmail(user);
+				
+				if(u != null) {
+					Usuario u2 = new Usuario();
+					u2 = usuarios.buscarPorId(user_id);
+					// Se devuelve con la lista de usuarios en la base de datos.
+					if(u.getTipo().equals("administrador")) {
+						// Se devuelve el usuario con el id indicado en la ruta.
+						return usuarios.findById(Long.parseLong(user_id));
+					}
+					else if(u.getEmail().equals(u2.getEmail())){
+						// Se devuelve el usuario con el id indicado en la ruta.
+						Optional<Usuario> userOptional = Optional.of(u2);
+						return userOptional;
+					}
+					else {
+						return usuarios.findUserCommon(user_id);
+					}
+				}
+				else {
+					Optional<Usuario> user_list = null;
+					return user_list;
+				}
 	}
 	
 	@PutMapping(path="/{user_id}")
