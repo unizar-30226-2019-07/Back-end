@@ -1,2 +1,2 @@
-# demo-jwt
-Demo de un API REST que utiliza JWT
+# Back-end
+Repositorio para los integrantes del departamento(sub-equipo) de back-end
