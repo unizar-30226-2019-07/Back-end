@@ -56,6 +56,7 @@ public class UsuarioController {
 		usuario.setPassword(bCryptPasswordEncoder.encode(usuario.getPassword()));
 		usuario.setStatus("activa");
 		usuario.setTipo("usuario");
+		usuario.setLast_name("");
 		usuario.setRating(0);
 		usuario.setPosX((float) 0.0);
 		usuario.setPosY((float) 0.0);
