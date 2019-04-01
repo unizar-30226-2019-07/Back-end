@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
 import selit.usuario.UsuarioRepository;
+import selit.security.TokenCheck;
 
 import io.jsonwebtoken.Jwts;
 
@@ -35,8 +36,7 @@ public class UsuarioController {
 	
 	@Autowired
 	public 
-	static UsuarioRepository usuarios;
-	
+	static UsuarioRepository usuarios;	
 	
 	
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -81,9 +81,11 @@ public class UsuarioController {
 				.getSubject();
 		
 		Usuario u = new Usuario();
-		
 		u = usuarios.buscarPorEmail(user);
-		if(u != null) {
+		
+		
+		
+		if(TokenCheck.checkAccess(token,u)) {
 			// Se devuelve con la lista de usuarios en la base de datos.
 			if(u.getTipo().equals("administrador")) { 
 				return usuarios.findAll();
@@ -95,7 +97,7 @@ public class UsuarioController {
 			}
 		}
 		else {
-			String error = "The user credentials does not exist.";
+			String error = "The user credentials are wrong.";
 			response.sendError(401, error);
 			return null;
 		}
@@ -116,7 +118,8 @@ public class UsuarioController {
 				Usuario u = new Usuario();
 				u = usuarios.buscarPorEmail(user);
 				
-				if(u != null) {
+				
+				if(TokenCheck.checkAccess(token,u)) {
 					Usuario u2 = new Usuario();
 					u2 = usuarios.buscarPorId(user_id);
 					// Se devuelve con la lista de usuarios en la base de datos.
