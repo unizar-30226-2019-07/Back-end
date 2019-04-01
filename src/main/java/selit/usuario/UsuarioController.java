@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -70,7 +71,7 @@ public class UsuarioController {
 	}
 	
 	@GetMapping(path="")
-	public @ResponseBody Iterable<Usuario> obtenerUsuarios(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody List<Usuario> obtenerUsuarios(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
@@ -88,7 +89,9 @@ public class UsuarioController {
 				return usuarios.findAll();
 			}
 			else {
-				return usuarios.findAllCommon();
+				List<Usuario> myUserList = usuarios.findAllCommon(user);
+				myUserList.add(usuarios.buscarPorEmail(user));
+				return myUserList;
 			}
 		}
 		else {
