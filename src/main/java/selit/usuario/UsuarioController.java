@@ -57,7 +57,6 @@ public class UsuarioController {
 		usuario.setPassword(bCryptPasswordEncoder.encode(usuario.getPassword()));
 		usuario.setStatus("activa");
 		usuario.setTipo("usuario");
-		usuario.setLast_name("");
 		usuario.setRating(0);
 		usuario.setPosX((float) 0.0);
 		usuario.setPosY((float) 0.0);
@@ -69,7 +68,8 @@ public class UsuarioController {
 		response.setStatus(201);
 		return "Nuevo usuario creado";
 	}
-	
+
+	/* sort page y size ?? */
 	@GetMapping(path="")
 	public @ResponseBody List<Usuario> obtenerUsuarios(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
@@ -84,13 +84,15 @@ public class UsuarioController {
 		u = usuarios.buscarPorEmail(user);
 		
 		
-		
+		//Compruebo si el token es valido
 		if(TokenCheck.checkAccess(token,u)) {
-			// Se devuelve con la lista de usuarios en la base de datos.
 			if(u.getTipo().equals("administrador")) { 
+				// Se devuelve con la lista de usuarios en la base de datos.
 				return usuarios.findAll();
 			}
 			else {
+				// Se devuelve con la lista de usuarios en la base de datos.
+				// Solo se devuelven todos los atributos del propio usuario.
 				List<Usuario> myUserList = usuarios.findAllCommon(user);
 				myUserList.add(usuarios.buscarPorEmail(user));
 				return myUserList;
@@ -118,11 +120,11 @@ public class UsuarioController {
 				Usuario u = new Usuario();
 				u = usuarios.buscarPorEmail(user);
 				
-				
+				//Compruebo si el token es valido
 				if(TokenCheck.checkAccess(token,u)) {
 					Usuario u2 = new Usuario();
 					u2 = usuarios.buscarPorId(user_id);
-					// Se devuelve con la lista de usuarios en la base de datos.
+
 					if(u.getTipo().equals("administrador")) {
 						// Se devuelve el usuario con el id indicado en la ruta.
 						Optional<Usuario> userOptional = usuarios.findById(Long.parseLong(user_id));
@@ -158,10 +160,50 @@ public class UsuarioController {
 	}
 	
 	@PutMapping(path="/{user_id}")
-	public @ResponseBody String actualizarUsuario(@PathVariable String user_id) {
+	public @ResponseBody String actualizarUsuario(@PathVariable String user_id, 
+						HttpServletRequest request, @RequestBody Usuario usuario, 
+						HttpServletResponse response) throws IOException {
+		//Obtengo que usuario es el que realiza la petición
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
 		
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		
+		//Compruebo si el token es valido
+		if(TokenCheck.checkAccess(token,u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
+					usuarios.actualizarUsuario(usuario.getEmail(), 
+							usuario.getFirst_name(), usuario.getLast_name(), 
+							usuario.getGender(), usuario.getBirth_date(), usuario.getPosX(), 
+							usuario.getPosY(), user_id);
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(409, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
+			
+		}
+		else {
+			String error = "The user credentials does not exist.";
+			response.sendError(401, error);
+			return null;
+		}
 		// Se actualiza el usuario.
-		
 		return "OK";
 	}
 	
