@@ -30,6 +30,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	@Query("select idUsuario from Usuario where email=:email")
 	public Integer buscarIdUsuario(@Param("email") String nombre);
 	
+	@Query("select password from Usuario where id_usuario=:id_usuario")
+	public String searchPassword(@Param("id_usuario") String id_usuario);
+	
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Usuario set contrasena=:contrasena where id_usuario=:id_usuario")
+	public void changePassword(@Param("contrasena") String password,
+			@Param("id_usuario") String id_usuario);
+	
 	@Transactional
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Usuario set email=:email, nombre=:nombre, apellidos=:apellidos, "

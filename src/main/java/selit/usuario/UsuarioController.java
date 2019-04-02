@@ -99,7 +99,7 @@ public class UsuarioController {
 			}
 		}
 		else {
-			String error = "The user credentials are wrong.";
+			String error = "The user credentials doesn´t exist or are not correct.";
 			response.sendError(401, error);
 			return null;
 		}
@@ -153,7 +153,7 @@ public class UsuarioController {
 					}
 				}
 				else {
-					String error = "The user credentials does not exist.";
+					String error = "The user credentials does not exist or are not correct.";
 					response.sendError(401, error);
 					return null;
 				}
@@ -199,7 +199,7 @@ public class UsuarioController {
 			
 		}
 		else {
-			String error = "The user credentials does not exist.";
+			String error = "The user credentials does not exist or are not correct.";
 			response.sendError(401, error);
 			return null;
 		}
@@ -208,17 +208,102 @@ public class UsuarioController {
 	}
 	
 	@DeleteMapping(path="/{user_id}")
-	public @ResponseBody String eliminarUsuario(@PathVariable String user_id) {
+	public @ResponseBody String eliminarUsuario(@PathVariable String user_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
 		
-		// Se elimina el usuario
-		usuarios.deleteById(Long.parseLong(user_id));
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		
+		if(TokenCheck.checkAccess(token,u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
+					// Se elimina el usuario
+					usuarios.deleteById(Long.parseLong(user_id));
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(409, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
+			
+		}
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}			
 		
 		// Se devuelve mensaje de confirmacion.
 		return "OK";	
 	}
 	
 	@PostMapping(path="/{user_id}/change_password")
-	public @ResponseBody String changePass(@PathVariable String user_id, @RequestParam (name = "old", required = false) String oldPass, @RequestParam(name = "new") String newPass) {
+	public @ResponseBody String changePass(@PathVariable String user_id, 
+						@RequestParam (name = "old", required = false) String oldPass, @RequestParam(name = "new") String newPass,
+						HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		
+		if(TokenCheck.checkAccess(token,u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
+					if(oldPass!=null) {
+						String pass = usuarios.searchPassword(user_id);
+						
+						if(bCryptPasswordEncoder.matches(oldPass, pass)) {
+							usuarios.changePassword(bCryptPasswordEncoder.encode(newPass), user_id);
+						}
+						else {
+							String error = "The passwords doesn´t match.";
+							response.sendError(412, error);
+							return null;
+						}
+					}
+					else {
+						usuarios.changePassword(bCryptPasswordEncoder.encode(newPass), user_id);
+					}
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(409, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
+			
+		}
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}	
 		return null;
 	}
 	
