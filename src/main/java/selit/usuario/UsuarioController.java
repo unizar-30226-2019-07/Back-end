@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -71,7 +72,9 @@ public class UsuarioController {
 
 	/* sort page y size ?? */
 	@GetMapping(path="")
-	public @ResponseBody List<Usuario> obtenerUsuarios(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody List<Usuario> obtenerUsuarios(HttpServletRequest request, 
+			HttpServletResponse response, @RequestParam (name = "$sort", required = false) 
+			String sort ) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
@@ -83,7 +86,6 @@ public class UsuarioController {
 		Usuario u = new Usuario();
 		u = usuarios.buscarPorEmail(user);
 		
-		
 		//Compruebo si el token es valido
 		if(TokenCheck.checkAccess(token,u)) {
 			if(u.getTipo().equals("administrador")) { 
@@ -93,8 +95,22 @@ public class UsuarioController {
 			else {
 				// Se devuelve con la lista de usuarios en la base de datos.
 				// Solo se devuelven todos los atributos del propio usuario.
-				List<Usuario> myUserList = usuarios.findAllCommon(user);
-				myUserList.add(usuarios.buscarPorEmail(user));
+				List<Usuario> myUserList = new ArrayList<Usuario>();
+				myUserList = usuarios.findAllCommon();
+				
+				 //Búsqueda del usuario para reemplazarlo con toda la información
+				int i = 0;
+				for(Usuario us : myUserList) {
+					if(user.equals(us.getEmail())){
+						break;
+					}
+					i++;
+				}
+				
+				//Reemplazo del usuario
+				myUserList.remove(i);
+				myUserList.add(i,usuarios.buscarPorEmail(user));
+
 				return myUserList;
 			}
 		}

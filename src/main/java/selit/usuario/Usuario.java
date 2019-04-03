@@ -53,12 +53,13 @@ public class Usuario {
     	
     }
 
-    public Usuario(Long idUsuario, String birth_date, long rating, String last_name, String first_name) {
+    public Usuario(Long idUsuario, String birth_date, long rating, String last_name, String first_name, String email) {
     	this.idUsuario = idUsuario;
     	this.birth_date = birth_date;
     	this.rating = rating;
     	this.last_name = last_name;
     	this.first_name = first_name;
+    	this.email = email;
     }
     
 	public Long getIdUsuario() {
