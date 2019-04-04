@@ -1,4 +1,4 @@
-package selit.producto;
+/*package selit.producto;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,7 +11,7 @@ import selit.producto.Producto;
 
 @Entity
 @Table(name="subasta", schema="selit")
-public class Subasta extends Producto {
+public class Subasta extends Anuncio {
 
     @Column(name="f_finalizacion", columnDefinition="DATE")
     private String ending_date;
@@ -40,3 +40,4 @@ public class Subasta extends Producto {
 	}
 
 }
+*/
