@@ -10,16 +10,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,9 +32,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
 import selit.usuario.UsuarioRepository;
+import selit.verificacion.Verificacion;
+import selit.verificacion.VerificacionController;
+import selit.verificacion.VerificacionRepository;
+import selit.mail.MailMail;
 import selit.security.TokenCheck;
 
 import io.jsonwebtoken.Jwts;
+
+
 
 @RestController   
 @RequestMapping(path="/users") 
@@ -39,6 +50,8 @@ public class UsuarioController {
 	public 
 	static UsuarioRepository usuarios;	
 	
+	@Autowired public 
+	VerificacionRepository verificaciones;	
 	
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -47,7 +60,6 @@ public class UsuarioController {
 		UsuarioController.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
 
-	
 	@PostMapping(path="")
 	public @ResponseBody String anyadirUsuario (@RequestBody Usuario usuario, HttpServletResponse response) {
 		
@@ -56,25 +68,50 @@ public class UsuarioController {
 		// nulos se deben rellenar.
 
 		usuario.setPassword(bCryptPasswordEncoder.encode(usuario.getPassword()));
-		usuario.setStatus("activa");
+		usuario.setStatus("bloqueada");
 		usuario.setTipo("usuario");
 		usuario.setRating(0);
 		usuario.setPosX((float) 0.0);
 		usuario.setPosY((float) 0.0);
 		
+		//Generar RANDOM
+		String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        StringBuilder salt = new StringBuilder();
+        Random rnd = new Random();
+        while (salt.length() < 18) { // length of the random string.
+            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+            salt.append(SALTCHARS.charAt(index));
+        }
+        String saltStr = salt.toString();
+        
 		// Se guarda al usuario.
 		usuarios.save(usuario);
+        
+        Long idUsuario = UsuarioController.usuarios.buscarIdUsuario(usuario.getEmail());
 		
+        Verificacion verificacion = new Verificacion();
+        verificacion.setIdUsuario(idUsuario);
+        verificacion.setRandom(saltStr);
+        
+        //Se guarda la verificacion
+        verificaciones.save(verificacion);
+       
+		ApplicationContext context = 
+	             new ClassPathXmlApplicationContext("Spring-Mail.xml");
+		MailMail mm = (MailMail) context.getBean("mailMail");
+		mm.sendMail("selit@gmail.com",usuario.getEmail(),"","Para activar su cuenta acceda a la siguiente direccion: http://selit.naval.cat/verify?random=" + saltStr);
+
 		// Se contesta a la peticion con un mensaje de exito.
 		response.setStatus(201);
 		return "Nuevo usuario creado";
 	}
 
+	
 	/* sort page y size ?? */
 	@GetMapping(path="")
 	public @ResponseBody List<Usuario> obtenerUsuarios(HttpServletRequest request, 
 			HttpServletResponse response, @RequestParam (name = "$sort", required = false) 
-			String sort ) throws IOException {
+			String sort, @RequestParam(name = "email", required = false) String email) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
@@ -88,31 +125,37 @@ public class UsuarioController {
 		
 		//Compruebo si el token es valido
 		if(TokenCheck.checkAccess(token,u)) {
-			if(u.getTipo().equals("administrador")) { 
-				// Se devuelve con la lista de usuarios en la base de datos.
-				return usuarios.findAll();
-			}
-			else {
-				// Se devuelve con la lista de usuarios en la base de datos.
-				// Solo se devuelven todos los atributos del propio usuario.
-				List<Usuario> myUserList = new ArrayList<Usuario>();
-				myUserList = usuarios.findAllCommon();
-				
-				 //Búsqueda del usuario para reemplazarlo con toda la información
-				int i = 0;
-				for(Usuario us : myUserList) {
-					if(user.equals(us.getEmail())){
-						break;
-					}
-					i++;
-				}
-				
-				//Reemplazo del usuario
-				myUserList.remove(i);
-				myUserList.add(i,usuarios.buscarPorEmail(user));
-
+			List<Usuario> myUserList = new ArrayList<Usuario>();
+			if(email != null) {
+				myUserList.add(usuarios.buscarPorEmail(user));
 				return myUserList;
 			}
+			else {
+				if(u.getTipo().equals("administrador")) { 
+					// Se devuelve con la lista de usuarios en la base de datos.
+					return usuarios.findAll();
+				}
+				else {
+					// Se devuelve con la lista de usuarios en la base de datos.
+					// Solo se devuelven todos los atributos del propio usuario.					
+					myUserList = usuarios.findAllCommon();
+					
+					 //Búsqueda del usuario para reemplazarlo con toda la información
+					int i = 0;
+					for(Usuario us : myUserList) {
+						if(user.equals(us.getEmail())){
+							break;
+						}
+						i++;
+					}
+					
+					//Reemplazo del usuario
+					myUserList.remove(i);
+					myUserList.add(i,usuarios.buscarPorEmail(user));
+
+					return myUserList;
+				}
+			}			
 		}
 		else {
 			String error = "The user credentials doesn´t exist or are not correct.";
@@ -322,5 +365,6 @@ public class UsuarioController {
 		}	
 		return null;
 	}
+	
 	
 }

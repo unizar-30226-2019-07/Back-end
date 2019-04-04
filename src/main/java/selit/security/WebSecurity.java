@@ -2,6 +2,7 @@ package selit.security;
 
 import static selit.security.Constants.LOGIN_URL;
 import static selit.security.Constants.REGISTER_URL;
+import static selit.security.Constants.VERIFY_URL;
 import selit.security.customAuthenticationManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +47,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 			.cors().and()
 			.csrf().disable()
 			.authorizeRequests().antMatchers(HttpMethod.POST, LOGIN_URL).permitAll().and()
-			.authorizeRequests().antMatchers(HttpMethod.POST, REGISTER_URL).permitAll()
+			.authorizeRequests().antMatchers(HttpMethod.POST, REGISTER_URL).permitAll().and()
+			.authorizeRequests().antMatchers(HttpMethod.POST, VERIFY_URL).permitAll()
 			.anyRequest().authenticated().and()
 				.addFilter(new JWTAuthenticationFilter( new customAuthenticationManager()))
 				.addFilter(new JWTAuthorizationFilter( new customAuthenticationManager()));

@@ -16,6 +16,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import selit.usuario.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
@@ -57,9 +59,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 				.getBody()
 				.getSubject();
 		
-		Integer idUsuario = UsuarioController.usuarios.buscarIdUsuario(user);
-		
 		response.addHeader(HEADER_AUTHORIZACION_KEY, TOKEN_BEARER_PREFIX + " " + token);
-		response.addHeader("idUsuario", idUsuario.toString());
 	}
 }

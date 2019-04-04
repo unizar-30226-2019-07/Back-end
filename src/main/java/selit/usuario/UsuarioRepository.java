@@ -28,7 +28,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	public Optional<Usuario> findUserCommon(@Param("id_usuario") String id_usuario);
 	
 	@Query("select idUsuario from Usuario where email=:email")
-	public Integer buscarIdUsuario(@Param("email") String nombre);
+	public Long buscarIdUsuario(@Param("email") String nombre);
 	
 	@Query("select password from Usuario where id_usuario=:id_usuario")
 	public String searchPassword(@Param("id_usuario") String id_usuario);
@@ -48,4 +48,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 			@Param("sexo") String gender, @Param("nacimiento") String birth_date,
 			@Param("posX") float lat, @Param("posY") float lng,
 			@Param("id_usuario") String id_usuario);
+	
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Usuario set status=:status where id_usuario=:id_usuario")
+	public void updateStatus(@Param("id_usuario") Long id_usuario,@Param("status") String status);
 }	
