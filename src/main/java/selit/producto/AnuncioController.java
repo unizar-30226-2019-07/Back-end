@@ -131,7 +131,7 @@ public class AnuncioController {
 					
 					// No es el administrador o el propietario del producto, se devuelve un error.
 					String error = "You are not an administrator or the user is not you.";
-					response.sendError(409, error);
+					response.sendError(402, error);
 					return null;
 				}
 			}
