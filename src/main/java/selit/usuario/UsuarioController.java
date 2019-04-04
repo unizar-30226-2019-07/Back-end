@@ -245,7 +245,7 @@ public class UsuarioController {
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";
-					response.sendError(409, error);
+					response.sendError(402, error);
 					return null;
 				}
 			}
@@ -346,7 +346,7 @@ public class UsuarioController {
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";
-					response.sendError(409, error);
+					response.sendError(402, error);
 					return null;
 				}
 			}
