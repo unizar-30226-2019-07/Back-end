@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
 import selit.usuario.UsuarioRepository;
 import selit.verificacion.Verificacion;
-import selit.verificacion.VerificacionController;
 import selit.verificacion.VerificacionRepository;
 import selit.mail.MailMail;
 import selit.security.TokenCheck;
