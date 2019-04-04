@@ -60,19 +60,20 @@ public class UsuarioController {
 	}
 
 	@PostMapping(path="")
-	public @ResponseBody String anyadirUsuario (@RequestBody Usuario usuario, HttpServletResponse response) {
+	public @ResponseBody String anyadirUsuario (@RequestBody UsuarioLoc usuario, HttpServletResponse response) throws IOException {
 		
 		// El objeto usuario pasado en el cuerpo de la peticion tiene los 
 		// atributos email, password y first_name. El resto de los atributos no 
 		// nulos se deben rellenar.
 
-		usuario.setPassword(bCryptPasswordEncoder.encode(usuario.getPassword()));
-		usuario.setStatus("bloqueada");
-		usuario.setTipo("usuario");
-		usuario.setRating(0);
-		usuario.setPosX((float) 0.0);
-		usuario.setPosY((float) 0.0);
 		
+        Usuario test = usuarios.buscarPorEmail(usuario.getEmail());
+        if(test != null) {
+        	String error = "The email already exists.";
+			response.sendError(409, error);
+			return null;
+        }
+        
 		//Generar RANDOM
 		String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder salt = new StringBuilder();
@@ -83,10 +84,15 @@ public class UsuarioController {
         }
         String saltStr = salt.toString();
         
+        //Convierto para guardar el usuario en la BD
+        Usuario user = new Usuario(usuario.getLocation().getLat(),usuario.getLocation().getLng(),
+        		bCryptPasswordEncoder.encode(usuario.getPassword()),usuario.getEmail(),
+        		usuario.getLast_name(),usuario.getFirst_name(),"pendiente","usuario",0);
 		// Se guarda al usuario.
-		usuarios.save(usuario);
+
+		usuarios.save(user);
         
-        Long idUsuario = UsuarioController.usuarios.buscarIdUsuario(usuario.getEmail());
+        Long idUsuario = usuarios.buscarIdUsuario(usuario.getEmail());
 		
         Verificacion verificacion = new Verificacion();
         verificacion.setIdUsuario(idUsuario);
@@ -362,7 +368,7 @@ public class UsuarioController {
 			response.sendError(401, error);
 			return null;
 		}	
-		return null;
+		return "OK";
 	}
 	
 	
