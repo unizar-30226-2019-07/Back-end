@@ -15,7 +15,7 @@ public class Anuncio {
     @GeneratedValue(strategy=GenerationType.AUTO)
     @Column(name="id_producto")
     private Long idProducto;
-   
+
 	@Column(name="fecha_publicacion", columnDefinition="DATE")
     private String publicate_date;
 
@@ -27,13 +27,13 @@ public class Anuncio {
 
     @Column(name="ubicacion")
     private String location;
-    
+
     @Column(name="precio")
     private float price;
 
 	@Column(name="moneda")
     private String currency;
-	
+
 	@Column(name="nfavoritos")
     private int nfav;
 
@@ -46,7 +46,32 @@ public class Anuncio {
     @Column(name="nombre_categoria")
     private String category;
     
+    public Anuncio() {
+    	
+    }
     
+    public Anuncio(String publicate_date,String description,String title,String location,float price,String currency,int nfav,int nvis,Long id_owner,String category) {
+		super();
+		this.publicate_date = publicate_date;
+		this.description = description;
+		this.title = title;
+		this.location = location;
+		this.price = price;
+		this.currency = currency;
+		this.nfav = nfav;
+		this.nvis = nvis;
+		this.id_owner = id_owner;
+		this.category = category;
+	} 
+    
+	public Anuncio(Long idProducto,String publicate_date,String description,String title,float price){
+	  this.idProducto = idProducto;
+	  this.publicate_date = publicate_date;
+	  this.description = description;
+	  this.title = title;
+	  this.price = price;
+	}
+
     public String getPublicate_date() {
 		return publicate_date;
 	}
@@ -126,5 +151,5 @@ public class Anuncio {
 	public void setCategory(String category) {
 		this.category = category;
 	}
-    
+
 }

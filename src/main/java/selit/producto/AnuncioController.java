@@ -1,5 +1,7 @@
 package selit.producto;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,6 +43,10 @@ public class AnuncioController {
 	@Autowired
 	public
 	static AnuncioRepository anuncios;
+	
+	@Autowired
+	public 
+	static UsuarioRepository usuarios;
 	
 	public AnuncioController(AnuncioRepository productos) {
 		AnuncioController.anuncios = productos;
@@ -146,4 +152,100 @@ public class AnuncioController {
 		
 	}
 
+	@GetMapping(path="/{product_id}")
+	public @ResponseBody Optional<Anuncio> obtenerAnuncio(@PathVariable String product_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		//Obtengo que usuario es el que realiza la petición
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		
+		Usuario u = new Usuario();
+		u = UsuarioController.usuarios.buscarPorEmail(user);
+		
+		// Se compreba si el token es valido.
+		if(TokenCheck.checkAccess(token,u)) {
+	
+			// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
+			Optional<Anuncio> anuncio = anuncios.findById(Long.parseLong(product_id));
+			if ( !anuncio.isPresent() ) {
+				
+				// Se devuelve error 404.
+				response.sendError(404, "El producto con id "+product_id+" no existe");
+				
+				return null;
+				
+			} 
+			return anuncio;
+			
+		} else {
+			
+			// El token es incorrecto.
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}
+	}
+	
+	@PutMapping(path="/{product_id}")
+	public @ResponseBody String actualizarAnuncio(@PathVariable String product_id, 
+						HttpServletRequest request, @RequestBody Anuncio anuncio, 
+						HttpServletResponse response) throws IOException {
+		//Obtengo que usuario es el que realiza la petición
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		
+		Usuario u = new Usuario();
+		u = UsuarioController.usuarios.buscarPorEmail(user);
+		
+		// Se compreba si el token es valido.
+		if(TokenCheck.checkAccess(token,u)) {
+			// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
+			Optional<Anuncio> anuncio2 = anuncios.findById(Long.parseLong(product_id));
+			if ( !anuncio2.isPresent() ) {
+				
+				// Se devuelve error 404.
+				response.sendError(404, "El producto con id "+product_id+" no existe");
+				
+				return null;
+				
+			} else {
+				
+				// Se comprueba que el usuario que realiza la peticion de eliminar es un administrador
+				// o es el propietario del producto.
+				Anuncio anuncio3 = anuncio2.get();
+				if (anuncio3.getId_owner() == u.getIdUsuario()) {
+					
+					// Se elimina el producto.
+					anuncios.actualizarAnuncio(anuncio.getPublicate_date(),anuncio.getDescription(),
+							anuncio.getTitle(),anuncio.getLocation(),anuncio.getPrice(),
+							anuncio.getCurrency(),anuncio.getNfav(),anuncio.getNvis(),
+							anuncio.getId_owner(),anuncio.getCategory(),product_id);
+					
+					// Se devuelve mensaje de confirmacion.
+					return "Anuncio actualizado";
+					
+				} else {
+					
+					// No es el administrador o el propietario del producto, se devuelve un error.
+					String error = "You are not update this product.";
+					response.sendError(402, error);
+					return null;
+				}
+			}
+			
+		} else {
+			
+			// El token es incorrecto.
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}
+	}
 }
