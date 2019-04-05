@@ -1,8 +1,9 @@
 package selit.producto;
 
 import selit.Location.Location;
+import selit.usuario.Usuario;
 
-public class AnuncioLoc {
+public class AnuncioAux {
 
 	private Long idProducto;
 	
@@ -26,12 +27,16 @@ public class AnuncioLoc {
 
     private String category;
     
-    public AnuncioLoc() {
+    private String status;
+    
+    private Usuario owner;
+    
+    public AnuncioAux() {
     	
     }
     
-    public AnuncioLoc(String publicate_date,String description,String title,Location location,
-    		float price,String currency,int nfav,int nvis,Long id_owner,String category) {
+    public AnuncioAux(String publicate_date,String description,String title,Location location,
+    		float price,String currency,int nfav,int nvis,Long id_owner,String category, String status, Usuario owner) {
 		super();
 		this.publicate_date = publicate_date;
 		this.description = description;
@@ -43,9 +48,11 @@ public class AnuncioLoc {
 		this.nvis = nvis;
 		this.id_owner = id_owner;
 		this.category = category;
+		this.status = status;
+		this.owner = owner;
 	} 
     
-	public AnuncioLoc(String publicate_date,String description,String title,float price){
+	public AnuncioAux(String publicate_date,String description,String title,float price){
 	  this.publicate_date = publicate_date;
 	  this.description = description;
 	  this.title = title;
@@ -140,6 +147,22 @@ public class AnuncioLoc {
 
 	public void setCategory(String category) {
 		this.category = category;
+	}
+	
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
+	public Usuario getOwner() {
+		return owner;
+	}
+
+	public void setOwner(Usuario owner) {
+		this.owner = owner;
 	}
 
 }

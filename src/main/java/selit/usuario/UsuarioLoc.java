@@ -36,16 +36,23 @@ public class UsuarioLoc {
     public UsuarioLoc() {
     	
     }
-
-    public UsuarioLoc(Long idUsuario, String birth_date, long rating, String last_name, String first_name, String email) {
-    	this.idUsuario = idUsuario;
-    	this.birth_date = birth_date;
-    	this.rating = rating;
-    	this.last_name = last_name;
-    	this.first_name = first_name;
-    	this.email = email;
-    }
     
+	public UsuarioLoc(Long idUsuario, String gender, String birth_date, Location location, long rating, String status,
+			String password, String email, String last_name, String first_name, String tipo) {
+		super();
+		this.idUsuario = idUsuario;
+		this.gender = gender;
+		this.birth_date = birth_date;
+		this.location = location;
+		this.rating = rating;
+		this.status = status;
+		this.password = password;
+		this.email = email;
+		this.last_name = last_name;
+		this.first_name = first_name;
+		this.tipo = tipo;
+	}
+
 	public Long getIdUsuario() {
 		return idUsuario;
 	}

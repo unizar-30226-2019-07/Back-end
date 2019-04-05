@@ -34,6 +34,7 @@ import selit.usuario.Usuario;
 import selit.usuario.UsuarioRepository;
 import selit.verificacion.Verificacion;
 import selit.verificacion.VerificacionRepository;
+import selit.Location.Location;
 import selit.mail.MailMail;
 import selit.security.TokenCheck;
 
@@ -114,7 +115,7 @@ public class UsuarioController {
 	
 	/* sort page y size ?? */
 	@GetMapping(path="")
-	public @ResponseBody List<Usuario> obtenerUsuarios(HttpServletRequest request, 
+	public @ResponseBody List<UsuarioLoc> obtenerUsuarios(HttpServletRequest request, 
 			HttpServletResponse response, @RequestParam (name = "$sort", required = false) 
 			String sort, @RequestParam(name = "email", required = false) String email) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
@@ -132,13 +133,18 @@ public class UsuarioController {
 		if(TokenCheck.checkAccess(token,u)) {
 			List<Usuario> myUserList = new ArrayList<Usuario>();
 			if(email != null) {
-				myUserList.add(usuarios.buscarPorEmail(user));
-				return myUserList;
+				if(email.equals(user)){
+					myUserList.add(usuarios.buscarPorEmail(user));
+				}
+				else {
+					myUserList.add(usuarios.buscarPorEmailCommon(user));
+				}
+				
 			}
 			else {
 				if(u.getTipo().equals("administrador")) { 
 					// Se devuelve con la lista de usuarios en la base de datos.
-					return usuarios.findAll();
+					myUserList = usuarios.findAll();
 				}
 				else {
 					// Se devuelve con la lista de usuarios en la base de datos.
@@ -158,9 +164,24 @@ public class UsuarioController {
 					myUserList.remove(i);
 					myUserList.add(i,usuarios.buscarPorEmail(user));
 
-					return myUserList;
-				}
-			}			
+				}			
+							
+			}	
+			
+			List<UsuarioLoc> userValidList = new ArrayList<UsuarioLoc>();
+			for(Usuario userAux : myUserList) {
+				Location loc = new Location(userAux.getPosX(), userAux.getPosY());
+				
+				UsuarioLoc rUser = new UsuarioLoc(userAux.getIdUsuario(),userAux.getGender(),userAux.getBirth_date(),
+												loc,userAux.getRating(),userAux.getStatus(),userAux.getPassword(),userAux.getEmail(),
+												userAux.getLast_name(),userAux.getFirst_name(),userAux.getTipo());
+				userValidList.add(rUser);
+			}
+			
+			
+
+			
+			return userValidList;
 		}
 		else {
 			String error = "The user credentials doesn´t exist or are not correct.";
@@ -172,7 +193,7 @@ public class UsuarioController {
 	}
 	
 	@GetMapping(path="/{user_id}")
-	public @ResponseBody Optional<Usuario> obtenerUsuario(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody UsuarioLoc obtenerUsuario(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 				String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 				String user = Jwts.parser()
@@ -188,33 +209,31 @@ public class UsuarioController {
 				if(TokenCheck.checkAccess(token,u)) {
 					Usuario u2 = new Usuario();
 					u2 = usuarios.buscarPorId(user_id);
-
-					if(u.getTipo().equals("administrador")) {
+					
+					Optional<Usuario> userOptional;
+					if(u.getTipo().equals("administrador") || u.getEmail().equals(u2.getEmail())) {
 						// Se devuelve el usuario con el id indicado en la ruta.
-						Optional<Usuario> userOptional = usuarios.findById(Long.parseLong(user_id));
+						userOptional = Optional.of(u2);
 						if(!userOptional.isPresent()) {
 							String error = "The user " + user_id.toString() + " does not exist.";
 							response.sendError(404, error);
 						}
-						return userOptional;
-					}
-					else if(u.getEmail().equals(u2.getEmail())){
-						// Se devuelve el usuario con el id indicado en la ruta.
-						Optional<Usuario> userOptional = Optional.of(u2);
-						if(!userOptional.isPresent()) {
-							String error = "The user " + user_id.toString() + " does not exist.";
-							response.sendError(404, error);
-						}
-						return userOptional;
+						
 					}
 					else {
-						Optional<Usuario> userOptional =usuarios.findUserCommon(user_id);
+						userOptional =usuarios.findUserCommon(user_id);
 						if(!userOptional.isPresent()) {
 							String error = "The user " + user_id.toString() + " does not exist.";
 							response.sendError(404, error);
 						}
-						return userOptional;
 					}
+					Usuario aux = userOptional.get();
+					Location loc = new Location(aux.getPosX(), aux.getPosY());
+					
+					UsuarioLoc rUser = new UsuarioLoc(aux.getIdUsuario(),aux.getGender(),aux.getBirth_date(),
+													loc,aux.getRating(),aux.getStatus(),aux.getPassword(),aux.getEmail(),
+													aux.getLast_name(),aux.getFirst_name(),aux.getTipo());
+					return rUser;
 				}
 				else {
 					String error = "The user credentials does not exist or are not correct.";

@@ -5,11 +5,12 @@ public class Location {
     
     private float lng;
     
-    Location(float lat, float lng){
+    public Location(float lat, float lng){
     	this.lat = lat;
     	this.lng = lng;
     }
     
+
 	public float getLat() {
 		return lat;
 	}
