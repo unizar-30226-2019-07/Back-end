@@ -70,21 +70,29 @@ public class AnuncioController {
 		
 		//Se comrprueba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
-		
-			// Se definen los valores por defecto de las columnas obligatorias.
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
-			LocalDateTime now = LocalDateTime.now();  
+			if(anuncio.getId_owner().equals(u.getIdUsuario())) {
+				// Se definen los valores por defecto de las columnas obligatorias.
+				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
+				LocalDateTime now = LocalDateTime.now();  
 
-			Anuncio anun = new Anuncio(dtf.format(now).toString(),anuncio.getDescription(),anuncio.getTitle(),
-							anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),anuncio.getPrice(),
-							anuncio.getCurrency(),0,0,u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
-			// Se guarda el anuncio.
-			anuncios.save(anun);
-	
-			// Se contesta a la peticion con un mensaje de exito.
-			response.setStatus(201);
-			return "Nuevo producto creado";
-		} else {
+				Anuncio anun = new Anuncio(dtf.format(now).toString(),anuncio.getDescription(),anuncio.getTitle(),
+								anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),anuncio.getPrice(),
+								anuncio.getCurrency(),0,0,u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
+				// Se guarda el anuncio.
+				anuncios.save(anun);
+		
+				// Se contesta a la peticion con un mensaje de exito.
+				response.setStatus(201);
+				return "Nuevo producto creado";
+			}
+			else {
+				String error = "The user doesn't have enough permissions.";
+				response.sendError(402, error);
+				return null;
+			}
+			
+		} 
+		else {
 			String error = "The user credentials does not exist or are not correct.";
 			response.sendError(401, error);
 			return null;
