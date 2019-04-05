@@ -42,18 +42,18 @@ public class AnuncioController {
 
 	@Autowired
 	public
-	static AnuncioRepository anuncios;
+	AnuncioRepository anuncios;
 	
 	@Autowired
 	public 
-	static UsuarioRepository usuarios;
+	UsuarioRepository usuarios;
 	
 	public AnuncioController(AnuncioRepository productos) {
-		AnuncioController.anuncios = productos;
+		anuncios = productos;
 	}
 
 	@PostMapping(path="")
-	public @ResponseBody String anyadirAnuncio (@RequestBody Anuncio anuncio, HttpServletRequest request, HttpServletResponse response) throws IOException { 
+	public @ResponseBody String anyadirAnuncio (@RequestBody AnuncioLoc anuncio, HttpServletRequest request, HttpServletResponse response) throws IOException { 
 
 		// Se obtiene el correo del usuario que ha anyadido el producto para 
 		// encontrar su identificador y meterlo en la tabla de anuncios como
@@ -66,24 +66,19 @@ public class AnuncioController {
 				.getSubject();
 		Usuario u = new Usuario();
 		u = UsuarioController.usuarios.buscarPorEmail(user);
-		anuncio.setId_owner(u.getIdUsuario());
 		
 		//Se comrprueba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
 		
 			// Se definen los valores por defecto de las columnas obligatorias.
-			anuncio.setNfav(0);
-			anuncio.setNvis(0);
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 			LocalDateTime now = LocalDateTime.now();  
-			anuncio.setPublicate_date(dtf.format(now).toString());
-			if (anuncio.getTitle() == null) {
-				anuncio.setTitle("");
-			}
-			anuncio.setLocation("ubicacion");
-			 
+
+			Anuncio anun = new Anuncio(dtf.format(now).toString(),anuncio.getDescription(),anuncio.getTitle(),
+							anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),anuncio.getPrice(),
+							anuncio.getCurrency(),0,0,u.getIdUsuario(),anuncio.getCategory()); 
 			// Se guarda el anuncio.
-			anuncios.save(anuncio);
+			anuncios.save(anun);
 	
 			// Se contesta a la peticion con un mensaje de exito.
 			response.setStatus(201);
@@ -177,10 +172,13 @@ public class AnuncioController {
 				
 				return null;
 				
-			} 
-			return anuncio;
+			}
+			else {
+				return anuncio;
+			}
 			
-		} else {
+		} 
+		else {
 			
 			// El token es incorrecto.
 			String error = "The user credentials does not exist or are not correct.";
@@ -191,7 +189,7 @@ public class AnuncioController {
 	
 	@PutMapping(path="/{product_id}")
 	public @ResponseBody String actualizarAnuncio(@PathVariable String product_id, 
-						HttpServletRequest request, @RequestBody Anuncio anuncio, 
+						HttpServletRequest request, @RequestBody AnuncioLoc anuncio, 
 						HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
@@ -217,16 +215,16 @@ public class AnuncioController {
 				
 			} else {
 				
-				// Se comprueba que el usuario que realiza la peticion de eliminar es un administrador
+				// Se comprueba que el usuario que realiza la peticion de actualizar es un administrador
 				// o es el propietario del producto.
 				Anuncio anuncio3 = anuncio2.get();
-				if (anuncio3.getId_owner() == u.getIdUsuario()) {
+				if (u.getTipo().equals("administrador") || anuncio3.getId_owner() == u.getIdUsuario()) {
 					
-					// Se elimina el producto.
+					// Se actualiza el producto.
 					anuncios.actualizarAnuncio(anuncio.getPublicate_date(),anuncio.getDescription(),
-							anuncio.getTitle(),anuncio.getLocation(),anuncio.getPrice(),
-							anuncio.getCurrency(),anuncio.getNfav(),anuncio.getNvis(),
-							anuncio.getId_owner(),anuncio.getCategory(),product_id);
+							anuncio.getTitle(),anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),
+							anuncio.getPrice(),anuncio.getCurrency(),anuncio.getNfav(),
+							anuncio.getNvis(),anuncio.getId_owner(),anuncio.getCategory(),product_id);
 					
 					// Se devuelve mensaje de confirmacion.
 					return "Anuncio actualizado";
@@ -234,7 +232,7 @@ public class AnuncioController {
 				} else {
 					
 					// No es el administrador o el propietario del producto, se devuelve un error.
-					String error = "You are not update this product.";
+					String error = "You can't update this product.";
 					response.sendError(402, error);
 					return null;
 				}
