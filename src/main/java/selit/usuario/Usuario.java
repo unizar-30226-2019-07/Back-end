@@ -29,8 +29,8 @@ public class Usuario {
     @Column(name="posY")
     private float posY;
     
-	@Column(name="calificacion")
-    private long rating;
+	@Column(name="calificacion", columnDefinition="FLOAT")
+    private float rating;
     
     @Column(name="estado_cuenta", columnDefinition="ENUM('bloqueada', 'activa')" )
     private String status;
@@ -54,7 +54,7 @@ public class Usuario {
     	
     }
     
-    public Usuario(float posX, float posY, String password, String email, String last_name, String first_name, String status, String tipo, long rating) {
+    public Usuario(float posX, float posY, String password, String email, String last_name, String first_name, String status, String tipo, float rating) {
 		super();
 		this.posX = posX;
 		this.posY = posY;
@@ -67,7 +67,7 @@ public class Usuario {
 		this.rating = rating;
 	}
 
-    public Usuario(Long idUsuario, String birth_date, long rating, String last_name, String first_name, String email) {
+    public Usuario(Long idUsuario, String birth_date, float rating, String last_name, String first_name, String email) {
     	this.idUsuario = idUsuario;
     	this.birth_date = birth_date;
     	this.rating = rating;
@@ -116,11 +116,11 @@ public class Usuario {
 		this.posY = posY;
 	}
 
-	public long getRating() {
+	public float getRating() {
 		return rating;
 	}
 
-	public void setRating(long rating) {
+	public void setRating(float rating) {
 		this.rating = rating;
 	}
 

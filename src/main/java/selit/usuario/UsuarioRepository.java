@@ -5,12 +5,15 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
 	
 	@Query("from Usuario where nombre=:nombre")
 	public Iterable<Usuario> buscarPorNombre(@Param("nombre") String nombre);
@@ -35,6 +38,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	
 	@Query("select password from Usuario where id_usuario=:id_usuario")
 	public String searchPassword(@Param("id_usuario") String id_usuario);
+	
+	@Query("from Usuario")
+	public List<Usuario> buscarUsuariosOrdenados(Sort sort);
+	
+	@Query("from Usuario")
+	public List<Usuario> buscarUsuariosPagina(Pageable page);
 	
 	@Transactional
 	@Modifying(flushAutomatically = true, clearAutomatically = true)

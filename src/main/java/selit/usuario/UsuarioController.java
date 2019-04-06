@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -25,6 +26,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -117,7 +121,10 @@ public class UsuarioController {
 	@GetMapping(path="")
 	public @ResponseBody List<UsuarioLoc> obtenerUsuarios(HttpServletRequest request, 
 			HttpServletResponse response, @RequestParam (name = "$sort", required = false) 
-			String sort, @RequestParam(name = "email", required = false) String email) throws IOException {
+			String sort, @RequestParam(name = "email", required = false) String email,
+			@RequestParam(name = "$page", required = false) String page, 
+			@RequestParam(name = "$size", required = false) String size) throws IOException {
+		
 		//Obtengo que usuario es el que realiza la petición
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
@@ -140,6 +147,35 @@ public class UsuarioController {
 					myUserList.add(usuarios.buscarPorEmailCommon(user));
 				}
 				
+			} else if (sort != null) {
+				System.out.println(sort);
+				String campos[] = sort.split("\\s");
+				Sort sorting;
+				if ( campos[0].equals("id_usuario") || campos[0].equals("gender") || campos[0].equals("birth_date") || campos[0].equals("location") ||
+					 campos[0].equals("location") || campos[0].equals("rating") || campos[0].equals("status") || campos[0].equals("email") || 
+					 campos[0].equals("first_name") || campos[0].equals("last_name") || campos[0].equals("tipo")) {
+					
+					if (campos[1].equals("DESC")) {
+						if (page != null && size != null) {
+							myUserList = usuarios.buscarUsuariosPagina(PageRequest.of(Integer.parseInt(page), Integer.parseInt(size), Sort.by(campos[0]).descending()));
+
+						} else {
+							myUserList = usuarios.buscarUsuariosOrdenados(Sort.by(campos[0]).descending());
+						}
+					} else if (campos[1].equals("ASC")){
+						if (page != null && size != null) {
+							myUserList = usuarios.buscarUsuariosPagina(PageRequest.of(Integer.parseInt(page), Integer.parseInt(size), Sort.by(campos[0]).ascending()));
+						} else {
+							myUserList = usuarios.buscarUsuariosOrdenados(Sort.by(campos[0]).ascending());	
+						}
+					} else {
+						// ERROR
+					}
+				} else {
+					// ERROR
+				}
+			} else if (page != null && size != null) {
+				myUserList = usuarios.buscarUsuariosPagina(PageRequest.of(Integer.parseInt(page), Integer.parseInt(size)));
 			}
 			else {
 				if(u.getTipo().equals("administrador")) { 
