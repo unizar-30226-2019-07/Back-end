@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.lang.Float;
+import java.math.BigInteger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,6 +55,18 @@ public class AnuncioController {
 	public AnuncioController(AnuncioRepository productos) {
 		anuncios = productos;
 	}
+	
+	private <T> List<T> intersection(List<T> list1, List<T> list2) {
+        List<T> list = new ArrayList<T>();
+
+        for (T t : list1) {
+            if(list2.contains(t)) {
+                list.add(t);
+            }
+        }
+
+        return list;
+    }
 
 	@PostMapping(path="")
 	public @ResponseBody String anyadirAnuncio (@RequestBody AnuncioAux anuncio, HttpServletRequest request, HttpServletResponse response) throws IOException { 
@@ -159,7 +172,8 @@ public class AnuncioController {
 	}
 
 	@GetMapping(path="/{product_id}")
-	public @ResponseBody AnuncioAux obtenerAnuncio(@PathVariable String product_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody AnuncioAux obtenerAnuncio(@PathVariable String product_id, @RequestParam (name = "lat") String lat,
+			@RequestParam (name = "lng") String lng, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
@@ -187,18 +201,22 @@ public class AnuncioController {
 				Optional<Usuario>  u2;
 				Anuncio aaux = anuncio.get();
 				Location loc = new Location(aaux.getPosX(),aaux.getPosY());
-				if(u.getTipo().equals("administrador") || u.getIdUsuario().equals(anuncio.get().getId_owner())) {					
-					u2 = usuarios.findById(u.getIdUsuario());							
+				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
+				
+				AnuncioAux rAnuncio;
+				if(userFind.getTipo().equals("administrador") || userFind.getEmail().equals(user)) {
+					rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
+							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
+							aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
+							userFind,anuncios.selectDistance(lat, lng, product_id));
 				}
 				else {
-					u2 = usuarios.findUserCommon(u.getIdUsuario().toString());
-				}
-				AnuncioAux rAnuncio = new AnuncioAux(aaux.getPublicate_date(),aaux.getDescription(),
-						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
-						aaux.getNfav(),aaux.getNvis(),u.getIdUsuario(),aaux.getCategory(),aaux.getStatus(),
-						u2.get());
+					rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
+							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
+							aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
+							usuarios.buscarPorEmailCommon(userFind.getEmail()),anuncios.selectDistance(lat, lng, product_id));
+				}	
 				return rAnuncio;
-				
 			}
 			
 		} 
@@ -282,14 +300,11 @@ public class AnuncioController {
 	
 	/* sort page y size ?? */
 	@GetMapping(path="")
-	public @ResponseBody List<Anuncio> obtenerAnuncios(HttpServletRequest request, 
+	public @ResponseBody List<AnuncioAux> obtenerAnuncios(HttpServletRequest request, 
 			HttpServletResponse response, 
-			@RequestParam (name = "$sort", required = false) String sort, 
-			@RequestParam (name = "lat_min", required = true) String lat_min,
-			@RequestParam (name = "lat_max", required = true) String lat_max,
-			@RequestParam (name = "lng_min", required = true) String lng_min,
-			@RequestParam (name = "lng_max", required = true) String lng_max,
-			@RequestParam (name = "dis_max", required = false) String dis_max,
+			@RequestParam (name = "lat") String lat,
+			@RequestParam (name = "lng") String lng,
+			@RequestParam (name = "distance") String distance,
 			@RequestParam (name = "category", required = false) String category,
 			@RequestParam (name = "search", required = false) String search,
 			@RequestParam (name = "priceFrom", required = false) String priceFrom,
@@ -310,9 +325,74 @@ public class AnuncioController {
 		
 		//Compruebo si el token es valido
 		if(TokenCheck.checkAccess(token,u)) {
-			List<Anuncio> myAnuncioList = new ArrayList<Anuncio>();
-			myAnuncioList = anuncios.selectAnuncioCommon(Float.parseFloat(lat_min),Float.parseFloat(lat_max),Float.parseFloat(lng_min),Float.parseFloat(lng_max));
-			return myAnuncioList;
+			List<BigInteger> myAnuncioListAux = new ArrayList<BigInteger>();
+			List<Long> myAnuncioList = new ArrayList<Long>();
+			List<Long> categories = new ArrayList<Long>();
+			List<BigInteger> foundAux = new ArrayList<BigInteger>();
+			List<Long> found = new ArrayList<Long>();
+			List<Long> pFrom = new ArrayList<Long>();
+			List<Long> pTo = new ArrayList<Long>();
+			List<Long> pubFrom = new ArrayList<Long>();
+			List<Long> pubTo = new ArrayList<Long>();
+			
+			myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance);
+			for(BigInteger id : myAnuncioListAux){
+				myAnuncioList.add(id.longValue());
+			}
+			if(category != null) {
+				categories = anuncios.selectAnuncioCommonCategory(category);
+				myAnuncioList = intersection(myAnuncioList,categories);
+			}
+			if(search != null) {
+				foundAux = anuncios.selectAnuncioCommonSearch(search);
+				for(BigInteger id : foundAux){
+					found.add(id.longValue());
+				}
+				myAnuncioList = intersection(myAnuncioList,found);				
+			}
+			if(priceFrom != null) {
+				 pFrom = anuncios.selectAnuncioCommonPriceFrom(Float.parseFloat(priceFrom));
+				 myAnuncioList = intersection(myAnuncioList,pFrom);
+			}
+			if(priceTo != null) {
+				pTo = anuncios.selectAnuncioCommonPriceTo(Float.parseFloat(priceTo));
+				myAnuncioList = intersection(myAnuncioList,pTo);				 
+			}
+			if(publishedFrom != null) {
+				pubFrom = anuncios.selectAnuncioCommonPublishedFrom(publishedFrom);
+				myAnuncioList = intersection(myAnuncioList,pubFrom);
+			}			
+			if(publishedTo != null) {
+				pubTo = anuncios.selectAnuncioCommonPublishedTo(publishedTo);
+				myAnuncioList = intersection(myAnuncioList,pubTo);
+			}
+			List<AnuncioAux> rListAn = new ArrayList<AnuncioAux>();
+			for(Long id : myAnuncioList) {
+				Optional<Anuncio> a = anuncios.findAnuncioCommon(id.toString());
+				Anuncio aaux = a.get();
+				
+				Location loc = new Location(aaux.getPosX(),aaux.getPosY());
+				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
+				
+				AnuncioAux rAnuncio;
+				if(userFind.getTipo().equals("administrador") || userFind.getEmail().equals(user)) {
+					rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
+							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
+							aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
+							userFind,anuncios.selectDistance(lat, lng, id.toString()));
+				}
+				else {
+					rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
+							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
+							aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
+							usuarios.buscarPorEmailCommon(userFind.getEmail()),anuncios.selectDistance(lat, lng, id.toString()));
+				}
+					
+				
+				rListAn.add(rAnuncio);
+				
+			}
+			return rListAn;
 		}
 		return null;
 	}	

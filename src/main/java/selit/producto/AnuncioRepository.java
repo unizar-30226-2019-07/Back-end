@@ -1,8 +1,10 @@
 package selit.producto;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,10 +18,40 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 			+ "  from Anuncio where id_producto=:id_producto")
 	public Optional<Anuncio> findAnuncioCommon(@Param("id_producto") String id_producto);
 	
-	@Query("select new Anuncio(idProducto, publicate_date, description, title,posX,posY,price,currency,nfav,nvis,id_owner,category,status)"
-			+ "  from Anuncio where posX>:lat_min and posX<:lat_max and posY>:lng_min and posY<:lng_max")
-	public List<Anuncio> selectAnuncioCommon(@Param("lat_min") float lat_min,@Param("lat_max") float lat_max,@Param("lng_min") float lng_min,
-			@Param("lng_max") float lng_max);
+	@Query(value = "select id_producto,fecha_publicacion,descripcion,titulo,posX,posY,precio,moneda,nfavoritos,nvisitas,usuario_id_usuario,nombre_categoria,estado,"+
+			"( 6371 * acos( cos( radians(?1) ) * cos( radians( anuncio.posX ) )" + 
+			"   * cos( radians(anuncio.posY) - radians(?2)) + sin(radians(?1))" + 
+			"   * sin( radians(anuncio.posX)))) AS distance  from anuncio WHERE id_producto = ?3", nativeQuery = true)
+	public Anuncio selectDistanceAll(@Param("posX") String lat,@Param("posY") String lng, @Param("id_producto") BigInteger id_producto);
+
+	@Query(value = "select ( 6371 * acos( cos( radians(?1) ) * cos( radians( anuncio.posX ) )" + 
+			"   * cos( radians(anuncio.posY) - radians(?2)) + sin(radians(?1))" + 
+			"   * sin( radians(anuncio.posX)))) AS distancia  from anuncio WHERE id_producto = ?3", nativeQuery = true)
+	public double selectDistance(@Param("posX") String lat,@Param("posY") String lng, @Param("id_producto") String id_producto);
+
+	@Query(value = "select id_producto FROM anuncio " +
+			"WHERE ( 6371 * acos( cos( radians(?1) ) * cos( radians( anuncio.posX ) )" +
+			   "* cos( radians(anuncio.posY) - radians(?2)) + sin(radians(?1))" +
+			   "* sin( radians(anuncio.posX)))) <= ?3", nativeQuery = true)
+	public List<BigInteger> selectAnuncioCommonDistance(@Param("posX") String lat,@Param("posY") String lng,@Param("distance") String distance);
+	
+	@Query("select idProducto from Anuncio where nombre_categoria=:nombre_categoria")
+	public List<Long> selectAnuncioCommonCategory(@Param("nombre_categoria") String category);
+	
+	@Query(value = "select id_producto from anuncio where LOCATE(?1,titulo)", nativeQuery = true)
+	public List<BigInteger> selectAnuncioCommonSearch(@Param("search") String search);
+	
+	@Query("select idProducto from Anuncio where price >= :priceFrom")
+	public List<Long> selectAnuncioCommonPriceFrom(@Param("priceFrom") float priceFrom);
+	
+	@Query("select idProducto from Anuncio where price <= :priceTo")
+	public List<Long> selectAnuncioCommonPriceTo(@Param("priceTo") float priceTo);
+	
+	@Query("select idProducto from Anuncio where publicate_date >= :publishedFrom")
+	public List<Long> selectAnuncioCommonPublishedFrom(@Param("publishedFrom") String publishedFrom);
+	
+	@Query("select idProducto from Anuncio where publicate_date <= :publishedTo")
+	public List<Long> selectAnuncioCommonPublishedTo(@Param("publishedTo") String publishedTo);
 	
 	@Query("from Anuncio where id_producto=:id_producto")
 	public Anuncio buscarPorId(@Param("id_producto") String id_producto);

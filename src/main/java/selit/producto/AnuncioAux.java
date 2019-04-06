@@ -1,5 +1,6 @@
 package selit.producto;
 
+
 import selit.Location.Location;
 import selit.usuario.Usuario;
 
@@ -31,13 +32,16 @@ public class AnuncioAux {
     
     private Usuario owner;
     
+    private double distance;
+    
     public AnuncioAux() {
     	
     }
     
-    public AnuncioAux(String publicate_date,String description,String title,Location location,
-    		float price,String currency,int nfav,int nvis,Long id_owner,String category, String status, Usuario owner) {
+    public AnuncioAux(Long idProducto,String publicate_date,String description,String title,Location location,
+    		float price,String currency,int nfav,int nvis,Long id_owner,String category, String status, Usuario owner, double distance) {
 		super();
+		this.idProducto = idProducto;
 		this.publicate_date = publicate_date;
 		this.description = description;
 		this.title = title;
@@ -50,6 +54,7 @@ public class AnuncioAux {
 		this.category = category;
 		this.status = status;
 		this.owner = owner;
+		this.distance = distance;
 	} 
     
 	public AnuncioAux(String publicate_date,String description,String title,float price){
@@ -163,6 +168,14 @@ public class AnuncioAux {
 
 	public void setOwner(Usuario owner) {
 		this.owner = owner;
+	}
+	
+	public double getDistance() {
+		return distance;
+	}
+
+	public void setDistance(double distance) {
+		this.distance = distance;
 	}
 
 }
