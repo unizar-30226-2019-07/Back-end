@@ -140,6 +140,8 @@ public class UsuarioController {
 					myUserList.add(usuarios.buscarPorEmailCommon(user));
 				}
 				
+			} else if(sort != null) {
+			
 			}
 			else {
 				if(u.getTipo().equals("administrador")) { 
@@ -332,6 +334,35 @@ public class UsuarioController {
 		// Se devuelve mensaje de confirmacion.
 		return "OK";	
 	}
+	
+	
+	@GetMapping(path="/me")
+	public @ResponseBody UsuarioLoc obtenerUsuarioActual(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);		
+		if (TokenCheck.checkAccess(token, u)) {
+			Location loc = new Location(u.getPosX(), u.getPosY());
+			
+			UsuarioLoc rUser = new UsuarioLoc(u.getIdUsuario(),u.getGender(),u.getBirth_date(),
+											loc,u.getRating(),u.getStatus(),u.getPassword(),u.getEmail(),
+											u.getLast_name(),u.getFirst_name(),u.getTipo());
+			return rUser;
+		} else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}
+	}
+	
+	
+	
 	
 	@PostMapping(path="/{user_id}/change_password")
 	public @ResponseBody String changePass(@PathVariable String user_id, 

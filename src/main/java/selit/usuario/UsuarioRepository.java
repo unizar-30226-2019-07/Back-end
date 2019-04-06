@@ -36,6 +36,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	@Query("select password from Usuario where id_usuario=:id_usuario")
 	public String searchPassword(@Param("id_usuario") String id_usuario);
 	
+	@Query("select password from Usuario where id_usuario=:id_usuario")
+	public String usuariosOrdenados(@Param("id_usuario") String id_usuario);
+	
 	@Transactional
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Usuario set contrasena=:contrasena where id_usuario=:id_usuario")
