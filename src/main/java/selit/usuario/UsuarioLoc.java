@@ -7,75 +7,52 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Entity 
-@Table(name="usuario", schema="selit")
-public class Usuario {
+import selit.Location.Location;
+
+public class UsuarioLoc {
 	
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    @Column(name="id_usuario")
     private Long idUsuario;
     
-    @Column(name="sexo", columnDefinition="ENUM('hombre', 'mujer')")
     private String gender;
     
-    @Column(name="nacimiento", columnDefinition="DATE")
     private String birth_date;
-   
-
-	@Column(name="posX")
-    private float posX;
     
-    @Column(name="posY")
-    private float posY;
+    private Location location;
     
-	@Column(name="calificacion")
     private long rating;
     
-    @Column(name="estado_cuenta", columnDefinition="ENUM('bloqueada', 'activa')" )
     private String status;
     
-    @Column(name="contrasena")
     private String password;
     
-    @Column(name="email")
     private String email;
   
-    @Column(name="apellidos")
     private String last_name;
     
-    @Column(name="nombre")
     private String first_name;
     
-    @Column(name="tipo", columnDefinition="ENUM('administrador', 'usuario')")
     private String tipo;
     
-    public Usuario() {
+    public UsuarioLoc() {
     	
     }
     
-    public Usuario(float posX, float posY, String password, String email, String last_name, String first_name, String status, String tipo, long rating) {
+	public UsuarioLoc(Long idUsuario, String gender, String birth_date, Location location, long rating, String status,
+			String password, String email, String last_name, String first_name, String tipo) {
 		super();
-		this.posX = posX;
-		this.posY = posY;
+		this.idUsuario = idUsuario;
+		this.gender = gender;
+		this.birth_date = birth_date;
+		this.location = location;
+		this.rating = rating;
+		this.status = status;
 		this.password = password;
 		this.email = email;
 		this.last_name = last_name;
 		this.first_name = first_name;
-		this.status = status;
 		this.tipo = tipo;
-		this.rating = rating;
 	}
 
-    public Usuario(Long idUsuario, String birth_date, long rating, String last_name, String first_name, String email) {
-    	this.idUsuario = idUsuario;
-    	this.birth_date = birth_date;
-    	this.rating = rating;
-    	this.last_name = last_name;
-    	this.first_name = first_name;
-    	this.email = email;
-    }
-    
 	public Long getIdUsuario() {
 		return idUsuario;
 	}
@@ -100,20 +77,12 @@ public class Usuario {
 		this.birth_date = birth_date;
 	}
 
-	public float getPosX() {
-		return posX;
+	public Location getLocation() {
+		return location;
 	}
 
-	public void setPosX(float posX) {
-		this.posX = posX;
-	}
-
-	public float getPosY() {
-		return posY;
-	}
-
-	public void setPosY(float posY) {
-		this.posY = posY;
+	public void seLocation(Location location) {
+		this.location =location;
 	}
 
 	public long getRating() {

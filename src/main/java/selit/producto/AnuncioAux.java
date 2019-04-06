@@ -1,70 +1,51 @@
 package selit.producto;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
-@Entity
-@Table(name="anuncio", schema="selit")
-public class Anuncio {
+import selit.Location.Location;
+import selit.usuario.Usuario;
 
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    @Column(name="id_producto")
-    private Long idProducto;
+public class AnuncioAux {
 
-	@Column(name="fecha_publicacion", columnDefinition="DATE")
+	private Long idProducto;
+	
     private String publicate_date;
 
-    @Column(name="descripcion")
     private String description;
 
-	@Column(name="titulo")
     private String title;
 
-    @Column(name="posX")
-    private float posX;
+    private Location location;
 
-    @Column(name="posY")
-    private float posY;
-
-
-    @Column(name="precio")
     private float price;
 
-	@Column(name="moneda")
     private String currency;
 
-	@Column(name="nfavoritos")
     private int nfav;
 
-    @Column(name="nvisitas")
     private int nvis;
 
-    @Column(name="usuario_id_usuario")
     private Long id_owner;
 
-    @Column(name="nombre_categoria")
     private String category;
-
-    @Column(name="estado")
+    
     private String status;
-
-    public Anuncio() {
-
+    
+    private Usuario owner;
+    
+    private double distance;
+    
+    public AnuncioAux() {
+    	
     }
-
-    public Anuncio(String publicate_date,String description,String title,float posX,float posY,
-    		float price,String currency,int nfav,int nvis,Long id_owner,String category,String status) {
+    
+    public AnuncioAux(Long idProducto,String publicate_date,String description,String title,Location location,
+    		float price,String currency,int nfav,int nvis,Long id_owner,String category, String status, Usuario owner, double distance) {
 		super();
+		this.idProducto = idProducto;
 		this.publicate_date = publicate_date;
 		this.description = description;
 		this.title = title;
-		this.posX = posX;
-		this.posY = posY;
+		this.location = location;
 		this.price = price;
 		this.currency = currency;
 		this.nfav = nfav;
@@ -72,34 +53,17 @@ public class Anuncio {
 		this.id_owner = id_owner;
 		this.category = category;
 		this.status = status;
-	}
-  public Anuncio(Long id_producto,String publicate_date,String description,String title,float posX,float posY,
-      float price,String currency,int nfav,int nvis,Long id_owner,String category,String status) {
-  super();
-  this.idProducto = id_producto;
-  this.publicate_date = publicate_date;
-  this.description = description;
-  this.title = title;
-  this.posX = posX;
-  this.posY = posY;
-  this.price = price;
-  this.currency = currency;
-  this.nfav = nfav;
-  this.nvis = nvis;
-  this.id_owner = id_owner;
-  this.category = category;
-  this.status = status;
-}
-
-	public Anuncio(Long idProducto,String publicate_date,String description,String title,float price){
-	  this.idProducto = idProducto;
+		this.owner = owner;
+		this.distance = distance;
+	} 
+    
+	public AnuncioAux(String publicate_date,String description,String title,float price){
 	  this.publicate_date = publicate_date;
 	  this.description = description;
 	  this.title = title;
 	  this.price = price;
 	}
-
-
+	
 	public void setId_producto(Long idProducto) {
 		this.idProducto = idProducto;
 	}
@@ -107,6 +71,7 @@ public class Anuncio {
     public Long getId_producto() {
 		return idProducto;
 	}
+    
 
     public String getPublicate_date() {
 		return publicate_date;
@@ -132,22 +97,15 @@ public class Anuncio {
 		this.title = title;
 	}
 
-	public float getPosX() {
-		return posX;
+	public Location getLocation() {
+		return location;
 	}
 
-	public void setPosX(float posX) {
-		this.posX = posX;
+	public void setPosX(Location location) {
+		this.location = location;
 	}
 
-	public float getPosY() {
-		return posY;
-	}
-
-	public void setPosY(float posY) {
-		this.posY = posY;
-	}
-
+		
 	public float getPrice() {
 		return price;
 	}
@@ -195,13 +153,29 @@ public class Anuncio {
 	public void setCategory(String category) {
 		this.category = category;
 	}
-
+	
 	public String getStatus() {
 		return status;
 	}
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	
+	public Usuario getOwner() {
+		return owner;
+	}
+
+	public void setOwner(Usuario owner) {
+		this.owner = owner;
+	}
+	
+	public double getDistance() {
+		return distance;
+	}
+
+	public void setDistance(double distance) {
+		this.distance = distance;
 	}
 
 }

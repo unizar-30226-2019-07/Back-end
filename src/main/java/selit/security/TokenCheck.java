@@ -22,7 +22,7 @@ public class TokenCheck {
 		if(checkToken(token)) {
 			access = false;
 		}
-		else if(u == null || u.getStatus().equals("bloqueada")) {
+		else if(u == null ||!u.getStatus().equals("activa")) {
 			access = false;
 			addToken(token);
 		}
