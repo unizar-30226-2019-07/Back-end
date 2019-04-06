@@ -9,22 +9,18 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,10 +33,7 @@ import selit.verificacion.VerificacionRepository;
 import selit.Location.Location;
 import selit.mail.MailMail;
 import selit.security.TokenCheck;
-
 import io.jsonwebtoken.Jwts;
-
-
 
 @RestController   
 @RequestMapping(path="/users") 
@@ -106,7 +99,8 @@ public class UsuarioController {
 	             new ClassPathXmlApplicationContext("Spring-Mail.xml");
 		MailMail mm = (MailMail) context.getBean("mailMail");
 		mm.sendMail("selit@gmail.com",usuario.getEmail(),"","Para activar su cuenta acceda a la siguiente direccion: http://selit.naval.cat/verify?random=" + saltStr);
-
+		((ClassPathXmlApplicationContext) context).close();
+		
 		// Se contesta a la peticion con un mensaje de exito.
 		response.setStatus(201);
 		return "Nuevo usuario creado";
@@ -117,7 +111,10 @@ public class UsuarioController {
 	@GetMapping(path="")
 	public @ResponseBody List<UsuarioLoc> obtenerUsuarios(HttpServletRequest request, 
 			HttpServletResponse response, @RequestParam (name = "$sort", required = false) 
-			String sort, @RequestParam(name = "email", required = false) String email) throws IOException {
+			String sort, @RequestParam(name = "email", required = false) String email,
+			@RequestParam(name = "$page", required = false) String page, 
+			@RequestParam(name = "$size", required = false) String size) throws IOException {
+		
 		//Obtengo que usuario es el que realiza la petición
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
@@ -131,7 +128,10 @@ public class UsuarioController {
 		
 		//Compruebo si el token es valido
 		if(TokenCheck.checkAccess(token,u)) {
+			
 			List<Usuario> myUserList = new ArrayList<Usuario>();
+			
+			// Si se quiere obtener solo un usuario mediante correo.
 			if(email != null) {
 				if(email.equals(user)){
 					myUserList.add(usuarios.buscarPorEmail(user));
@@ -140,7 +140,78 @@ public class UsuarioController {
 					myUserList.add(usuarios.buscarPorEmailCommon(user));
 				}
 				
+			// Si se quiere ordenar el resultado (ademas de devolver una pagina concreta).
+			} else if (sort != null) {
+				// Si el campo sort no esta vacio, se comprueba que lo que se ha pasado como parametro
+				// es un valor correcto.
+				String campos[] = sort.split("\\s");
+				if ( ( campos[0].equals("id_usuario") || campos[0].equals("gender") || campos[0].equals("birth_date") || campos[0].equals("location") ||
+					campos[0].equals("location") || campos[0].equals("rating") || campos[0].equals("status") || campos[0].equals("email") || 
+					campos[0].equals("first_name") || campos[0].equals("last_name") || campos[0].equals("tipo") ) && ( campos.length == 2 ) && 
+					( campos[1].equals("DESC") || campos[1].equals("ASC") ) ) {
+					
+					// Dependiendo de si se pide ordenar de forma ascendente o descendente, el usuario es
+					// un usuario o un administrador, y si ademas de ordenar, se quiere devolver una pagina
+					// concreta, se realizan unas funciones u otras.
+					if (campos[1].equals("DESC")) {
+						
+						if (page != null && size != null) {
+							if ( (Integer.parseInt(page) >= 0) && (Integer.parseInt(size) > 0) ) {
+								if (u.getTipo().equals("administrador")) {
+									myUserList = usuarios.buscarUsuariosPagina(PageRequest.of(Integer.parseInt(page), Integer.parseInt(size), Sort.by(campos[0]).descending()));
+								} else {
+									myUserList = usuarios.buscarUsuariosPaginaCommon(PageRequest.of(Integer.parseInt(page), Integer.parseInt(size), Sort.by(campos[0]).descending()));
+								}
+							} else {
+								response.sendError(412, "Valores incorrectos en el parametro $page o $size");
+							}
+
+						} else {
+							
+							if (u.getTipo().equals("administrador")) {
+								myUserList = usuarios.buscarUsuariosOrdenados(Sort.by(campos[0]).descending());
+							} else {
+								myUserList = usuarios.buscarUsuariosOrdenadosCommon(Sort.by(campos[0]).descending());
+							}
+						}
+					} else {
+						
+						if (page != null && size != null) {
+							if ( (Integer.parseInt(page) >= 0) && (Integer.parseInt(size) > 0) ) {
+								if (u.getTipo().equals("administrador")) {
+									myUserList = usuarios.buscarUsuariosPagina(PageRequest.of(Integer.parseInt(page), Integer.parseInt(size), Sort.by(campos[0]).ascending()));
+	
+								} else {
+									myUserList = usuarios.buscarUsuariosPaginaCommon(PageRequest.of(Integer.parseInt(page), Integer.parseInt(size), Sort.by(campos[0]).ascending()));
+								}
+							} else {
+								response.sendError(412, "Valores incorrectos en el parametro $page o $size");
+							}
+							
+						} else {
+							
+							if (u.getTipo().equals("administrador")) {
+								myUserList = usuarios.buscarUsuariosOrdenados(Sort.by(campos[0]).ascending());
+							} else {
+								myUserList = usuarios.buscarUsuariosOrdenadosCommon(Sort.by(campos[0]).ascending());
+							}
+						}
+					}
+					
+				} else {
+					response.sendError(412, "Valores incorrectos en el parametro $sort");
+				}
+				
+			// Si se quiere devolver una pagina en concreta, sin ordenar.
+			} else if (page != null && size != null) {
+				if (u.getTipo().equals("administrador")) {
+					myUserList = usuarios.buscarUsuariosPagina(PageRequest.of(Integer.parseInt(page), Integer.parseInt(size)));
+				} else {
+					myUserList = usuarios.buscarUsuariosPaginaCommon(PageRequest.of(Integer.parseInt(page), Integer.parseInt(size)));
+				}
 			}
+			
+			// Si se quiere obtener la lista de usuarios sin modificar.
 			else {
 				if(u.getTipo().equals("administrador")) { 
 					// Se devuelve con la lista de usuarios en la base de datos.
@@ -177,10 +248,7 @@ public class UsuarioController {
 												userAux.getLast_name(),userAux.getFirst_name(),userAux.getTipo());
 				userValidList.add(rUser);
 			}
-			
-			
-
-			
+		
 			return userValidList;
 		}
 		else {

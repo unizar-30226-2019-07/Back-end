@@ -173,21 +173,7 @@ public class AnuncioController {
 
 	@GetMapping(path="/{product_id}")
 	public @ResponseBody AnuncioAux obtenerAnuncio(@PathVariable String product_id, @RequestParam (name = "lat") String lat,
-			@RequestParam (name = "lng") String lng, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		//Obtengo que usuario es el que realiza la petición
-		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
-		String user = Jwts.parser()
-				.setSigningKey(SUPER_SECRET_KEY)
-				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
-				.getBody()
-				.getSubject();
-		
-		Usuario u = new Usuario();
-		u = UsuarioController.usuarios.buscarPorEmail(user);
-		
-		// Se compreba si el token es valido.
-		if(TokenCheck.checkAccess(token,u)) {
-			
+			@RequestParam (name = "lng") String lng, HttpServletRequest request, HttpServletResponse response) throws IOException {			
 			// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
 			Optional<Anuncio> anuncio = anuncios.findById(Long.parseLong(product_id));
 			if ( !anuncio.isPresent() ) {			
@@ -198,35 +184,18 @@ public class AnuncioController {
 				
 			}
 			else {
-				Optional<Usuario>  u2;
 				Anuncio aaux = anuncio.get();
 				Location loc = new Location(aaux.getPosX(),aaux.getPosY());
 				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
 				
-				AnuncioAux rAnuncio;
-				if(userFind.getTipo().equals("administrador") || userFind.getEmail().equals(user)) {
-					rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
-							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
-							aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
-							userFind,anuncios.selectDistance(lat, lng, product_id));
-				}
-				else {
-					rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
-							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
-							aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
-							usuarios.buscarPorEmailCommon(userFind.getEmail()),anuncios.selectDistance(lat, lng, product_id));
-				}	
+				AnuncioAux rAnuncio;	
+				rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
+						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
+						aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
+						usuarios.buscarPorEmailCommon(userFind.getEmail()),anuncios.selectDistance(lat, lng, product_id));					
 				return rAnuncio;
-			}
-			
-		} 
-		else {
-			
-			// El token es incorrecto.
-			String error = "The user credentials does not exist or are not correct.";
-			response.sendError(401, error);
-			return null;
-		}
+			}					 
+
 	}
 	
 	@PutMapping(path="/{product_id}")
@@ -313,18 +282,7 @@ public class AnuncioController {
 			@RequestParam (name = "publishedTo", required = false) String publishedTo			
 			) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
-		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
-		String user = Jwts.parser()
-				.setSigningKey(SUPER_SECRET_KEY)
-				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
-				.getBody()
-				.getSubject();
 		
-		Usuario u = new Usuario();
-		u = usuarios.buscarPorEmail(user);
-		
-		//Compruebo si el token es valido
-		if(TokenCheck.checkAccess(token,u)) {
 			List<BigInteger> myAnuncioListAux = new ArrayList<BigInteger>();
 			List<Long> myAnuncioList = new ArrayList<Long>();
 			List<Long> categories = new ArrayList<Long>();
@@ -375,25 +333,15 @@ public class AnuncioController {
 				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
 				
 				AnuncioAux rAnuncio;
-				if(userFind.getTipo().equals("administrador") || userFind.getEmail().equals(user)) {
-					rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
-							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
-							aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
-							userFind,anuncios.selectDistance(lat, lng, id.toString()));
-				}
-				else {
-					rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
-							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
-							aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
-							usuarios.buscarPorEmailCommon(userFind.getEmail()),anuncios.selectDistance(lat, lng, id.toString()));
-				}
-					
+				
+				rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
+						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
+						aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
+						usuarios.buscarPorEmailCommon(userFind.getEmail()),anuncios.selectDistance(lat, lng, id.toString()));
 				
 				rListAn.add(rAnuncio);
 				
 			}
-			return rListAn;
-		}
-		return null;
+			return rListAn;		
 	}	
 }

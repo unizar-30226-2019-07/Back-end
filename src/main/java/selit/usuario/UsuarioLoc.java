@@ -19,7 +19,7 @@ public class UsuarioLoc {
     
     private Location location;
     
-    private long rating;
+    private float rating;
     
     private String status;
     
@@ -37,7 +37,7 @@ public class UsuarioLoc {
     	
     }
     
-	public UsuarioLoc(Long idUsuario, String gender, String birth_date, Location location, long rating, String status,
+	public UsuarioLoc(Long idUsuario, String gender, String birth_date, Location location, float rating, String status,
 			String password, String email, String last_name, String first_name, String tipo) {
 		super();
 		this.idUsuario = idUsuario;
@@ -85,11 +85,11 @@ public class UsuarioLoc {
 		this.location =location;
 	}
 
-	public long getRating() {
+	public float getRating() {
 		return rating;
 	}
 
-	public void setRating(long rating) {
+	public void setRating(float rating) {
 		this.rating = rating;
 	}
 
