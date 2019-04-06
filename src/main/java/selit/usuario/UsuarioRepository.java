@@ -42,8 +42,14 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
 	@Query("from Usuario")
 	public List<Usuario> buscarUsuariosOrdenados(Sort sort);
 	
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email)  from Usuario")
+	public List<Usuario> buscarUsuariosOrdenadosCommon(Sort sort);
+	
 	@Query("from Usuario")
 	public List<Usuario> buscarUsuariosPagina(Pageable page);
+	
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email)  from Usuario")
+	public List<Usuario> buscarUsuariosPaginaCommon(Pageable page);
 	
 	@Transactional
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
