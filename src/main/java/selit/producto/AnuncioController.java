@@ -17,11 +17,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.lang.Float;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -277,4 +279,41 @@ public class AnuncioController {
 			return null;
 		}
 	}
+	
+	/* sort page y size ?? */
+	@GetMapping(path="")
+	public @ResponseBody List<Anuncio> obtenerAnuncios(HttpServletRequest request, 
+			HttpServletResponse response, 
+			@RequestParam (name = "$sort", required = false) String sort, 
+			@RequestParam (name = "lat_min", required = true) String lat_min,
+			@RequestParam (name = "lat_max", required = true) String lat_max,
+			@RequestParam (name = "lng_min", required = true) String lng_min,
+			@RequestParam (name = "lng_max", required = true) String lng_max,
+			@RequestParam (name = "dis_max", required = false) String dis_max,
+			@RequestParam (name = "category", required = false) String category,
+			@RequestParam (name = "search", required = false) String search,
+			@RequestParam (name = "priceFrom", required = false) String priceFrom,
+			@RequestParam (name = "priceTo", required = false) String priceTo,
+			@RequestParam (name = "publishedFrom", required = false) String publishedFrom,
+			@RequestParam (name = "publishedTo", required = false) String publishedTo			
+			) throws IOException {
+		//Obtengo que usuario es el que realiza la petición
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		
+		//Compruebo si el token es valido
+		if(TokenCheck.checkAccess(token,u)) {
+			List<Anuncio> myAnuncioList = new ArrayList<Anuncio>();
+			myAnuncioList = anuncios.selectAnuncioCommon(Float.parseFloat(lat_min),Float.parseFloat(lat_max),Float.parseFloat(lng_min),Float.parseFloat(lng_max));
+			return myAnuncioList;
+		}
+		return null;
+	}	
 }

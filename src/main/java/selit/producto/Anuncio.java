@@ -27,7 +27,7 @@ public class Anuncio {
 
     @Column(name="posX")
     private float posX;
-    
+
     @Column(name="posY")
     private float posY;
 
@@ -49,14 +49,14 @@ public class Anuncio {
 
     @Column(name="nombre_categoria")
     private String category;
-    
+
     @Column(name="estado")
     private String status;
-    
+
     public Anuncio() {
-    	
+
     }
-    
+
     public Anuncio(String publicate_date,String description,String title,float posX,float posY,
     		float price,String currency,int nfav,int nvis,Long id_owner,String category,String status) {
 		super();
@@ -72,8 +72,25 @@ public class Anuncio {
 		this.id_owner = id_owner;
 		this.category = category;
 		this.status = status;
-	} 
-    
+	}
+  public Anuncio(Long id_producto,String publicate_date,String description,String title,float posX,float posY,
+      float price,String currency,int nfav,int nvis,Long id_owner,String category,String status) {
+  super();
+  this.idProducto = id_producto;
+  this.publicate_date = publicate_date;
+  this.description = description;
+  this.title = title;
+  this.posX = posX;
+  this.posY = posY;
+  this.price = price;
+  this.currency = currency;
+  this.nfav = nfav;
+  this.nvis = nvis;
+  this.id_owner = id_owner;
+  this.category = category;
+  this.status = status;
+}
+
 	public Anuncio(Long idProducto,String publicate_date,String description,String title,float price){
 	  this.idProducto = idProducto;
 	  this.publicate_date = publicate_date;
@@ -81,7 +98,7 @@ public class Anuncio {
 	  this.title = title;
 	  this.price = price;
 	}
-	
+
 
 	public void setId_producto(Long idProducto) {
 		this.idProducto = idProducto;
@@ -90,7 +107,7 @@ public class Anuncio {
     public Long getId_producto() {
 		return idProducto;
 	}
-    
+
     public String getPublicate_date() {
 		return publicate_date;
 	}
@@ -130,7 +147,7 @@ public class Anuncio {
 	public void setPosY(float posY) {
 		this.posY = posY;
 	}
-		
+
 	public float getPrice() {
 		return price;
 	}
@@ -178,7 +195,7 @@ public class Anuncio {
 	public void setCategory(String category) {
 		this.category = category;
 	}
-	
+
 	public String getStatus() {
 		return status;
 	}

@@ -12,8 +12,14 @@ import org.springframework.data.repository.query.Param;
 
 public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 
-	@Query("select new Anuncio(idProducto, publicate_date, description, title, price)  from Anuncio where id_producto=:id_producto")
+	@Query("select new Anuncio(idProducto, publicate_date, description, title,posX,posY,price,currency,nfav,nvis,id_owner,category,status)"
+			+ "  from Anuncio where id_producto=:id_producto")
 	public Optional<Anuncio> findAnuncioCommon(@Param("id_producto") String id_producto);
+	
+	@Query("select new Anuncio(idProducto, publicate_date, description, title,posX,posY,price,currency,nfav,nvis,id_owner,category,status)"
+			+ "  from Anuncio where posX>:lat_min and posX<:lat_max and posY>:lng_min and posY<:lng_max")
+	public List<Anuncio> selectAnuncioCommon(@Param("lat_min") float lat_min,@Param("lat_max") float lat_max,@Param("lng_min") float lng_min,
+			@Param("lng_max") float lng_max);
 	
 	@Query("from Anuncio where id_producto=:id_producto")
 	public Anuncio buscarPorId(@Param("id_producto") String id_producto);
