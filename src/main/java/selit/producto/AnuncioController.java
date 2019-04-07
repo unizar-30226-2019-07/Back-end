@@ -279,7 +279,9 @@ public class AnuncioController {
 			@RequestParam (name = "priceFrom", required = false) String priceFrom,
 			@RequestParam (name = "priceTo", required = false) String priceTo,
 			@RequestParam (name = "publishedFrom", required = false) String publishedFrom,
-			@RequestParam (name = "publishedTo", required = false) String publishedTo			
+			@RequestParam (name = "publishedTo", required = false) String publishedTo,
+			@RequestParam (name = "owner", required = false) String owner,
+			@RequestParam (name = "status", required = false) String status
 			) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		
@@ -292,6 +294,8 @@ public class AnuncioController {
 			List<Long> pTo = new ArrayList<Long>();
 			List<Long> pubFrom = new ArrayList<Long>();
 			List<Long> pubTo = new ArrayList<Long>();
+			List<Long> ownerL = new ArrayList<Long>();
+			List<Long> statusL = new ArrayList<Long>();
 			
 			myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance);
 			for(BigInteger id : myAnuncioListAux){
@@ -323,6 +327,14 @@ public class AnuncioController {
 			if(publishedTo != null) {
 				pubTo = anuncios.selectAnuncioCommonPublishedTo(publishedTo);
 				myAnuncioList = intersection(myAnuncioList,pubTo);
+			}
+			if(owner != null) {
+				ownerL = anuncios.selectAnuncioCommonOwner(Long.parseLong(owner));
+				myAnuncioList = intersection(myAnuncioList,ownerL);
+			}
+			if(status != null) {
+				statusL = anuncios.selectAnuncioCommonStatus(status);
+				myAnuncioList = intersection(myAnuncioList,statusL);
 			}
 			List<AnuncioAux> rListAn = new ArrayList<AnuncioAux>();
 			for(Long id : myAnuncioList) {

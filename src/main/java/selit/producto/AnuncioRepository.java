@@ -53,6 +53,12 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 	@Query("select idProducto from Anuncio where publicate_date <= :publishedTo")
 	public List<Long> selectAnuncioCommonPublishedTo(@Param("publishedTo") String publishedTo);
 	
+	@Query("select idProducto from Anuncio where id_owner = :owner")
+	public List<Long> selectAnuncioCommonOwner(@Param("owner") Long owner);
+	
+	@Query("select idProducto from Anuncio where status = :status")
+	public List<Long> selectAnuncioCommonStatus(@Param("status") String status);
+	
 	@Query("from Anuncio where id_producto=:id_producto")
 	public Anuncio buscarPorId(@Param("id_producto") String id_producto);
 	
