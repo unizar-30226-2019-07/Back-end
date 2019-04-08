@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
 import selit.usuario.UsuarioController;
+import selit.usuario.UsuarioLoc;
 import selit.usuario.UsuarioRepository;
 import selit.Location.Location;
 import selit.producto.AnuncioRepository;
@@ -187,15 +188,21 @@ public class AnuncioController {
 				Anuncio aaux = anuncio.get();
 				Location loc = new Location(aaux.getPosX(),aaux.getPosY());
 				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
+				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
+				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
+				
+				UsuarioLoc rUser = new UsuarioLoc(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
+						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
+						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo());
 				
 				AnuncioAux2 rAnuncio;	
 				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 						aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-						usuarios.buscarPorEmailCommon(userFind.getEmail()),anuncios.selectDistance(lat, lng, product_id));					
+						rUser,anuncios.selectDistance(lat, lng, product_id));	
+				
 				return rAnuncio;
 			}					 
-
 	}
 	
 	@PutMapping(path="/{product_id}")
@@ -343,13 +350,18 @@ public class AnuncioController {
 				
 				Location loc = new Location(aaux.getPosX(),aaux.getPosY());
 				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
+				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
+				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 				
-				AnuncioAux2 rAnuncio;
+				UsuarioLoc rUser = new UsuarioLoc(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
+						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
+						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo());
 				
+				AnuncioAux2 rAnuncio;	
 				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 						aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-						usuarios.buscarPorEmailCommon(userFind.getEmail()),anuncios.selectDistance(lat, lng, id.toString()));
+						rUser,anuncios.selectDistance(lat, lng, id.toString()));	
 				
 				rListAn.add(rAnuncio);
 				

@@ -3,6 +3,7 @@ package selit.producto;
 
 import selit.Location.Location;
 import selit.usuario.Usuario;
+import selit.usuario.UsuarioLoc;
 
 public class AnuncioAux2 {
 
@@ -28,7 +29,7 @@ public class AnuncioAux2 {
     
     private String status;
     
-    private Usuario owner;
+    private UsuarioLoc owner;
     
     private double distance;
     
@@ -37,7 +38,7 @@ public class AnuncioAux2 {
     }
     
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
-    		float price,String currency,int nfav,int nvis,String category, String status, Usuario owner, double distance) {
+    		float price,String currency,int nfav,int nvis,String category, String status, UsuarioLoc owner, double distance) {
 		super();
 		this.idProducto = idProducto;
 		this.publicate_date = publicate_date;
@@ -151,11 +152,11 @@ public class AnuncioAux2 {
 		this.status = status;
 	}
 	
-	public Usuario getOwner() {
+	public UsuarioLoc getOwner() {
 		return owner;
 	}
 
-	public void setOwner(Usuario owner) {
+	public void setOwner(UsuarioLoc owner) {
 		this.owner = owner;
 	}
 	
