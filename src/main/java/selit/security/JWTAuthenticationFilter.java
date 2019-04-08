@@ -58,7 +58,13 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
 				.getBody()
 				.getSubject();
-		
-		response.addHeader(HEADER_AUTHORIZACION_KEY, TOKEN_BEARER_PREFIX + " " + token);
+		Usuario u = UsuarioController.usuarios.buscarPorEmail(user);
+		if(u.getStatus().equals("activa")) {
+			response.addHeader(HEADER_AUTHORIZACION_KEY, TOKEN_BEARER_PREFIX + " " + token);
+		}
+		else {
+			response.setStatus(401);
+		}
+
 	}
 }
