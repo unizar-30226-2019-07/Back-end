@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.lang.Float;
@@ -24,15 +23,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
-import selit.usuario.UsuarioController;
 import selit.usuario.UsuarioLoc;
 import selit.usuario.UsuarioRepository;
 import selit.Location.Location;
@@ -126,7 +122,7 @@ public class AnuncioController {
 				.getSubject();
 		
 		Usuario u = new Usuario();
-		u = UsuarioController.usuarios.buscarPorEmail(user);
+		u = usuarios.buscarPorEmail(user);
 		
 		// Se compreba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
@@ -228,7 +224,7 @@ public class AnuncioController {
 				.getSubject();
 		
 		Usuario u = new Usuario();
-		u = UsuarioController.usuarios.buscarPorEmail(user);
+		u = usuarios.buscarPorEmail(user);
 		
 		// Se compreba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
