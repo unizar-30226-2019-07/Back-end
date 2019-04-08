@@ -312,7 +312,7 @@ public class UsuarioController {
 	
 	@PutMapping(path="/{user_id}")
 	public @ResponseBody String actualizarUsuario(@PathVariable String user_id, 
-						HttpServletRequest request, @RequestBody Usuario usuario, 
+						HttpServletRequest request, @RequestBody UsuarioLoc usuario, 
 						HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
@@ -333,8 +333,8 @@ public class UsuarioController {
 				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
 					usuarios.actualizarUsuario(usuario.getEmail(), 
 							usuario.getFirst_name(), usuario.getLast_name(), 
-							usuario.getGender(), usuario.getBirth_date(), usuario.getPosX(), 
-							usuario.getPosY(), user_id);
+							usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
+							usuario.getLocation().getLng(), user_id);
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";
