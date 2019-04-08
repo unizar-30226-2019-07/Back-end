@@ -67,13 +67,15 @@ public class Usuario {
 		this.rating = rating;
 	}
 
-    public Usuario(Long idUsuario, String birth_date, float rating, String last_name, String first_name, String email) {
+    public Usuario(Long idUsuario, String birth_date, float rating, String last_name, String first_name, String email, float posX, float posY) {
     	this.idUsuario = idUsuario;
     	this.birth_date = birth_date;
     	this.rating = rating;
     	this.last_name = last_name;
     	this.first_name = first_name;
     	this.email = email;
+    	this.posX = posX;
+    	this.posY = posY;
     }
     
 	public Long getIdUsuario() {

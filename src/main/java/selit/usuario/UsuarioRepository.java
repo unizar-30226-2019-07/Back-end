@@ -21,16 +21,16 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
 	@Query("from Usuario where email=:email")
 	public Usuario buscarPorEmail(@Param("email") String nombre);
 	
-	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email) from Usuario where email=:email")
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY) from Usuario where email=:email")
 	public Usuario buscarPorEmailCommon(@Param("email") String nombre);
 	
 	@Query("from Usuario where id_usuario=:id_usuario")
 	public Usuario buscarPorId(@Param("id_usuario") String id_usuario);
 	
-	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email)  from Usuario")
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY)  from Usuario")
 	public List<Usuario> findAllCommon();
 	
-	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email)  from Usuario where id_usuario=:id_usuario")
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY)  from Usuario where id_usuario=:id_usuario")
 	public Optional<Usuario> findUserCommon(@Param("id_usuario") String id_usuario);
 	
 	@Query("select idUsuario from Usuario where email=:email")
@@ -42,13 +42,13 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
 	@Query("from Usuario")
 	public List<Usuario> buscarUsuariosOrdenados(Sort sort);
 	
-	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email)  from Usuario")
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY)  from Usuario")
 	public List<Usuario> buscarUsuariosOrdenadosCommon(Sort sort);
 	
 	@Query("from Usuario")
 	public List<Usuario> buscarUsuariosPagina(Pageable page);
 	
-	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email)  from Usuario")
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY)  from Usuario")
 	public List<Usuario> buscarUsuariosPaginaCommon(Pageable page);
 	
 	@Transactional
