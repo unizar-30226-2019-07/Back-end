@@ -173,8 +173,8 @@ public class AnuncioController {
 	}
 
 	@GetMapping(path="/{product_id}")
-	public @ResponseBody AnuncioAux2 obtenerAnuncio(@PathVariable String product_id, @RequestParam (name = "lat") String lat,
-			@RequestParam (name = "lng") String lng, HttpServletRequest request, HttpServletResponse response) throws IOException {			
+	public @ResponseBody AnuncioAux2 obtenerAnuncio(@PathVariable String product_id, @RequestParam (name = "lat", required = false) String lat,
+			@RequestParam (name = "lng", required = false) String lng, HttpServletRequest request, HttpServletResponse response) throws IOException {			
 			// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
 			Optional<Anuncio> anuncio = anuncios.findById(Long.parseLong(product_id));
 			if ( !anuncio.isPresent() ) {			
