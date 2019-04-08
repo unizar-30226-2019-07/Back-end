@@ -83,7 +83,6 @@ public class AnuncioController {
 		Usuario u = new Usuario();
 		u = usuarios.buscarPorEmail(user);
 		
-		System.out.println(anuncio.getOwner_id());
 		//Se comrprueba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
 			if(anuncio.getOwner_id().equals(u.getIdUsuario())) {
