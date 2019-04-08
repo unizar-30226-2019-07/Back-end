@@ -81,11 +81,12 @@ public class AnuncioController {
 				.getBody()
 				.getSubject();
 		Usuario u = new Usuario();
-		u = UsuarioController.usuarios.buscarPorEmail(user);
+		u = usuarios.buscarPorEmail(user);
 		
+		System.out.println(anuncio.getOwner_id());
 		//Se comrprueba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
-			if(anuncio.getId_owner().equals(u.getIdUsuario())) {
+			if(anuncio.getOwner_id().equals(u.getIdUsuario())) {
 				// Se definen los valores por defecto de las columnas obligatorias.
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 				LocalDateTime now = LocalDateTime.now();  
