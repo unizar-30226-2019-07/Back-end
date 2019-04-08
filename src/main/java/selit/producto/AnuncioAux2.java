@@ -55,6 +55,23 @@ public class AnuncioAux2 {
 		this.distance = distance;
 	} 
     
+    public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
+    		float price,String currency,int nfav,int nvis,String category, String status, UsuarioLoc owner) {
+		super();
+		this.idProducto = idProducto;
+		this.publicate_date = publicate_date;
+		this.description = description;
+		this.title = title;
+		this.location = location;
+		this.price = price;
+		this.currency = currency;
+		this.nfav = nfav;
+		this.nvis = nvis;
+		this.category = category;
+		this.status = status;
+		this.owner = owner;
+	} 
+    
 	public AnuncioAux2(String publicate_date,String description,String title,float price){
 	  this.publicate_date = publicate_date;
 	  this.description = description;
