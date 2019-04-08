@@ -196,10 +196,20 @@ public class AnuncioController {
 						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo());
 				
 				AnuncioAux2 rAnuncio;	
-				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
-						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
-						aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-						rUser,anuncios.selectDistance(lat, lng, product_id));	
+				
+				if(lat != null && lng != null) {
+					rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
+							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
+							aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
+							rUser,anuncios.selectDistance(lat, lng, product_id));
+				}
+				else {
+					rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
+							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
+							aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
+							rUser);
+				}
+	
 				
 				return rAnuncio;
 			}					 
