@@ -172,7 +172,7 @@ public class AnuncioController {
 	}
 
 	@GetMapping(path="/{product_id}")
-	public @ResponseBody AnuncioAux obtenerAnuncio(@PathVariable String product_id, @RequestParam (name = "lat") String lat,
+	public @ResponseBody AnuncioAux2 obtenerAnuncio(@PathVariable String product_id, @RequestParam (name = "lat") String lat,
 			@RequestParam (name = "lng") String lng, HttpServletRequest request, HttpServletResponse response) throws IOException {			
 			// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
 			Optional<Anuncio> anuncio = anuncios.findById(Long.parseLong(product_id));
@@ -188,10 +188,10 @@ public class AnuncioController {
 				Location loc = new Location(aaux.getPosX(),aaux.getPosY());
 				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
 				
-				AnuncioAux rAnuncio;	
-				rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
+				AnuncioAux2 rAnuncio;	
+				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
-						aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
+						aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
 						usuarios.buscarPorEmailCommon(userFind.getEmail()),anuncios.selectDistance(lat, lng, product_id));					
 				return rAnuncio;
 			}					 
@@ -269,7 +269,7 @@ public class AnuncioController {
 	
 	/* sort page y size ?? */
 	@GetMapping(path="")
-	public @ResponseBody List<AnuncioAux> obtenerAnuncios(HttpServletRequest request, 
+	public @ResponseBody List<AnuncioAux2> obtenerAnuncios(HttpServletRequest request, 
 			HttpServletResponse response, 
 			@RequestParam (name = "lat") String lat,
 			@RequestParam (name = "lng") String lng,
@@ -336,7 +336,7 @@ public class AnuncioController {
 				statusL = anuncios.selectAnuncioCommonStatus(status);
 				myAnuncioList = intersection(myAnuncioList,statusL);
 			}
-			List<AnuncioAux> rListAn = new ArrayList<AnuncioAux>();
+			List<AnuncioAux2> rListAn = new ArrayList<AnuncioAux2>();
 			for(Long id : myAnuncioList) {
 				Optional<Anuncio> a = anuncios.findAnuncioCommon(id.toString());
 				Anuncio aaux = a.get();
@@ -344,11 +344,11 @@ public class AnuncioController {
 				Location loc = new Location(aaux.getPosX(),aaux.getPosY());
 				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
 				
-				AnuncioAux rAnuncio;
+				AnuncioAux2 rAnuncio;
 				
-				rAnuncio = new AnuncioAux(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
+				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
-						aaux.getNfav(),aaux.getNvis(),aaux.getId_owner(),aaux.getCategory(),aaux.getStatus(),
+						aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
 						usuarios.buscarPorEmailCommon(userFind.getEmail()),anuncios.selectDistance(lat, lng, id.toString()));
 				
 				rListAn.add(rAnuncio);
