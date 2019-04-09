@@ -7,6 +7,7 @@ import java.util.Optional;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -32,8 +33,8 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 	@Query(value = "select id_producto FROM anuncio " +
 			"WHERE ( 6371 * acos( cos( radians(?1) ) * cos( radians( anuncio.posX ) )" +
 			   "* cos( radians(anuncio.posY) - radians(?2)) + sin(radians(?1))" +
-			   "* sin( radians(anuncio.posX)))) <= ?3", nativeQuery = true)
-	public List<BigInteger> selectAnuncioCommonDistance(@Param("posX") String lat,@Param("posY") String lng,@Param("distance") String distance);
+			   "* sin( radians(anuncio.posX)))) <= ?3 ORDER BY ?#{#sort}", nativeQuery = true)
+	public List<BigInteger> selectAnuncioCommonDistance(@Param("posX") String lat,@Param("posY") String lng,@Param("distance") String distance, Sort sort);
 	
 	@Query("select idProducto from Anuncio where nombre_categoria=:nombre_categoria")
 	public List<Long> selectAnuncioCommonCategory(@Param("nombre_categoria") String category);

@@ -5,11 +5,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
 import static selit.security.Constants.HEADER_AUTHORIZACION_KEY;
 import static selit.security.Constants.SUPER_SECRET_KEY;
 import static selit.security.Constants.TOKEN_BEARER_PREFIX;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,11 +16,12 @@ import java.util.List;
 import java.util.Optional;
 import java.lang.Float;
 import java.math.BigInteger;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,6 +32,7 @@ import selit.usuario.UsuarioLoc;
 import selit.usuario.UsuarioRepository;
 import selit.Location.Location;
 import selit.producto.AnuncioRepository;
+import selit.producto.AnuncioAux2;
 import selit.security.TokenCheck;
 
 import io.jsonwebtoken.Jwts;
@@ -294,7 +294,8 @@ public class AnuncioController {
 			@RequestParam (name = "publishedFrom", required = false) String publishedFrom,
 			@RequestParam (name = "publishedTo", required = false) String publishedTo,
 			@RequestParam (name = "owner", required = false) String owner,
-			@RequestParam (name = "status", required = false) String status
+			@RequestParam (name = "status", required = false) String status,
+			@RequestParam (name = "sort", required = false) String sort
 			) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		
@@ -309,8 +310,30 @@ public class AnuncioController {
 			List<Long> pubTo = new ArrayList<Long>();
 			List<Long> ownerL = new ArrayList<Long>();
 			List<Long> statusL = new ArrayList<Long>();
+			Sort sorting = null;
+			String campos[];
+			if (sort != null) {
+				campos = sort.split("\\s");
+				if (campos.length != 2) {
+					if ( (campos[1].equals("ASC") || campos[1].equals("DESC") ) && ( campos[0].equals("id_producto") || 
+							campos[0].equals("publicate_date") || campos[0].equals("description") || campos[0].equals("title") ||
+							campos[0].equals("lcoation") || campos[0].equals("price") || campos[0].equals("currency") || 
+							campos[0].equals("nfav") || campos[0].equals("nvis") || campos[0].equals("category") || 
+							campos[0].equals("status") || campos[0].equals("owner") || campos[0].equals("distance") ) ) {
+							if ( campos[1].equals("ASC") ) {
+								sorting = Sort.by(Sort.Direction.ASC, campos[0]);
+							} else {
+								sorting = Sort.by(Sort.Direction.DESC, campos[0]);
+							}
+					} else {
+						response.sendError(412, "Valores incorrectos en el parametro $sort");
+					}
+				} else {
+					response.sendError(412, "Valores incorrectos en el parametro $sort");
+				}
+			}
 			
-			myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance);
+			myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance, null);
 			for(BigInteger id : myAnuncioListAux){
 				myAnuncioList.add(id.longValue());
 			}
