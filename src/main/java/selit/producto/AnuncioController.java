@@ -5,9 +5,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
 import static selit.security.Constants.HEADER_AUTHORIZACION_KEY;
 import static selit.security.Constants.SUPER_SECRET_KEY;
 import static selit.security.Constants.TOKEN_BEARER_PREFIX;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,11 +18,11 @@ import java.util.List;
 import java.util.Optional;
 import java.lang.Float;
 import java.math.BigInteger;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,7 +34,6 @@ import selit.usuario.UsuarioLoc;
 import selit.usuario.UsuarioRepository;
 import selit.Location.Location;
 import selit.producto.AnuncioRepository;
-import selit.producto.AnuncioAux2;
 import selit.security.TokenCheck;
 
 import io.jsonwebtoken.Jwts;
@@ -64,6 +65,42 @@ public class AnuncioController {
 
         return list;
     }
+	
+	private String elegirAtributo(String parametro) {
+		if (parametro.equals("id")) {
+			return "id_producto";
+		} else if (parametro.equals("type")) {
+			return "???????";
+		} else if (parametro.equals("title")) {
+			return "titulo";
+		} else if (parametro.equals("owner")) {
+			return "usuario_id_usuario";
+		} else if (parametro.equals("description")) {
+			return "descripcion";
+		} else if (parametro.equals("published")) {
+			return "fecha_publicacion";
+		} else if (parametro.equals("location")) {
+			return "???????";
+		} else if (parametro.equals("distance")) {
+			return "??????";
+		} else if (parametro.equals("category")) {
+			return "nombre_categoria";
+		} else if (parametro.equals("status")) {
+			return "estado";
+		} else if (parametro.equals("media")) {
+			return "???????????";
+		} else if (parametro.equals("price")) {
+			return "precio";
+		} else if (parametro.equals("currency")) {
+			return "moneda";
+		} else if (parametro.equals("views")) {
+			return "nvisitas";
+		} else if (parametro.equals("likes")) {
+			return "nfavoritos";
+		} else {
+			return null;
+		}
+	}
 
 	@PostMapping(path="")
 	public @ResponseBody String anyadirAnuncio (@RequestBody AnuncioAux anuncio, HttpServletRequest request, HttpServletResponse response) throws IOException { 
@@ -310,30 +347,22 @@ public class AnuncioController {
 			List<Long> pubTo = new ArrayList<Long>();
 			List<Long> ownerL = new ArrayList<Long>();
 			List<Long> statusL = new ArrayList<Long>();
-			Sort sorting = null;
-			String campos[];
-			if (sort != null) {
-				campos = sort.split("\\s");
-				if (campos.length != 2) {
-					if ( (campos[1].equals("ASC") || campos[1].equals("DESC") ) && ( campos[0].equals("id_producto") || 
-							campos[0].equals("publicate_date") || campos[0].equals("description") || campos[0].equals("title") ||
-							campos[0].equals("lcoation") || campos[0].equals("price") || campos[0].equals("currency") || 
-							campos[0].equals("nfav") || campos[0].equals("nvis") || campos[0].equals("category") || 
-							campos[0].equals("status") || campos[0].equals("owner") || campos[0].equals("distance") ) ) {
-							if ( campos[1].equals("ASC") ) {
-								sorting = Sort.by(Sort.Direction.ASC, campos[0]);
-							} else {
-								sorting = Sort.by(Sort.Direction.DESC, campos[0]);
-							}
+			
+			if ( sort != null) {
+				String campos[] = sort.split("\\s");
+				if ( (campos.length == 2) && ( (campos[1].equals("ASC")) || (campos[1].equals("DESC")) )  && ( elegirAtributo(campos[0]) != null) ) {
+					campos[0] = elegirAtributo(campos[0]);
+					if ( campos[1].equals("ASC")) {
+						myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance, Sort.by(campos[0]).ascending());
 					} else {
-						response.sendError(412, "Valores incorrectos en el parametro $sort");
+						myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance, Sort.by(campos[0]).descending());
 					}
 				} else {
 					response.sendError(412, "Valores incorrectos en el parametro $sort");
 				}
+			} else {
+				myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance, null);
 			}
-			
-			myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance, null);
 			for(BigInteger id : myAnuncioListAux){
 				myAnuncioList.add(id.longValue());
 			}
