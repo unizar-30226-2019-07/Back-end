@@ -101,7 +101,27 @@ public class AnuncioController {
 			return null;
 		}
 	}
+	
+	private <T> List<T> paginar(List<T> list1, Integer page, Integer size) {
+        
+		List<T> list = new ArrayList<T>();
 
+		Integer i=1, pagina = 0;
+		
+        for (T t: list1) {
+        	if (pagina == page) {
+        		list.add(t);
+        	}
+        	if (i == size) {
+        		pagina++;
+        		i=1;
+        	} else {
+        		i++;
+        	}
+        }
+
+        return list;
+    }
 	@PostMapping(path="")
 	public @ResponseBody String anyadirAnuncio (@RequestBody AnuncioAux anuncio, HttpServletRequest request, HttpServletResponse response) throws IOException { 
 
@@ -332,7 +352,9 @@ public class AnuncioController {
 			@RequestParam (name = "publishedTo", required = false) String publishedTo,
 			@RequestParam (name = "owner", required = false) String owner,
 			@RequestParam (name = "status", required = false) String status,
-			@RequestParam (name = "sort", required = false) String sort
+			@RequestParam (name = "sort", required = false) String sort,
+			@RequestParam (name = "page", required = false) String page,
+			@RequestParam (name = "size", required = false) String size
 			) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		
@@ -423,6 +445,10 @@ public class AnuncioController {
 				
 				rListAn.add(rAnuncio);
 				
+			}
+			if ( ( size != null) && ( page != null ) ) {
+				System.out.println("Hola");
+				rListAn = paginar(rListAn, Integer.parseInt(page), Integer.parseInt(size));
 			}
 			return rListAn;		
 	}	
