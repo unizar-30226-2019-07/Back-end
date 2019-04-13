@@ -50,6 +50,9 @@ public class Usuario {
     @Column(name="tipo", columnDefinition="ENUM('administrador', 'usuario')")
     private String tipo;
     
+    @Column(name="id_imagen")
+    private Long idImagen;
+    
     public Usuario() {
     	
     }
@@ -67,7 +70,7 @@ public class Usuario {
 		this.rating = rating;
 	}
 
-    public Usuario(Long idUsuario, String birth_date, float rating, String last_name, String first_name, String email, float posX, float posY) {
+    public Usuario(Long idUsuario, String birth_date, float rating, String last_name, String first_name, String email, float posX, float posY, Long idImagen) {
     	this.idUsuario = idUsuario;
     	this.birth_date = birth_date;
     	this.rating = rating;
@@ -76,6 +79,7 @@ public class Usuario {
     	this.email = email;
     	this.posX = posX;
     	this.posY = posY;
+    	this.idImagen = idImagen;
     }
     
 	public Long getIdUsuario() {
@@ -174,5 +178,12 @@ public class Usuario {
 		this.tipo = tipo;
 	}
 	
+	public Long getIdImagen() {
+		return idImagen;
+	}
+
+	public void setIdImagen(Long idImagen) {
+		this.idImagen = idImagen;
+	}
 }
 

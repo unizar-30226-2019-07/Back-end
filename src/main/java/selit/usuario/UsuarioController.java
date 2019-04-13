@@ -248,9 +248,21 @@ public class UsuarioController {
 			for(Usuario userAux : myUserList) {
 				Location loc = new Location(userAux.getPosX(), userAux.getPosY());
 				
+				Long idIm = userAux.getIdImagen();
+				Picture pic = null;
+				
+				if(idIm != null) {
+					//Obtengo la imagen
+					Optional<Picture> p = pictures.findById(idIm);
+					if(p.isPresent()) {
+						pic = p.get();
+					}
+				}
+				
+				 				
 				UsuarioAux rUser = new UsuarioAux(userAux.getIdUsuario(),userAux.getGender(),userAux.getBirth_date(),
 												loc,userAux.getRating(),userAux.getStatus(),userAux.getPassword(),userAux.getEmail(),
-												userAux.getLast_name(),userAux.getFirst_name(),userAux.getTipo(),null/* Imagen*/);
+												userAux.getLast_name(),userAux.getFirst_name(),userAux.getTipo(),pic);
 				userValidList.add(rUser);
 			}
 		
@@ -303,9 +315,20 @@ public class UsuarioController {
 					Usuario aux = userOptional.get();
 					Location loc = new Location(aux.getPosX(), aux.getPosY());
 					
+					Long idIm = aux.getIdImagen();
+					Picture pic = null;
+					
+					if(idIm != null) {
+						//Obtengo la imagen
+						Optional<Picture> p = pictures.findById(idIm);
+						if(p.isPresent()) {
+							pic = p.get();
+						}
+					}
+					
 					UsuarioAux rUser = new UsuarioAux(aux.getIdUsuario(),aux.getGender(),aux.getBirth_date(),
 													loc,aux.getRating(),aux.getStatus(),aux.getPassword(),aux.getEmail(),
-													aux.getLast_name(),aux.getFirst_name(),aux.getTipo(),null/* Imagen*/);
+													aux.getLast_name(),aux.getFirst_name(),aux.getTipo(),pic);
 					return rUser;
 				}
 				else {
@@ -335,13 +358,22 @@ public class UsuarioController {
 			Usuario u2 = new Usuario();
 			u2 = usuarios.buscarPorId(user_id);
 			if(u2!=null) {
-				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
-					Picture pic = new Picture(usuario.getPicture().getName(),usuario.getPicture().getTipo(),usuario.getPicture().getTamanyo(),usuario.getPicture().getContent());
+				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {					
+					//Guardo la imagen
+					Picture pic = new Picture(usuario.getPicture().getMime(),usuario.getPicture().getCharset(),usuario.getPicture().getBase64());
 					Picture p = pictures.save(pic);
+					
+					//Actualizo el usuario
 					usuarios.actualizarUsuario(usuario.getEmail(), 
 							usuario.getFirst_name(), usuario.getLast_name(), 
 							usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
-							usuario.getLocation().getLng(), user_id/* AÑADIR IMAGEN*/);
+							usuario.getLocation().getLng(), user_id,p.getIdImagen());
+					
+					Long idIm = u.getIdImagen();
+					//Borro la antigua imagen de perfil
+					if(idIm != null) {
+						pictures.deleteById(idIm);
+					}
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";
@@ -382,8 +414,14 @@ public class UsuarioController {
 			u2 = usuarios.buscarPorId(user_id);
 			if(u2!=null) {
 				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
-					// Se elimina el usuario
+					//Se eliminar el usuario
 					usuarios.deleteById(Long.parseLong(user_id));
+					
+					// Se elimina la imagen
+					Long idIm = u.getIdImagen();					
+					if(idIm != null) {
+						pictures.deleteById(idIm);
+					}
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";
@@ -479,9 +517,20 @@ public class UsuarioController {
 		if (TokenCheck.checkAccess(token, u)) {
 			Location loc = new Location(u.getPosX(), u.getPosY());
 			
+			Long idIm = u.getIdImagen();
+			Picture pic = null;
+			
+			if(idIm != null) {
+				//Obtengo la imagen
+				Optional<Picture> p = pictures.findById(idIm);
+				if(p.isPresent()) {
+					pic = p.get();
+				}
+			}
+			
 			UsuarioAux rUser = new UsuarioAux(u.getIdUsuario(),u.getGender(),u.getBirth_date(),
 											loc,u.getRating(),u.getStatus(),u.getPassword(),u.getEmail(),
-											u.getLast_name(),u.getFirst_name(),u.getTipo(),null/* Imagen*/);
+											u.getLast_name(),u.getFirst_name(),u.getTipo(),pic);
 			return rUser;
 		} else {
 			String error = "The user credentials does not exist or are not correct.";

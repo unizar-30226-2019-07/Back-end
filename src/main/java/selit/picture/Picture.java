@@ -17,47 +17,46 @@ public class Picture {
     private Long idImagen;
     
     @Column(name="nombre")
-    private String name;
+    private String mime;
     
     @Column(name="tipo")
-    private String tipo;
+    private String charset;
     
     @Column(name="tamano")
     private Integer tamanyo;
     
     @Column(name="contenido")
-    private byte[] content;
+    private byte[] base64;
+    
+    public Picture() {
+    	
+    }
+    
+	public Picture(String mime, String charset, byte[] base64) {
+		super();
+		this.mime = mime;
+		this.charset = charset;
+		this.base64 = base64;
+	}
 
 	public Long getIdImagen() {
 		return idImagen;
 	}
 
-	public Picture(String name, String tipo, Integer tamanyo, byte[] content) {
-		super();
-		this.name = name;
-		this.tipo = tipo;
-		this.tamanyo = tamanyo;
-		this.content = content;
+	public String getMime() {
+		return mime;
 	}
 
-	public void setIdImagen(Long idImagen) {
-		this.idImagen = idImagen;
+	public void setMime(String mime) {
+		this.mime = mime;
 	}
 
-	public String getName() {
-		return name;
+	public String getCharset() {
+		return charset;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getTipo() {
-		return tipo;
-	}
-
-	public void setTipo(String tipo) {
-		this.tipo = tipo;
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
 	public Integer getTamanyo() {
@@ -68,11 +67,16 @@ public class Picture {
 		this.tamanyo = tamanyo;
 	}
 
-	public byte[] getContent() {
-		return content;
+	public byte[] getBase64() {
+		return base64;
 	}
 
-	public void setContent(byte[] content) {
-		this.content = content;
+	public void setBase64(byte[] base64) {
+		this.base64 = base64;
 	}
+
+	public void setIdImagen(Long idImagen) {
+		this.idImagen = idImagen;
+	}
+	
 }

@@ -15,10 +15,4 @@ import org.springframework.data.repository.query.Param;
 
 public interface PictureRepository extends JpaRepository<Picture, Long>{
 	
-	@Transactional
-	@Modifying(flushAutomatically = true, clearAutomatically = true)
-	@Query("INSERT into Picture(:name, :tipo, :tamanyo, :content)")
-	public Picture insertarImagen(@Param("name") String name,@Param("tipo") String tipo,
-			@Param("tamanyo") Integer tamano, @Param("content") byte[] content);
-
 }	
