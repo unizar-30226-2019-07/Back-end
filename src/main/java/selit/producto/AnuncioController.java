@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
-import selit.usuario.UsuarioLoc;
+import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioRepository;
 import selit.Location.Location;
 import selit.producto.AnuncioRepository;
@@ -244,9 +244,9 @@ public class AnuncioController {
 				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 				
-				UsuarioLoc rUser = new UsuarioLoc(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
+				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
-						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo());
+						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),null/* Imagen*/);
 				
 				AnuncioAux2 rAnuncio;	
 				
@@ -433,9 +433,9 @@ public class AnuncioController {
 				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 				
-				UsuarioLoc rUser = new UsuarioLoc(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
+				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
-						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo());
+						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),null/* Imagen*/);
 				
 				AnuncioAux2 rAnuncio;	
 				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
