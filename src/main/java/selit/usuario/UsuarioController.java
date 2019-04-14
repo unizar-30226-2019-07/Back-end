@@ -376,7 +376,7 @@ public class UsuarioController {
 					
 					Long idIm = u.getIdImagen();
 					//Borro la antigua imagen de perfil
-					if(idIm != null) {
+					if(idIm != null && usuario.getPicture() != null) {
 						pictures.deleteById(idIm);
 					}
 				}
