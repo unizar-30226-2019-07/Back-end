@@ -360,8 +360,13 @@ public class UsuarioController {
 			if(u2!=null) {
 				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {					
 					//Guardo la imagen
-					Picture pic = new Picture(usuario.getPicture().getMime(),usuario.getPicture().getCharset(),usuario.getPicture().getBase64());
-					Picture p = pictures.save(pic);
+					Picture p =  new Picture();
+					p.setIdImagen(u2.getIdImagen());
+					if(usuario.getPicture() != null) {
+						Picture pic = new Picture(usuario.getPicture().getMime(),usuario.getPicture().getCharset(),usuario.getPicture().getBase64());
+						p = pictures.save(pic);
+					}
+					
 					
 					//Actualizo el usuario
 					usuarios.actualizarUsuario(usuario.getEmail(), 
