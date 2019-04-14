@@ -249,7 +249,7 @@ public class UsuarioController {
 				Location loc = new Location(userAux.getPosX(), userAux.getPosY());
 				
 				Long idIm = userAux.getIdImagen();
-				Picture pic = null;
+				Picture pic = new Picture();
 				
 				if(idIm != null) {
 					//Obtengo la imagen
@@ -316,7 +316,7 @@ public class UsuarioController {
 					Location loc = new Location(aux.getPosX(), aux.getPosY());
 					
 					Long idIm = aux.getIdImagen();
-					Picture pic = null;
+					Picture pic = new Picture();
 					
 					if(idIm != null) {
 						//Obtengo la imagen
@@ -518,7 +518,7 @@ public class UsuarioController {
 			Location loc = new Location(u.getPosX(), u.getPosY());
 			
 			Long idIm = u.getIdImagen();
-			Picture pic = null;
+			Picture pic = new Picture();
 			
 			if(idIm != null) {
 				//Obtengo la imagen
