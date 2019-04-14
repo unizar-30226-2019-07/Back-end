@@ -33,6 +33,8 @@ import selit.usuario.Usuario;
 import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioRepository;
 import selit.Location.Location;
+import selit.picture.Picture;
+import selit.picture.PictureRepository;
 import selit.producto.AnuncioRepository;
 import selit.security.TokenCheck;
 
@@ -49,6 +51,9 @@ public class AnuncioController {
 	@Autowired
 	public 
 	UsuarioRepository usuarios;
+
+	@Autowired public 
+	PictureRepository pictures;	
 	
 	public AnuncioController(AnuncioRepository productos) {
 		anuncios = productos;
@@ -244,9 +249,20 @@ public class AnuncioController {
 				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 				
+				Long idIm = userFind.getIdImagen();
+				Picture pic = new Picture();
+				
+				if(idIm != null) {
+					//Obtengo la imagen
+					Optional<Picture> p = pictures.findById(idIm);
+					if(p.isPresent()) {
+						pic = p.get();
+					}
+				}
+				
 				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
-						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),null/* Imagen*/);
+						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),pic);
 				
 				AnuncioAux2 rAnuncio;	
 				
@@ -433,9 +449,20 @@ public class AnuncioController {
 				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 				
+				Long idIm = userFind.getIdImagen();
+				Picture pic = new Picture();
+				
+				if(idIm != null) {
+					//Obtengo la imagen
+					Optional<Picture> p = pictures.findById(idIm);
+					if(p.isPresent()) {
+						pic = p.get();
+					}
+				}
+				
 				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
-						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),null/* Imagen*/);
+						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),pic);
 				
 				AnuncioAux2 rAnuncio;	
 				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
