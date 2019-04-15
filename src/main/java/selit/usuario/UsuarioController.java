@@ -247,22 +247,10 @@ public class UsuarioController {
 			List<UsuarioAux> userValidList = new ArrayList<UsuarioAux>();
 			for(Usuario userAux : myUserList) {
 				Location loc = new Location(userAux.getPosX(), userAux.getPosY());
-				
-				Long idIm = userAux.getIdImagen();
-				Picture pic = new Picture();
-				
-				if(idIm != null) {
-					//Obtengo la imagen
-					Optional<Picture> p = pictures.findById(idIm);
-					if(p.isPresent()) {
-						pic = p.get();
-					}
-				}
-				
-				 				
+												 				
 				UsuarioAux rUser = new UsuarioAux(userAux.getIdUsuario(),userAux.getGender(),userAux.getBirth_date(),
 												loc,userAux.getRating(),userAux.getStatus(),userAux.getPassword(),userAux.getEmail(),
-												userAux.getLast_name(),userAux.getFirst_name(),userAux.getTipo(),pic);
+												userAux.getLast_name(),userAux.getFirst_name(),userAux.getTipo(),new Picture(userAux.getIdImagen()));
 				userValidList.add(rUser);
 			}
 		
@@ -315,20 +303,9 @@ public class UsuarioController {
 					Usuario aux = userOptional.get();
 					Location loc = new Location(aux.getPosX(), aux.getPosY());
 					
-					Long idIm = aux.getIdImagen();
-					Picture pic = new Picture();
-					
-					if(idIm != null) {
-						//Obtengo la imagen
-						Optional<Picture> p = pictures.findById(idIm);
-						if(p.isPresent()) {
-							pic = p.get();
-						}
-					}
-					
 					UsuarioAux rUser = new UsuarioAux(aux.getIdUsuario(),aux.getGender(),aux.getBirth_date(),
 													loc,aux.getRating(),aux.getStatus(),aux.getPassword(),aux.getEmail(),
-													aux.getLast_name(),aux.getFirst_name(),aux.getTipo(),pic);
+													aux.getLast_name(),aux.getFirst_name(),aux.getTipo(),new Picture(aux.getIdImagen()));
 					return rUser;
 				}
 				else {
@@ -365,14 +342,23 @@ public class UsuarioController {
 					if(usuario.getPicture() != null) {
 						Picture pic = new Picture(usuario.getPicture().getMime(),usuario.getPicture().getCharset(),usuario.getPicture().getBase64());
 						p = pictures.save(pic);
+						
+						//Actualizo el usuario
+						usuarios.actualizarUsuario(usuario.getEmail(), 
+								usuario.getFirst_name(), usuario.getLast_name(), 
+								usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
+								usuario.getLocation().getLng(), user_id,p.getIdImagen());
+					}
+					else {
+						//Actualizo el usuario
+						usuarios.actualizarUsuario(usuario.getEmail(), 
+								usuario.getFirst_name(), usuario.getLast_name(), 
+								usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
+								usuario.getLocation().getLng(), user_id,u2.getIdImagen());
 					}
 					
 					
-					//Actualizo el usuario
-					usuarios.actualizarUsuario(usuario.getEmail(), 
-							usuario.getFirst_name(), usuario.getLast_name(), 
-							usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
-							usuario.getLocation().getLng(), user_id,p.getIdImagen());
+					
 					
 					Long idIm = u.getIdImagen();
 					//Borro la antigua imagen de perfil
@@ -522,20 +508,9 @@ public class UsuarioController {
 		if (TokenCheck.checkAccess(token, u)) {
 			Location loc = new Location(u.getPosX(), u.getPosY());
 			
-			Long idIm = u.getIdImagen();
-			Picture pic = new Picture();
-			
-			if(idIm != null) {
-				//Obtengo la imagen
-				Optional<Picture> p = pictures.findById(idIm);
-				if(p.isPresent()) {
-					pic = p.get();
-				}
-			}
-			
 			UsuarioAux rUser = new UsuarioAux(u.getIdUsuario(),u.getGender(),u.getBirth_date(),
 											loc,u.getRating(),u.getStatus(),u.getPassword(),u.getEmail(),
-											u.getLast_name(),u.getFirst_name(),u.getTipo(),pic);
+											u.getLast_name(),u.getFirst_name(),u.getTipo(),new Picture(u.getIdImagen()));
 			return rUser;
 		} else {
 			String error = "The user credentials does not exist or are not correct.";

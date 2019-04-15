@@ -32,6 +32,10 @@ public class Picture {
     	
     }
     
+    public Picture(Long idImagen) {
+		this.idImagen = idImagen;
+	}
+    
 	public Picture(String mime, String charset, byte[] base64) {
 		super();
 		this.mime = mime;

@@ -248,21 +248,11 @@ public class AnuncioController {
 				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
 				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
-				
-				Long idIm = userFind.getIdImagen();
-				Picture pic = new Picture();
-				
-				if(idIm != null) {
-					//Obtengo la imagen
-					Optional<Picture> p = pictures.findById(idIm);
-					if(p.isPresent()) {
-						pic = p.get();
-					}
-				}
+
 				
 				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
-						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),pic);
+						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 				
 				AnuncioAux2 rAnuncio;	
 				
@@ -449,20 +439,10 @@ public class AnuncioController {
 				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 				
-				Long idIm = userFind.getIdImagen();
-				Picture pic = new Picture();
-				
-				if(idIm != null) {
-					//Obtengo la imagen
-					Optional<Picture> p = pictures.findById(idIm);
-					if(p.isPresent()) {
-						pic = p.get();
-					}
-				}
 				
 				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
-						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),pic);
+						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 				
 				AnuncioAux2 rAnuncio;	
 				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),

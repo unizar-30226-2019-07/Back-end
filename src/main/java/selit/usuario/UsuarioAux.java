@@ -34,6 +34,8 @@ public class UsuarioAux {
     
     private String tipo;
     
+    private Long idImagen;
+    
     private Picture picture;
     
     public UsuarioAux() {
@@ -143,7 +145,7 @@ public class UsuarioAux {
 
 	public void setTipo(String tipo) {
 		this.tipo = tipo;
-	}
+	}	
 	
 	public Picture getPicture() {
 		return picture;
