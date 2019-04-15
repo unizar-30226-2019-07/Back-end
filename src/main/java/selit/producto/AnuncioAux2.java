@@ -1,9 +1,11 @@
 package selit.producto;
 
+import java.util.List;
 
 import selit.Location.Location;
-import selit.usuario.Usuario;
-import selit.usuario.UsuarioLoc;
+import selit.media.Media;
+import selit.picture.Picture;
+import selit.usuario.UsuarioAux;
 
 public class AnuncioAux2 {
 
@@ -29,16 +31,18 @@ public class AnuncioAux2 {
     
     private String status;
     
-    private UsuarioLoc owner;
+    private UsuarioAux owner;
     
     private double distance;
+    
+    private List<Media> media;
     
     public AnuncioAux2() {
     	
     }
     
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
-    		float price,String currency,int nfav,int nvis,String category, String status, UsuarioLoc owner, double distance) {
+    		float price,String currency,int nfav,int nvis,String category, String status, UsuarioAux owner, double distance, List<Media> media) {
 		super();
 		this.idProducto = idProducto;
 		this.publicate_date = publicate_date;
@@ -53,10 +57,11 @@ public class AnuncioAux2 {
 		this.status = status;
 		this.owner = owner;
 		this.distance = distance;
+		this.media = media;
 	} 
     
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
-    		float price,String currency,int nfav,int nvis,String category, String status, UsuarioLoc owner) {
+    		float price,String currency,int nfav,int nvis,String category, String status, UsuarioAux owner, List<Media> media) {
 		super();
 		this.idProducto = idProducto;
 		this.publicate_date = publicate_date;
@@ -70,6 +75,7 @@ public class AnuncioAux2 {
 		this.category = category;
 		this.status = status;
 		this.owner = owner;
+		this.media = media;
 	} 
     
 	public AnuncioAux2(String publicate_date,String description,String title,float price){
@@ -169,11 +175,11 @@ public class AnuncioAux2 {
 		this.status = status;
 	}
 	
-	public UsuarioLoc getOwner() {
+	public UsuarioAux getOwner() {
 		return owner;
 	}
 
-	public void setOwner(UsuarioLoc owner) {
+	public void setOwner(UsuarioAux owner) {
 		this.owner = owner;
 	}
 	
@@ -183,6 +189,14 @@ public class AnuncioAux2 {
 
 	public void setDistance(double distance) {
 		this.distance = distance;
+	}
+
+	public List<Media> getMedia() {
+		return media;
+	}
+
+	public void setMedia(List<Media> media) {
+		this.media = media;
 	}
 
 }

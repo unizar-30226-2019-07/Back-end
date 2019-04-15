@@ -6,11 +6,6 @@
     <groupId>org.springframework</groupId>
     <artifactId>selit</artifactId>
     <version>0.1.0</version>
-    
-    <!--  <groupId2>com.autentia.demo.jwt</groupId2>
-	<artifactId2>demo-jwt</artifactId2>
-	<version2>0.0.1-SNAPSHOT</version2>
-	<packaging>jar</packaging>-->
 
 	<name>selit</name>
 	<description>API de selit</description>
@@ -80,21 +75,14 @@
 	    <dependency>
               <groupId>junit</groupId>
               <artifactId>junit</artifactId>
-              <version>3.8.1</version>
-             <scope>test</scope>
+              <scope>test</scope>
   	 	</dependency>
-		
-		<!--<dependency2>
-			<groupId2>org.hsqldb</groupId2>
-			<artifactId2>hsqldb</artifactId2>
-			<scope>runtime</scope>
-		</dependency2> 
-
-		<dependency2>
-			<groupId2>org.springframework.security</groupId2>
-			<artifactId2>spring-security-test</artifactId2>
-			<scope>test</scope>
-		</dependency2> -->
+  	 	
+  	 	<dependency>
+		    <groupId>commons-io</groupId>
+		    <artifactId>commons-io</artifactId>
+		    <version>2.6</version>
+		</dependency>
     </dependencies>
 
     <properties>

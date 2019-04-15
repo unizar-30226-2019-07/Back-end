@@ -32,6 +32,8 @@ import selit.verificacion.Verificacion;
 import selit.verificacion.VerificacionRepository;
 import selit.Location.Location;
 import selit.mail.MailMail;
+import selit.picture.Picture;
+import selit.picture.PictureRepository;
 import selit.security.TokenCheck;
 import io.jsonwebtoken.Jwts;
 
@@ -46,6 +48,9 @@ public class UsuarioController {
 	@Autowired public 
 	VerificacionRepository verificaciones;	
 	
+	@Autowired public 
+	PictureRepository pictures;	
+	
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
 
 	public UsuarioController(UsuarioRepository usuarios, BCryptPasswordEncoder bCryptPasswordEncoder) {
@@ -54,7 +59,7 @@ public class UsuarioController {
 	}
 
 	@PostMapping(path="")
-	public @ResponseBody String anyadirUsuario (@RequestBody UsuarioLoc usuario, HttpServletResponse response) throws IOException {
+	public @ResponseBody String anyadirUsuario (@RequestBody UsuarioAux usuario, HttpServletResponse response) throws IOException {
 		
 		// El objeto usuario pasado en el cuerpo de la peticion tiene los 
 		// atributos email, password y first_name. El resto de los atributos no 
@@ -109,7 +114,7 @@ public class UsuarioController {
 	
 	/* sort page y size ?? */
 	@GetMapping(path="")
-	public @ResponseBody List<UsuarioLoc> obtenerUsuarios(HttpServletRequest request, 
+	public @ResponseBody List<UsuarioAux> obtenerUsuarios(HttpServletRequest request, 
 			HttpServletResponse response, @RequestParam (name = "$sort", required = false) 
 			String sort, @RequestParam(name = "email", required = false) String email,
 			@RequestParam(name = "$page", required = false) String page, 
@@ -239,13 +244,13 @@ public class UsuarioController {
 							
 			}	
 			
-			List<UsuarioLoc> userValidList = new ArrayList<UsuarioLoc>();
+			List<UsuarioAux> userValidList = new ArrayList<UsuarioAux>();
 			for(Usuario userAux : myUserList) {
 				Location loc = new Location(userAux.getPosX(), userAux.getPosY());
-				
-				UsuarioLoc rUser = new UsuarioLoc(userAux.getIdUsuario(),userAux.getGender(),userAux.getBirth_date(),
+												 				
+				UsuarioAux rUser = new UsuarioAux(userAux.getIdUsuario(),userAux.getGender(),userAux.getBirth_date(),
 												loc,userAux.getRating(),userAux.getStatus(),userAux.getPassword(),userAux.getEmail(),
-												userAux.getLast_name(),userAux.getFirst_name(),userAux.getTipo());
+												userAux.getLast_name(),userAux.getFirst_name(),userAux.getTipo(),new Picture(userAux.getIdImagen()));
 				userValidList.add(rUser);
 			}
 		
@@ -261,7 +266,7 @@ public class UsuarioController {
 	}
 	
 	@GetMapping(path="/{user_id}")
-	public @ResponseBody UsuarioLoc obtenerUsuario(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody UsuarioAux obtenerUsuario(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 				String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 				String user = Jwts.parser()
@@ -298,9 +303,9 @@ public class UsuarioController {
 					Usuario aux = userOptional.get();
 					Location loc = new Location(aux.getPosX(), aux.getPosY());
 					
-					UsuarioLoc rUser = new UsuarioLoc(aux.getIdUsuario(),aux.getGender(),aux.getBirth_date(),
+					UsuarioAux rUser = new UsuarioAux(aux.getIdUsuario(),aux.getGender(),aux.getBirth_date(),
 													loc,aux.getRating(),aux.getStatus(),aux.getPassword(),aux.getEmail(),
-													aux.getLast_name(),aux.getFirst_name(),aux.getTipo());
+													aux.getLast_name(),aux.getFirst_name(),aux.getTipo(),new Picture(aux.getIdImagen()));
 					return rUser;
 				}
 				else {
@@ -312,7 +317,7 @@ public class UsuarioController {
 	
 	@PutMapping(path="/{user_id}")
 	public @ResponseBody String actualizarUsuario(@PathVariable String user_id, 
-						HttpServletRequest request, @RequestBody UsuarioLoc usuario, 
+						HttpServletRequest request, @RequestBody UsuarioAux usuario, 
 						HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
@@ -330,11 +335,36 @@ public class UsuarioController {
 			Usuario u2 = new Usuario();
 			u2 = usuarios.buscarPorId(user_id);
 			if(u2!=null) {
-				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
-					usuarios.actualizarUsuario(usuario.getEmail(), 
-							usuario.getFirst_name(), usuario.getLast_name(), 
-							usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
-							usuario.getLocation().getLng(), user_id);
+				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {					
+					//Guardo la imagen
+					Picture p =  new Picture();
+					p.setIdImagen(u2.getIdImagen());
+					if(usuario.getPicture() != null) {
+						Picture pic = new Picture(usuario.getPicture().getMime(),usuario.getPicture().getCharset(),usuario.getPicture().getBase64());
+						p = pictures.save(pic);
+						
+						//Actualizo el usuario
+						usuarios.actualizarUsuario(usuario.getEmail(), 
+								usuario.getFirst_name(), usuario.getLast_name(), 
+								usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
+								usuario.getLocation().getLng(), user_id,p.getIdImagen());
+					}
+					else {
+						//Actualizo el usuario
+						usuarios.actualizarUsuario(usuario.getEmail(), 
+								usuario.getFirst_name(), usuario.getLast_name(), 
+								usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
+								usuario.getLocation().getLng(), user_id,u2.getIdImagen());
+					}
+					
+					
+					
+					
+					Long idIm = u.getIdImagen();
+					//Borro la antigua imagen de perfil
+					if(idIm != null && usuario.getPicture() != null) {
+						pictures.deleteById(idIm);
+					}
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";
@@ -375,8 +405,14 @@ public class UsuarioController {
 			u2 = usuarios.buscarPorId(user_id);
 			if(u2!=null) {
 				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
-					// Se elimina el usuario
+					//Se eliminar el usuario
 					usuarios.deleteById(Long.parseLong(user_id));
+					
+					// Se elimina la imagen
+					Long idIm = u.getIdImagen();					
+					if(idIm != null) {
+						pictures.deleteById(idIm);
+					}
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";
@@ -459,7 +495,7 @@ public class UsuarioController {
 	}
 	
 	@GetMapping(path="/me")
-	public @ResponseBody UsuarioLoc obtenerUsuarioActual(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody UsuarioAux obtenerUsuarioActual(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
@@ -472,9 +508,9 @@ public class UsuarioController {
 		if (TokenCheck.checkAccess(token, u)) {
 			Location loc = new Location(u.getPosX(), u.getPosY());
 			
-			UsuarioLoc rUser = new UsuarioLoc(u.getIdUsuario(),u.getGender(),u.getBirth_date(),
+			UsuarioAux rUser = new UsuarioAux(u.getIdUsuario(),u.getGender(),u.getBirth_date(),
 											loc,u.getRating(),u.getStatus(),u.getPassword(),u.getEmail(),
-											u.getLast_name(),u.getFirst_name(),u.getTipo());
+											u.getLast_name(),u.getFirst_name(),u.getTipo(),new Picture(u.getIdImagen()));
 			return rUser;
 		} else {
 			String error = "The user credentials does not exist or are not correct.";

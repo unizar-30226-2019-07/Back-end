@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,16 +20,16 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
 	@Query("from Usuario where email=:email")
 	public Usuario buscarPorEmail(@Param("email") String nombre);
 	
-	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY) from Usuario where email=:email")
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY, idImagen) from Usuario where email=:email")
 	public Usuario buscarPorEmailCommon(@Param("email") String nombre);
 	
 	@Query("from Usuario where id_usuario=:id_usuario")
 	public Usuario buscarPorId(@Param("id_usuario") String id_usuario);
 	
-	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY)  from Usuario")
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY, idImagen)  from Usuario")
 	public List<Usuario> findAllCommon();
 	
-	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY)  from Usuario where id_usuario=:id_usuario")
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY, idImagen)  from Usuario where id_usuario=:id_usuario")
 	public Optional<Usuario> findUserCommon(@Param("id_usuario") String id_usuario);
 	
 	@Query("select idUsuario from Usuario where email=:email")
@@ -42,13 +41,13 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
 	@Query("from Usuario")
 	public List<Usuario> buscarUsuariosOrdenados(Sort sort);
 	
-	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY)  from Usuario")
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY, idImagen)  from Usuario")
 	public List<Usuario> buscarUsuariosOrdenadosCommon(Sort sort);
 	
 	@Query("from Usuario")
 	public List<Usuario> buscarUsuariosPagina(Pageable page);
 	
-	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY)  from Usuario")
+	@Query("select new Usuario(idUsuario, birth_date, rating, last_name, first_name, email, posX, posY, idImagen)  from Usuario")
 	public List<Usuario> buscarUsuariosPaginaCommon(Pageable page);
 	
 	@Transactional
@@ -60,12 +59,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
 	@Transactional
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Usuario set email=:email, nombre=:nombre, apellidos=:apellidos, "
-			+ "sexo=:sexo, nacimiento=:nacimiento, posX=:posX, posY=:posY where id_usuario=:id_usuario")
+			+ "sexo=:sexo, nacimiento=:nacimiento, posX=:posX, posY=:posY, id_imagen=:id_imagen where id_usuario=:id_usuario")
 	public void actualizarUsuario(@Param("email") String email, 
 			@Param("nombre") String first_name, @Param("apellidos") String last_name,
 			@Param("sexo") String gender, @Param("nacimiento") String birth_date,
 			@Param("posX") float lat, @Param("posY") float lng,
-			@Param("id_usuario") String id_usuario);
+			@Param("id_usuario") String id_usuario, @Param("id_imagen") Long id_imagen);
 	
 	@Transactional
 	@Modifying(flushAutomatically = true, clearAutomatically = true)

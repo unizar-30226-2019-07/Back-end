@@ -1,15 +1,9 @@
 package selit.usuario;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import selit.Location.Location;
+import selit.picture.Picture;
 
-public class UsuarioLoc {
+public class UsuarioAux {
 	
     private Long idUsuario;
     
@@ -33,12 +27,16 @@ public class UsuarioLoc {
     
     private String tipo;
     
-    public UsuarioLoc() {
+    private Long idImagen;
+    
+    private Picture picture;
+    
+    public UsuarioAux() {
     	
     }
     
-	public UsuarioLoc(Long idUsuario, String gender, String birth_date, Location location, float rating, String status,
-			String password, String email, String last_name, String first_name, String tipo) {
+	public UsuarioAux(Long idUsuario, String gender, String birth_date, Location location, float rating, String status,
+			String password, String email, String last_name, String first_name, String tipo, Picture picture) {
 		super();
 		this.idUsuario = idUsuario;
 		this.gender = gender;
@@ -51,6 +49,7 @@ public class UsuarioLoc {
 		this.last_name = last_name;
 		this.first_name = first_name;
 		this.tipo = tipo;
+		this.picture = picture;
 	}
 
 	public Long getIdUsuario() {
@@ -139,6 +138,14 @@ public class UsuarioLoc {
 
 	public void setTipo(String tipo) {
 		this.tipo = tipo;
+	}	
+	
+	public Picture getPicture() {
+		return picture;
+	}
+
+	public void setPicture(Picture picture) {
+		this.picture = picture;
 	}
 	
 }

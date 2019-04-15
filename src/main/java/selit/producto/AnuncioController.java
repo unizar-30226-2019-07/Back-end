@@ -23,15 +23,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
-import selit.usuario.UsuarioLoc;
+import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioRepository;
 import selit.Location.Location;
+import selit.media.Media;
+import selit.picture.Picture;
+import selit.picture.PictureRepository;
 import selit.producto.AnuncioRepository;
 import selit.security.TokenCheck;
 
@@ -48,6 +52,9 @@ public class AnuncioController {
 	@Autowired
 	public 
 	UsuarioRepository usuarios;
+
+	@Autowired public 
+	PictureRepository pictures;	
 	
 	public AnuncioController(AnuncioRepository productos) {
 		anuncios = productos;
@@ -64,7 +71,61 @@ public class AnuncioController {
 
         return list;
     }
+	
+	private String elegirAtributo(String parametro) {
+		if (parametro.equals("id")) {
+			return "id_producto";
+		} else if (parametro.equals("type")) {
+			return "???????";
+		} else if (parametro.equals("title")) {
+			return "titulo";
+		} else if (parametro.equals("owner")) {
+			return "usuario_id_usuario";
+		} else if (parametro.equals("published")) {
+			return "fecha_publicacion";
+		} else if (parametro.equals("location")) {
+			return "???????";
+		} else if (parametro.equals("distance")) {
+			return "distancia";
+		} else if (parametro.equals("category")) {
+			return "nombre_categoria";
+		} else if (parametro.equals("status")) {
+			return "estado";
+		} else if (parametro.equals("media")) {
+			return "???????????";
+		} else if (parametro.equals("price")) {
+			return "precio";
+		} else if (parametro.equals("currency")) {
+			return "moneda";
+		} else if (parametro.equals("views")) {
+			return "nvisitas";
+		} else if (parametro.equals("likes")) {
+			return "nfavoritos";
+		} else {
+			return null;
+		}
+	}
+	
+	private <T> List<T> paginar(List<T> list1, Integer page, Integer size) {
+        
+		List<T> list = new ArrayList<T>();
 
+		Integer i=1, pagina = 0;
+		
+        for (T t: list1) {
+        	if (pagina == page) {
+        		list.add(t);
+        	}
+        	if (i == size) {
+        		pagina++;
+        		i=1;
+        	} else {
+        		i++;
+        	}
+        }
+
+        return list;
+    }
 	@PostMapping(path="")
 	public @ResponseBody String anyadirAnuncio (@RequestBody AnuncioAux anuncio, HttpServletRequest request, HttpServletResponse response) throws IOException { 
 
@@ -91,8 +152,16 @@ public class AnuncioController {
 								anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),anuncio.getPrice(),
 								anuncio.getCurrency(),0,0,u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
 				// Se guarda el anuncio.
-				anuncios.save(anun);
-		
+				Anuncio an = anuncios.save(anun);
+				
+				List<Picture> lp = anuncio.getMedia();
+				Long idProducto = an.getId_producto();
+				
+				for(Picture pic : lp){
+					pic.setIdProducto(idProducto);
+					pictures.save(pic);
+				}
+				
 				// Se contesta a la peticion con un mensaje de exito.
 				response.setStatus(201);
 				return "Nuevo producto creado";
@@ -186,24 +255,33 @@ public class AnuncioController {
 				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
 				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
+
 				
-				UsuarioLoc rUser = new UsuarioLoc(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
+				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
-						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo());
+						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 				
 				AnuncioAux2 rAnuncio;	
+				//Obtengo los id de las imagenes
+				List<Media> idList = new ArrayList<Media>();
+				
+				List<BigInteger> idListBI = pictures.findIdImages(product_id);
+				for(BigInteger idB : idListBI){
+					Media med = new Media(idB.longValue());
+					idList.add(med);
+				}	
 				
 				if(lat != null && lng != null) {
 					rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 							aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-							rUser,anuncios.selectDistance(lat, lng, product_id));
+							rUser,anuncios.selectDistance(lat, lng, product_id),idList);
 				}
 				else {
 					rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 							aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-							rUser);
+							rUser,idList);
 				}
 	
 				
@@ -294,11 +372,14 @@ public class AnuncioController {
 			@RequestParam (name = "publishedFrom", required = false) String publishedFrom,
 			@RequestParam (name = "publishedTo", required = false) String publishedTo,
 			@RequestParam (name = "owner", required = false) String owner,
-			@RequestParam (name = "status", required = false) String status
+			@RequestParam (name = "status", required = false) String status,
+			@RequestParam (name = "sort", required = false) String sort,
+			@RequestParam (name = "page", required = false) String page,
+			@RequestParam (name = "size", required = false) String size
 			) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		
-			List<BigInteger> myAnuncioListAux = new ArrayList<BigInteger>();
+			List<Anuncio> myAnuncioListAux = new ArrayList<Anuncio>();
 			List<Long> myAnuncioList = new ArrayList<Long>();
 			List<Long> categories = new ArrayList<Long>();
 			List<BigInteger> foundAux = new ArrayList<BigInteger>();
@@ -310,9 +391,23 @@ public class AnuncioController {
 			List<Long> ownerL = new ArrayList<Long>();
 			List<Long> statusL = new ArrayList<Long>();
 			
-			myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance);
-			for(BigInteger id : myAnuncioListAux){
-				myAnuncioList.add(id.longValue());
+			if ( sort != null) {
+				String campos[] = sort.split("\\s");
+				if ( (campos.length == 2) && ( (campos[1].equals("ASC")) || (campos[1].equals("DESC")) )  && ( elegirAtributo(campos[0]) != null) ) {
+					campos[0] = elegirAtributo(campos[0]);
+					if ( campos[1].equals("ASC")) {
+						myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance, Sort.by(campos[0]).ascending());
+					} else {
+						myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance, Sort.by(campos[0]).descending());
+					}
+				} else {
+					response.sendError(412, "Valores incorrectos en el parametro $sort");
+				}
+			} else {
+				myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance, null);
+			}
+			for(Anuncio id : myAnuncioListAux){
+				myAnuncioList.add(id.getId_producto().longValue());
 			}
 			if(category != null) {
 				categories = anuncios.selectAnuncioCommonCategory(category);
@@ -359,19 +454,34 @@ public class AnuncioController {
 				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 				
-				UsuarioLoc rUser = new UsuarioLoc(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
+				//Obtengo los id de las imagenes
+				List<Media> idList = new ArrayList<Media>();
+				
+				List<BigInteger> idListBI = pictures.findIdImages(id.toString());
+				for(BigInteger idB : idListBI){
+					Media med = new Media(idB.longValue());
+					idList.add(med);
+				}	
+				
+				//Creo el usuario a devolver
+				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
-						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo());
+						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 				
 				AnuncioAux2 rAnuncio;	
 				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 						aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-						rUser,anuncios.selectDistance(lat, lng, id.toString()));	
+						rUser,anuncios.selectDistance(lat, lng, id.toString()),idList);	
 				
 				rListAn.add(rAnuncio);
 				
 			}
+			if ( ( size != null) && ( page != null ) ) {
+				System.out.println("Hola");
+				rListAn = paginar(rListAn, Integer.parseInt(page), Integer.parseInt(size));
+			}
 			return rListAn;		
-	}	
+	}
+	
 }
