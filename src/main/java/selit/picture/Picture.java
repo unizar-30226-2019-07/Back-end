@@ -28,11 +28,26 @@ public class Picture {
     @Column(name="contenido")
     private byte[] base64;
     
+    @Column(name="id_producto")
+    private Long idProducto;
+    
     public Picture() {
     	
     }
-    
-    public Picture(Long idImagen) {
+
+
+	public Picture(Long idImagen, String mime, String charset, Integer tamanyo, byte[] base64, Long idProducto) {
+		super();
+		this.idImagen = idImagen;
+		this.mime = mime;
+		this.charset = charset;
+		this.tamanyo = tamanyo;
+		this.base64 = base64;
+		this.idProducto = idProducto;
+	}
+
+
+	public Picture(Long idImagen) {
 		this.idImagen = idImagen;
 	}
     
@@ -41,10 +56,6 @@ public class Picture {
 		this.mime = mime;
 		this.charset = charset;
 		this.base64 = base64;
-	}
-
-	public Long getIdImagen() {
-		return idImagen;
 	}
 
 	public String getMime() {
@@ -78,9 +89,21 @@ public class Picture {
 	public void setBase64(byte[] base64) {
 		this.base64 = base64;
 	}
+	
+	public Long getIdImagen() {
+		return idImagen;
+	}
 
 	public void setIdImagen(Long idImagen) {
 		this.idImagen = idImagen;
+	}
+	
+    public Long getIdProducto() {
+		return idProducto;
+	}
+
+	public void setIdProducto(Long idProducto) {
+		this.idProducto = idProducto;
 	}
 	
 }

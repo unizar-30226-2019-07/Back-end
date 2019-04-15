@@ -1,7 +1,10 @@
 package selit.producto;
 
 
+import java.util.List;
+
 import selit.Location.Location;
+import selit.picture.Picture;
 import selit.usuario.Usuario;
 
 public class AnuncioAux {
@@ -34,6 +37,8 @@ public class AnuncioAux {
     
     private double distance;
     
+    private List<Picture> media;
+    
     public AnuncioAux() {
     	
     }
@@ -57,6 +62,22 @@ public class AnuncioAux {
 		this.distance = distance;
 	} 
     
+	public Long getIdProducto() {
+		return idProducto;
+	}
+
+	public void setIdProducto(Long idProducto) {
+		this.idProducto = idProducto;
+	}
+
+	public List<Picture> getMedia() {
+		return media;
+	}
+
+	public void setMedia(List<Picture> media) {
+		this.media = media;
+	}
+
 	public AnuncioAux(String publicate_date,String description,String title,float price){
 	  this.publicate_date = publicate_date;
 	  this.description = description;
@@ -101,7 +122,7 @@ public class AnuncioAux {
 		return location;
 	}
 
-	public void setPosX(Location location) {
+	public void setLocation(Location location) {
 		this.location = location;
 	}
 

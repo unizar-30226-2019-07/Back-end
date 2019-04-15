@@ -33,6 +33,7 @@ import selit.usuario.Usuario;
 import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioRepository;
 import selit.Location.Location;
+import selit.media.Media;
 import selit.picture.Picture;
 import selit.picture.PictureRepository;
 import selit.producto.AnuncioRepository;
@@ -151,8 +152,16 @@ public class AnuncioController {
 								anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),anuncio.getPrice(),
 								anuncio.getCurrency(),0,0,u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
 				// Se guarda el anuncio.
-				anuncios.save(anun);
-		
+				Anuncio an = anuncios.save(anun);
+				
+				List<Picture> lp = anuncio.getMedia();
+				Long idProducto = an.getId_producto();
+				
+				for(Picture pic : lp){
+					pic.setIdProducto(idProducto);
+					pictures.save(pic);
+				}
+				
 				// Se contesta a la peticion con un mensaje de exito.
 				response.setStatus(201);
 				return "Nuevo producto creado";
@@ -253,18 +262,26 @@ public class AnuncioController {
 						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 				
 				AnuncioAux2 rAnuncio;	
+				//Obtengo los id de las imagenes
+				List<Media> idList = new ArrayList<Media>();
+				
+				List<BigInteger> idListBI = pictures.findIdImages(product_id);
+				for(BigInteger idB : idListBI){
+					Media med = new Media(idB.longValue());
+					idList.add(med);
+				}	
 				
 				if(lat != null && lng != null) {
 					rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 							aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-							rUser,anuncios.selectDistance(lat, lng, product_id));
+							rUser,anuncios.selectDistance(lat, lng, product_id),idList);
 				}
 				else {
 					rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 							aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-							rUser);
+							rUser,idList);
 				}
 	
 				
@@ -437,7 +454,16 @@ public class AnuncioController {
 				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 				
+				//Obtengo los id de las imagenes
+				List<Media> idList = new ArrayList<Media>();
 				
+				List<BigInteger> idListBI = pictures.findIdImages(id.toString());
+				for(BigInteger idB : idListBI){
+					Media med = new Media(idB.longValue());
+					idList.add(med);
+				}	
+				
+				//Creo el usuario a devolver
 				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
 						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
@@ -446,7 +472,7 @@ public class AnuncioController {
 				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 						aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-						rUser,anuncios.selectDistance(lat, lng, id.toString()));	
+						rUser,anuncios.selectDistance(lat, lng, id.toString()),idList);	
 				
 				rListAn.add(rAnuncio);
 				
@@ -456,5 +482,6 @@ public class AnuncioController {
 				rListAn = paginar(rListAn, Integer.parseInt(page), Integer.parseInt(size));
 			}
 			return rListAn;		
-	}	
+	}
+	
 }
