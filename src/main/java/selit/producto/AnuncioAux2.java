@@ -1,8 +1,6 @@
 package selit.producto;
 
-
 import selit.Location.Location;
-import selit.usuario.Usuario;
 import selit.usuario.UsuarioAux;
 
 public class AnuncioAux2 {

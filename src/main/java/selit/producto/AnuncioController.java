@@ -80,14 +80,12 @@ public class AnuncioController {
 			return "titulo";
 		} else if (parametro.equals("owner")) {
 			return "usuario_id_usuario";
-		} else if (parametro.equals("description")) {
-			return "descripcion";
 		} else if (parametro.equals("published")) {
 			return "fecha_publicacion";
 		} else if (parametro.equals("location")) {
 			return "???????";
 		} else if (parametro.equals("distance")) {
-			return "??????";
+			return "distancia";
 		} else if (parametro.equals("category")) {
 			return "nombre_categoria";
 		} else if (parametro.equals("status")) {
@@ -364,7 +362,7 @@ public class AnuncioController {
 			) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		
-			List<BigInteger> myAnuncioListAux = new ArrayList<BigInteger>();
+			List<Anuncio> myAnuncioListAux = new ArrayList<Anuncio>();
 			List<Long> myAnuncioList = new ArrayList<Long>();
 			List<Long> categories = new ArrayList<Long>();
 			List<BigInteger> foundAux = new ArrayList<BigInteger>();
@@ -391,8 +389,8 @@ public class AnuncioController {
 			} else {
 				myAnuncioListAux = anuncios.selectAnuncioCommonDistance(lat, lng, distance, null);
 			}
-			for(BigInteger id : myAnuncioListAux){
-				myAnuncioList.add(id.longValue());
+			for(Anuncio id : myAnuncioListAux){
+				myAnuncioList.add(id.getId_producto().longValue());
 			}
 			if(category != null) {
 				categories = anuncios.selectAnuncioCommonCategory(category);

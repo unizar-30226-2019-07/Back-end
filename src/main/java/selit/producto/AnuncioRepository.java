@@ -3,10 +3,7 @@ package selit.producto;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
-
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -30,11 +27,13 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 			"   * sin( radians(anuncio.posX)))) AS distancia  from anuncio WHERE id_producto = ?3", nativeQuery = true)
 	public double selectDistance(@Param("posX") String lat,@Param("posY") String lng, @Param("id_producto") String id_producto);
 
-	@Query(value = "select id_producto FROM anuncio " +
+	@Query(value = "select id_producto,fecha_publicacion,descripcion,titulo,posX,posY,precio,moneda,nfavoritos,nvisitas,usuario_id_usuario,nombre_categoria,estado, "+ "( 6371 * acos( cos( radians(?1) ) * cos( radians( anuncio.posX ) )" +
+			   "* cos( radians(anuncio.posY) - radians(?2)) + sin(radians(?1))" +
+			   "* sin( radians(anuncio.posX)))) AS distancia " + "FROM anuncio " +
 			"WHERE ( 6371 * acos( cos( radians(?1) ) * cos( radians( anuncio.posX ) )" +
 			   "* cos( radians(anuncio.posY) - radians(?2)) + sin(radians(?1))" +
 			   "* sin( radians(anuncio.posX)))) <= ?3 ORDER BY ?#{#sort}", nativeQuery = true)
-	public List<BigInteger> selectAnuncioCommonDistance(@Param("posX") String lat,@Param("posY") String lng,@Param("distance") String distance, Sort sort);
+	public List<Anuncio> selectAnuncioCommonDistance(@Param("posX") String lat,@Param("posY") String lng,@Param("distance") String distance, Sort sort);
 	
 	@Query("select idProducto from Anuncio where nombre_categoria=:nombre_categoria")
 	public List<Long> selectAnuncioCommonCategory(@Param("nombre_categoria") String category);
