@@ -57,6 +57,28 @@ public class UsuarioController {
 		UsuarioController.usuarios = usuarios;
 		UsuarioController.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
+	
+	private String elegirAtributo(String parametro) {
+		if (parametro.equals("id")) {
+			return "id_usuario";
+		} else if (parametro.equals("email")) {
+			return "email";
+		} else if (parametro.equals("status")) {
+			return "estado_cuenta";
+		} else if (parametro.equals("first_name")) {
+			return "nombre";
+		} else if (parametro.equals("last_name")) {
+			return "apellidos";
+		} else if (parametro.equals("gender")) {
+			return "sexo";
+		} else if (parametro.equals("birth_date")) {
+			return "nacimiento";
+		} else if (parametro.equals("rating")) {
+			return "calificacion";
+		} else {
+			return null;
+		}
+	}
 
 	@PostMapping(path="")
 	public @ResponseBody String anyadirUsuario (@RequestBody UsuarioAux usuario, HttpServletResponse response) throws IOException {
@@ -150,10 +172,10 @@ public class UsuarioController {
 				// Si el campo sort no esta vacio, se comprueba que lo que se ha pasado como parametro
 				// es un valor correcto.
 				String campos[] = sort.split("\\s");
-				if ( ( campos[0].equals("id_usuario") || campos[0].equals("gender") || campos[0].equals("birth_date") || campos[0].equals("location") ||
-					campos[0].equals("location") || campos[0].equals("rating") || campos[0].equals("status") || campos[0].equals("email") || 
-					campos[0].equals("first_name") || campos[0].equals("last_name") || campos[0].equals("tipo") ) && ( campos.length == 2 ) && 
-					( campos[1].equals("DESC") || campos[1].equals("ASC") ) ) {
+				if ( ( elegirAtributo(campos[0]) != null) &&  
+					 ( campos[1].equals("DESC") || campos[1].equals("ASC") ) ) {
+					
+					campos[0] = elegirAtributo(campos[0]);
 					
 					// Dependiendo de si se pide ordenar de forma ascendente o descendente, el usuario es
 					// un usuario o un administrador, y si ademas de ordenar, se quiere devolver una pagina
@@ -264,7 +286,8 @@ public class UsuarioController {
 		
 		
 	}
-	
+
+
 	@GetMapping(path="/{user_id}")
 	public @ResponseBody UsuarioAux obtenerUsuario(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición

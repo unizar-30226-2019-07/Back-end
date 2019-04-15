@@ -75,16 +75,12 @@ public class AnuncioController {
 	private String elegirAtributo(String parametro) {
 		if (parametro.equals("id")) {
 			return "id_producto";
-		} else if (parametro.equals("type")) {
-			return "???????";
 		} else if (parametro.equals("title")) {
 			return "titulo";
 		} else if (parametro.equals("owner")) {
 			return "usuario_id_usuario";
 		} else if (parametro.equals("published")) {
 			return "fecha_publicacion";
-		} else if (parametro.equals("location")) {
-			return "???????";
 		} else if (parametro.equals("distance")) {
 			return "distancia";
 		} else if (parametro.equals("category")) {
