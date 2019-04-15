@@ -126,6 +126,7 @@ public class AnuncioController {
 
         return list;
     }
+	
 	@PostMapping(path="")
 	public @ResponseBody String anyadirAnuncio (@RequestBody AnuncioAux anuncio, HttpServletRequest request, HttpServletResponse response) throws IOException { 
 
