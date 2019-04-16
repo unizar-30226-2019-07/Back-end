@@ -319,7 +319,28 @@ public class AnuncioController {
 				
 				if(anuncio3.getStatus().equals("en venta")) {
 					if (u.getTipo().equals("administrador") || anuncio3.getId_owner() == u.getIdUsuario()) {
+						List<BigInteger> listIds = pictures.findIdImages(product_id);
+						List<Long> realIds = new ArrayList<Long>();
 						
+						for(BigInteger id: listIds) {
+							realIds.add(id.longValue());
+						}
+						
+						
+						
+						List<Picture> picL = anuncio.getMedia();
+						for(Picture pi : picL) {
+							Long idIm = pi.getIdImagen();					
+							
+							if(idIm != null) {
+								if(realIds.contains(idIm))
+								pictures.deleteById(idIm);
+							}
+							else {
+								pi.setIdProducto(Long.parseLong(product_id));
+								pictures.save(pi);
+							}
+						}
 						// Se actualiza el producto.
 						anuncios.actualizarAnuncio(anuncio3.getPublicate_date(),anuncio.getDescription(),
 								anuncio.getTitle(),anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),
@@ -370,9 +391,9 @@ public class AnuncioController {
 			@RequestParam (name = "publishedTo", required = false) String publishedTo,
 			@RequestParam (name = "owner", required = false) String owner,
 			@RequestParam (name = "status", required = false) String status,
-			@RequestParam (name = "sort", required = false) String sort,
-			@RequestParam (name = "page", required = false) String page,
-			@RequestParam (name = "size", required = false) String size
+			@RequestParam (name = "$sort", required = false) String sort,
+			@RequestParam (name = "$page", required = false) String page,
+			@RequestParam (name = "$size", required = false) String size
 			) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		
