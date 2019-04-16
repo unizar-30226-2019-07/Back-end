@@ -75,16 +75,12 @@ public class AnuncioController {
 	private String elegirAtributo(String parametro) {
 		if (parametro.equals("id")) {
 			return "id_producto";
-		} else if (parametro.equals("type")) {
-			return "???????";
 		} else if (parametro.equals("title")) {
 			return "titulo";
 		} else if (parametro.equals("owner")) {
 			return "usuario_id_usuario";
 		} else if (parametro.equals("published")) {
 			return "fecha_publicacion";
-		} else if (parametro.equals("location")) {
-			return "???????";
 		} else if (parametro.equals("distance")) {
 			return "distancia";
 		} else if (parametro.equals("category")) {
@@ -126,6 +122,7 @@ public class AnuncioController {
 
         return list;
     }
+	
 	@PostMapping(path="")
 	public @ResponseBody String anyadirAnuncio (@RequestBody AnuncioAux anuncio, HttpServletRequest request, HttpServletResponse response) throws IOException { 
 
@@ -322,7 +319,28 @@ public class AnuncioController {
 				
 				if(anuncio3.getStatus().equals("en venta")) {
 					if (u.getTipo().equals("administrador") || anuncio3.getId_owner() == u.getIdUsuario()) {
+						List<BigInteger> listIds = pictures.findIdImages(product_id);
+						List<Long> realIds = new ArrayList<Long>();
 						
+						for(BigInteger id: listIds) {
+							realIds.add(id.longValue());
+						}
+						
+						
+						
+						List<Picture> picL = anuncio.getMedia();
+						for(Picture pi : picL) {
+							Long idIm = pi.getIdImagen();					
+							
+							if(idIm != null) {
+								if(realIds.contains(idIm))
+								pictures.deleteById(idIm);
+							}
+							else {
+								pi.setIdProducto(Long.parseLong(product_id));
+								pictures.save(pi);
+							}
+						}
 						// Se actualiza el producto.
 						anuncios.actualizarAnuncio(anuncio3.getPublicate_date(),anuncio.getDescription(),
 								anuncio.getTitle(),anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),
@@ -373,9 +391,9 @@ public class AnuncioController {
 			@RequestParam (name = "publishedTo", required = false) String publishedTo,
 			@RequestParam (name = "owner", required = false) String owner,
 			@RequestParam (name = "status", required = false) String status,
-			@RequestParam (name = "sort", required = false) String sort,
-			@RequestParam (name = "page", required = false) String page,
-			@RequestParam (name = "size", required = false) String size
+			@RequestParam (name = "$sort", required = false) String sort,
+			@RequestParam (name = "$page", required = false) String page,
+			@RequestParam (name = "$size", required = false) String size
 			) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		

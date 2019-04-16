@@ -57,6 +57,28 @@ public class UsuarioController {
 		UsuarioController.usuarios = usuarios;
 		UsuarioController.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
+	
+	private String elegirAtributo(String parametro) {
+		if (parametro.equals("id")) {
+			return "id_usuario";
+		} else if (parametro.equals("email")) {
+			return "email";
+		} else if (parametro.equals("status")) {
+			return "estado_cuenta";
+		} else if (parametro.equals("first_name")) {
+			return "nombre";
+		} else if (parametro.equals("last_name")) {
+			return "apellidos";
+		} else if (parametro.equals("gender")) {
+			return "sexo";
+		} else if (parametro.equals("birth_date")) {
+			return "nacimiento";
+		} else if (parametro.equals("rating")) {
+			return "calificacion";
+		} else {
+			return null;
+		}
+	}
 
 	@PostMapping(path="")
 	public @ResponseBody String anyadirUsuario (@RequestBody UsuarioAux usuario, HttpServletResponse response) throws IOException {
@@ -150,10 +172,10 @@ public class UsuarioController {
 				// Si el campo sort no esta vacio, se comprueba que lo que se ha pasado como parametro
 				// es un valor correcto.
 				String campos[] = sort.split("\\s");
-				if ( ( campos[0].equals("id_usuario") || campos[0].equals("gender") || campos[0].equals("birth_date") || campos[0].equals("location") ||
-					campos[0].equals("location") || campos[0].equals("rating") || campos[0].equals("status") || campos[0].equals("email") || 
-					campos[0].equals("first_name") || campos[0].equals("last_name") || campos[0].equals("tipo") ) && ( campos.length == 2 ) && 
-					( campos[1].equals("DESC") || campos[1].equals("ASC") ) ) {
+				if ( ( elegirAtributo(campos[0]) != null) &&  
+					 ( campos[1].equals("DESC") || campos[1].equals("ASC") ) ) {
+					
+					campos[0] = elegirAtributo(campos[0]);
 					
 					// Dependiendo de si se pide ordenar de forma ascendente o descendente, el usuario es
 					// un usuario o un administrador, y si ademas de ordenar, se quiere devolver una pagina
@@ -249,7 +271,7 @@ public class UsuarioController {
 				Location loc = new Location(userAux.getPosX(), userAux.getPosY());
 												 				
 				UsuarioAux rUser = new UsuarioAux(userAux.getIdUsuario(),userAux.getGender(),userAux.getBirth_date(),
-												loc,userAux.getRating(),userAux.getStatus(),userAux.getPassword(),userAux.getEmail(),
+												loc,userAux.getRating(),userAux.getStatus(),null,userAux.getEmail(),
 												userAux.getLast_name(),userAux.getFirst_name(),userAux.getTipo(),new Picture(userAux.getIdImagen()));
 				userValidList.add(rUser);
 			}
@@ -264,7 +286,8 @@ public class UsuarioController {
 		
 		
 	}
-	
+
+
 	@GetMapping(path="/{user_id}")
 	public @ResponseBody UsuarioAux obtenerUsuario(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
@@ -304,7 +327,7 @@ public class UsuarioController {
 					Location loc = new Location(aux.getPosX(), aux.getPosY());
 					
 					UsuarioAux rUser = new UsuarioAux(aux.getIdUsuario(),aux.getGender(),aux.getBirth_date(),
-													loc,aux.getRating(),aux.getStatus(),aux.getPassword(),aux.getEmail(),
+													loc,aux.getRating(),aux.getStatus(),null,aux.getEmail(),
 													aux.getLast_name(),aux.getFirst_name(),aux.getTipo(),new Picture(aux.getIdImagen()));
 					return rUser;
 				}
@@ -338,8 +361,9 @@ public class UsuarioController {
 				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {					
 					//Guardo la imagen
 					Picture p =  new Picture();
-					p.setIdImagen(u2.getIdImagen());
-					if(usuario.getPicture() != null) {
+					
+					//Si me pasan una imagen compruebo que no sea vacia
+					if(usuario.getPicture().getBase64() != null) {
 						Picture pic = new Picture(usuario.getPicture().getMime(),usuario.getPicture().getCharset(),usuario.getPicture().getBase64());
 						p = pictures.save(pic);
 						
@@ -348,23 +372,30 @@ public class UsuarioController {
 								usuario.getFirst_name(), usuario.getLast_name(), 
 								usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
 								usuario.getLocation().getLng(), user_id,p.getIdImagen());
+						
+						Long idIm = u2.getIdImagen();
+						//Borro la antigua imagen de perfil
+						if(idIm != null) {
+							pictures.deleteById(idIm);
+						}
 					}
-					else {
+					else if(usuario.getPicture().getIdImagen() == null) {
 						//Actualizo el usuario
 						usuarios.actualizarUsuario(usuario.getEmail(), 
 								usuario.getFirst_name(), usuario.getLast_name(), 
 								usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
-								usuario.getLocation().getLng(), user_id,u2.getIdImagen());
+								usuario.getLocation().getLng(), user_id,null);
+						
+						Long idIm = u2.getIdImagen();
+						//Borro la antigua imagen de perfil
+
+						if(idIm != null) {
+							pictures.deleteById(idIm);
+						}
 					}
+
+			
 					
-					
-					
-					
-					Long idIm = u.getIdImagen();
-					//Borro la antigua imagen de perfil
-					if(idIm != null && usuario.getPicture() != null) {
-						pictures.deleteById(idIm);
-					}
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";
@@ -509,7 +540,7 @@ public class UsuarioController {
 			Location loc = new Location(u.getPosX(), u.getPosY());
 			
 			UsuarioAux rUser = new UsuarioAux(u.getIdUsuario(),u.getGender(),u.getBirth_date(),
-											loc,u.getRating(),u.getStatus(),u.getPassword(),u.getEmail(),
+											loc,u.getRating(),u.getStatus(),null,u.getEmail(),
 											u.getLast_name(),u.getFirst_name(),u.getTipo(),new Picture(u.getIdImagen()));
 			return rUser;
 		} else {
