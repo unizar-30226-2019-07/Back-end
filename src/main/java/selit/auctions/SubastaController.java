@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
+import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioController;
 import selit.usuario.UsuarioRepository;
 import selit.verificacion.Verificacion;
@@ -90,8 +91,8 @@ public class SubastaController {
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 				LocalDateTime now = LocalDateTime.now();  
 				
-				Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getCloses(), subastaAux.getStartPrice(),u.getIdUsuario(),subastaAux.getCategory(),
-								subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng()); 
+				Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getEndDate(), subastaAux.getStartPrice(),u.getIdUsuario(),subastaAux.getCategory(),
+								subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng(),"en venta",subastaAux.getCurrency()); 
 				
 				// Se guarda la subasta.
 				subasta = subastas.save(subasta);
@@ -176,4 +177,107 @@ public class SubastaController {
 		
 	}
 	
+	@GetMapping(path="/{auction_id}")
+	public @ResponseBody SubastaAux obtenerSubasta(@PathVariable String auction_id, @RequestParam (name = "lat", required = false) String lat,
+			@RequestParam (name = "lng", required = false) String lng, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	
+		// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
+		Optional<Subasta> subasta = subastas.findById(Long.parseLong(auction_id));
+		if ( !subasta.isPresent() ) {
+			
+			// Se devuelve error 404.
+			response.sendError(404, "La subasta con id "+auction_id+" no existe");
+			
+			return null;
+			
+		} else {
+			Subasta aaux = subasta.get();
+			Location loc = new Location(aaux.getPosX(),aaux.getPosY());
+			Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
+			userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
+			Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
+			
+			UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
+					loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
+					userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
+			
+			SubastaAux rSubasta;
+			
+			rSubasta = new SubastaAux(aaux.getidSubasta(),aaux.getPublicate_date(),aaux.getDescription(),
+					aaux.getTitle(),loc,aaux.getStartPrice(),aaux.getFecha_finalizacion(),aaux.getCategory(),
+					rUser);
+			
+			return rSubasta;
+			
+		}
+		
+	}
+	
+	@PutMapping(path="/{auction_id}")
+	public @ResponseBody String actualizarSubasta(@PathVariable String auction_id, HttpServletRequest request,@RequestBody SubastaAux subasta, HttpServletResponse response) throws IOException { 
+
+		// Se obtiene el correo del usuario que ha anyadido la subasta para 
+		// encontrar su identificador y meterlo en la tabla de subasta como
+		// el creador.
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		
+		//Se comrprueba si el token es valido.
+		if(TokenCheck.checkAccess(token,u)) {
+			// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
+			Optional<Subasta> subasta2 = subastas.findById(Long.parseLong(auction_id));
+			if ( !subasta2.isPresent() ) {
+				
+				// Se devuelve error 404.
+				response.sendError(404, "La subasta con id "+auction_id+" no existe");
+				
+				return null;
+				
+			} else {
+				// Se comprueba que el usuario que realiza la peticion de actualizar es un administrador
+				// o es el propietario del producto.
+				Subasta subasta3 = subasta2.get();
+				
+				if(subasta3.getStatus().equals("en venta")) {
+					if (u.getTipo().equals("administrador") || subasta3.getId_owner() == u.getIdUsuario()) {
+						
+						// Se actualiza el producto.
+						subastas.actualizarSubasta(subasta3.getPublicate_date(),subasta.getDescription(),subasta.getTitle(), 
+								subasta.getLocation().getLat(),subasta.getLocation().getLng(),subasta.getStartPrice(),subasta.getCurrency(),
+								subasta.getEndDate(), subasta.getOwner_id(),subasta.getCategory(),auction_id,subasta.getStatus());
+						
+						// Se devuelve mensaje de confirmacion.
+						return "Anuncio actualizado";
+						
+					} else {
+						
+						// No es el administrador o el propietario del producto, se devuelve un error.
+						String error = "You can't update this product.";
+						response.sendError(402, error);
+						return null;
+					}
+				}
+				else {
+					String error = "You can´t update this product, it has already been sold.";
+					response.sendError(409, error);
+					return null;
+				}
+				
+				
+			}
+			
+		} else {
+			
+			// El token es incorrecto.
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}
+	}	
 }

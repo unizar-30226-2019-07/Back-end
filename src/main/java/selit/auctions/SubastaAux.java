@@ -6,6 +6,7 @@ import java.util.List;
 import selit.Location.Location;
 import selit.picture.Picture;
 import selit.usuario.Usuario;
+import selit.usuario.UsuarioAux;
 
 public class SubastaAux {
 	
@@ -17,9 +18,9 @@ public class SubastaAux {
     
     private Long owner_id;
     
-    private String closes;
+    private String endDate;
     
-    private Usuario owner;
+    private UsuarioAux owner;
     
     private String description;
 
@@ -40,7 +41,20 @@ public class SubastaAux {
     private String currency;
     
     private Bid lastBid;
-
+    
+    public SubastaAux(Long id,String published,String description, String title,Location location,float startPrice,String endDate,
+    		String category, UsuarioAux owner) {
+    	super();
+    	this.id = id;
+    	this.published = published;
+    	this.description = description;
+    	this.title = title;
+    	this.location = location;
+    	this.startPrice = startPrice;
+    	this.endDate = endDate;
+    	this.category = category;
+    	this.owner = owner;
+    }
 
 	public Long getId() {
 		return id;
@@ -82,11 +96,11 @@ public class SubastaAux {
 		this.location = location;
 	}
 
-	public Usuario getOwner() {
+	public UsuarioAux getOwner() {
 		return owner;
 	}
 
-	public void setOwner(Usuario owner) {
+	public void setOwner(UsuarioAux owner) {
 		this.owner = owner;
 	}
 
@@ -162,15 +176,13 @@ public class SubastaAux {
 		this.owner_id = owner_id;
 	}
 
-	public String getCloses() {
-		return closes;
+	public String getEndDate() {
+		return endDate;
 	}
 
-	public void setCloses(String closes) {
-		this.closes = closes;
-	}
-	
-	
+	public void setEndDate(String endDate) {
+		this.endDate = endDate;
+	}	
     
 }
 
