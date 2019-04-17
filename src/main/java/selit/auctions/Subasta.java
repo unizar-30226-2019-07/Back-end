@@ -43,6 +43,12 @@ public class Subasta {
     @Column(name="posY")
     private float posY;
     
+    @Column(name="estado")
+    private String status;
+    
+    @Column(name="moneda")
+    private String currency;
+    
     public Subasta() {
 
     }
@@ -62,7 +68,7 @@ public class Subasta {
 	}
 
 	public Subasta( String publicate_date, String description, String title, String fecha_finalizacion, Float startPrice,
-			Long id_owner, String category, float posX, float posY) {
+			Long id_owner, String category, float posX, float posY, String status, String currency) {
 		this.publicate_date = publicate_date;
 		this.description = description;
 		this.title = title;
@@ -72,6 +78,8 @@ public class Subasta {
 		this.category = category;
 		this.posX = posX;
 		this.posY = posY;
+		this.status = status;
+		this.currency = currency;
 	}
 
 	public Long getidSubasta() {
@@ -153,7 +161,22 @@ public class Subasta {
 	public void setStartPrice(Float startPrice) {
 		this.startPrice = startPrice;
 	}
-  
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getCurrency() {
+		return currency;
+	}
+
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
     
 }
 

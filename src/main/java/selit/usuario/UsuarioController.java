@@ -271,7 +271,7 @@ public class UsuarioController {
 				Location loc = new Location(userAux.getPosX(), userAux.getPosY());
 												 				
 				UsuarioAux rUser = new UsuarioAux(userAux.getIdUsuario(),userAux.getGender(),userAux.getBirth_date(),
-												loc,userAux.getRating(),userAux.getStatus(),userAux.getPassword(),userAux.getEmail(),
+												loc,userAux.getRating(),userAux.getStatus(),null,userAux.getEmail(),
 												userAux.getLast_name(),userAux.getFirst_name(),userAux.getTipo(),new Picture(userAux.getIdImagen()));
 				userValidList.add(rUser);
 			}
@@ -327,7 +327,7 @@ public class UsuarioController {
 					Location loc = new Location(aux.getPosX(), aux.getPosY());
 					
 					UsuarioAux rUser = new UsuarioAux(aux.getIdUsuario(),aux.getGender(),aux.getBirth_date(),
-													loc,aux.getRating(),aux.getStatus(),aux.getPassword(),aux.getEmail(),
+													loc,aux.getRating(),aux.getStatus(),null,aux.getEmail(),
 													aux.getLast_name(),aux.getFirst_name(),aux.getTipo(),new Picture(aux.getIdImagen()));
 					return rUser;
 				}
@@ -361,8 +361,9 @@ public class UsuarioController {
 				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {					
 					//Guardo la imagen
 					Picture p =  new Picture();
-					p.setIdImagen(u2.getIdImagen());
-					if(usuario.getPicture() != null) {
+					
+					//Si me pasan una imagen compruebo que no sea vacia
+					if(usuario.getPicture().getBase64() != null) {
 						Picture pic = new Picture(usuario.getPicture().getMime(),usuario.getPicture().getCharset(),usuario.getPicture().getBase64());
 						p = pictures.save(pic);
 						
@@ -371,6 +372,26 @@ public class UsuarioController {
 								usuario.getFirst_name(), usuario.getLast_name(), 
 								usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
 								usuario.getLocation().getLng(), user_id,p.getIdImagen());
+						
+						Long idIm = u2.getIdImagen();
+						//Borro la antigua imagen de perfil
+						if(idIm != null) {
+							pictures.deleteById(idIm);
+						}
+					}
+					else if(usuario.getPicture().getIdImagen() == null) {
+						//Actualizo el usuario
+						usuarios.actualizarUsuario(usuario.getEmail(), 
+								usuario.getFirst_name(), usuario.getLast_name(), 
+								usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
+								usuario.getLocation().getLng(), user_id,null);
+						
+						Long idIm = u2.getIdImagen();
+						//Borro la antigua imagen de perfil
+
+						if(idIm != null) {
+							pictures.deleteById(idIm);
+						}
 					}
 					else {
 						//Actualizo el usuario
@@ -379,15 +400,9 @@ public class UsuarioController {
 								usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
 								usuario.getLocation().getLng(), user_id,u2.getIdImagen());
 					}
+
+			
 					
-					
-					
-					
-					Long idIm = u.getIdImagen();
-					//Borro la antigua imagen de perfil
-					if(idIm != null && usuario.getPicture() != null) {
-						pictures.deleteById(idIm);
-					}
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";
@@ -532,7 +547,7 @@ public class UsuarioController {
 			Location loc = new Location(u.getPosX(), u.getPosY());
 			
 			UsuarioAux rUser = new UsuarioAux(u.getIdUsuario(),u.getGender(),u.getBirth_date(),
-											loc,u.getRating(),u.getStatus(),u.getPassword(),u.getEmail(),
+											loc,u.getRating(),u.getStatus(),null,u.getEmail(),
 											u.getLast_name(),u.getFirst_name(),u.getTipo(),new Picture(u.getIdImagen()));
 			return rUser;
 		} else {
