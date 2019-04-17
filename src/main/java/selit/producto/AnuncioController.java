@@ -208,7 +208,10 @@ public class AnuncioController {
 				// o es el propietario del producto.
 				Anuncio anuncio2 = anuncio.get();
 				if (u.getTipo().equals("administrador") || anuncio2.getId_owner() == u.getIdUsuario()) {
-					
+					List<BigInteger> listPic = pictures.findIdImages(product_id);
+					for(BigInteger idP : listPic) {
+						pictures.deleteById(idP.longValue());
+					}
 					// Se elimina el producto.
 					anuncios.deleteById(Long.parseLong(product_id));
 					

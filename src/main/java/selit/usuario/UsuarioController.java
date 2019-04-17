@@ -393,6 +393,13 @@ public class UsuarioController {
 							pictures.deleteById(idIm);
 						}
 					}
+					else {
+						//Actualizo el usuario
+						usuarios.actualizarUsuario(usuario.getEmail(), 
+								usuario.getFirst_name(), usuario.getLast_name(), 
+								usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
+								usuario.getLocation().getLng(), user_id,u2.getIdImagen());
+					}
 
 			
 					
