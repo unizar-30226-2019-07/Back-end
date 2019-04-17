@@ -315,11 +315,13 @@ public class SubastaController {
 					
 					Subasta subasta = subastaOp.get();
 					Bid puja2 = pujas.findById_subasta(subasta.getidSubasta());
-					
-					if (puja2.getPuja() < puja.getAmount()) {
+					if (puja2 == null) {
+						puja2 = new Bid();
+						puja2.setClave(new ClavePrimaria(puja.getBidder_id(), auction_id, subasta.getId_owner()));
+					}
+					if ( puja2.getPuja() < puja.getAmount()) {
 						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 						LocalDateTime now = LocalDateTime.now(); 
-						pujas.delete(puja2);
 						puja2.setPuja(puja.getAmount());
 						puja2.setClave(new ClavePrimaria(puja.getBidder_id(), puja2.getClave().getSubasta_id_producto(), puja2.getClave().getSubasta_id_usuario()));
 						puja2.setFecha(dtf.format(now));
