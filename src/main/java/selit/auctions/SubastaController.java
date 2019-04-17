@@ -17,6 +17,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -201,8 +202,10 @@ public class SubastaController {
 			
 			SubastaAux rSubasta;
 			BidAux2 puja2;
-			Bid puja = pujas.findById_subasta(Long.parseLong(auction_id));
-			if (puja != null) {
+			List<Bid> pujas2 = pujas.findById_subasta(Long.parseLong(auction_id), Sort.by(Sort.Direction.DESC, "fecha"));
+			Bid puja;
+			if (!pujas2.isEmpty()) {
+				puja = pujas2.get(0);
 				Optional<Usuario> propietario = usuarios.findById(puja.getClave().getUsuario_id_usuario());
 				Usuario propietario2 = propietario.get();
 				puja2 = new BidAux2(puja.getPuja(), propietario2, puja.getFecha());
@@ -314,7 +317,13 @@ public class SubastaController {
 				if (subastaOp.isPresent()) {
 					
 					Subasta subasta = subastaOp.get();
-					Bid puja2 = pujas.findById_subasta(subasta.getidSubasta());
+					List<Bid> pujas2 = pujas.findById_subasta(subasta.getidSubasta(), Sort.by(Sort.Direction.DESC, "fecha"));
+					Bid puja2;
+					if (pujas2.isEmpty() ) {
+						puja2 = null;
+					} else {
+						puja2 = pujas2.get(0);
+					}
 					Bid puja3 = new Bid();
 					if (puja2 == null) {
 						puja3 = new Bid();
