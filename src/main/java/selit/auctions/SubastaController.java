@@ -12,17 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,15 +26,16 @@ import selit.usuario.Usuario;
 import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioController;
 import selit.usuario.UsuarioRepository;
-import selit.verificacion.Verificacion;
 import selit.verificacion.VerificacionRepository;
 import selit.Location.Location;
-import selit.mail.MailMail;
 import selit.picture.Picture;
 import selit.picture.PictureRepository;
-import selit.producto.Anuncio;
-import selit.producto.AnuncioAux;
 import selit.security.TokenCheck;
+import selit.bid.Bid;
+import selit.bid.BidAux;
+import selit.bid.BidAux2;
+import selit.bid.BidRepository;
+import selit.bid.ClavePrimaria;
 import io.jsonwebtoken.Jwts;
 
 @RestController   
@@ -60,6 +55,9 @@ public class SubastaController {
 	
 	@Autowired public 
 	VerificacionRepository verificaciones;	
+	
+	@Autowired public
+	BidRepository pujas;
 
 	
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -104,7 +102,7 @@ public class SubastaController {
 				
 				// Se contesta a la peticion con un mensaje de exito.
 				response.setStatus(201);
-				return "Nuevo subasta creada";
+				return "Nueva subasta creada";
 			}
 			else {
 				String error = "The user doesn't have enough permissions.";
@@ -202,10 +200,18 @@ public class SubastaController {
 					userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 			
 			SubastaAux rSubasta;
-			
+			BidAux2 puja2;
+			Bid puja = pujas.findById_subasta(Long.parseLong(auction_id));
+			if (puja != null) {
+				Optional<Usuario> propietario = usuarios.findById(puja.getClave().getUsuario_id_usuario());
+				Usuario propietario2 = propietario.get();
+				puja2 = new BidAux2(puja.getPuja(), propietario2, puja.getFecha());
+			} else {
+				puja2 = null;
+			}
 			rSubasta = new SubastaAux(aaux.getidSubasta(),aaux.getPublicate_date(),aaux.getDescription(),
 					aaux.getTitle(),loc,aaux.getStartPrice(),aaux.getFecha_finalizacion(),aaux.getCategory(),
-					rUser);
+					rUser, puja2);
 			
 			return rSubasta;
 			
@@ -213,12 +219,18 @@ public class SubastaController {
 		
 	}
 	
+	@GetMapping(path="")
+	public @ResponseBody List<Subasta> obtenerSubastas(HttpServletRequest request, 
+			HttpServletResponse response, 
+			@RequestParam (name = "lat") String lat,
+			@RequestParam (name = "lng") String lng,
+			@RequestParam (name = "distance") String distance) {
+		return subastas.selectSubastaCommonDistance(lat, lng,distance, null);
+	}
+	
 	@PutMapping(path="/{auction_id}")
 	public @ResponseBody String actualizarSubasta(@PathVariable String auction_id, HttpServletRequest request,@RequestBody SubastaAux subasta, HttpServletResponse response) throws IOException { 
 
-		// Se obtiene el correo del usuario que ha anyadido la subasta para 
-		// encontrar su identificador y meterlo en la tabla de subasta como
-		// el creador.
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
 				.setSigningKey(SUPER_SECRET_KEY)
@@ -230,7 +242,8 @@ public class SubastaController {
 		
 		//Se comrprueba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
-			// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
+			
+			// Se busca la subasta con el id pasado en la ruta, si no existe se devuelve un error.
 			Optional<Subasta> subasta2 = subastas.findById(Long.parseLong(auction_id));
 			if ( !subasta2.isPresent() ) {
 				
@@ -250,7 +263,7 @@ public class SubastaController {
 						// Se actualiza el producto.
 						subastas.actualizarSubasta(subasta3.getPublicate_date(),subasta.getDescription(),subasta.getTitle(), 
 								subasta.getLocation().getLat(),subasta.getLocation().getLng(),subasta.getStartPrice(),subasta.getCurrency(),
-								subasta.getEndDate(), subasta.getOwner_id(),subasta.getCategory(),auction_id,subasta.getStatus());
+								subasta.getEndDate(), subasta.getOwner_id(),subasta.getCategory(),auction_id);
 						
 						// Se devuelve mensaje de confirmacion.
 						return "Anuncio actualizado";
@@ -279,5 +292,57 @@ public class SubastaController {
 			response.sendError(401, error);
 			return null;
 		}
-	}	
+	}
+	
+	@PostMapping(path="/{auction_id}/bid")
+	public @ResponseBody String anyadirSubasta(@PathVariable Long auction_id, @RequestBody BidAux puja, HttpServletRequest request, HttpServletResponse response) throws IOException { 
+
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		
+		//Se comrprueba si el token es valido.
+		if(TokenCheck.checkAccess(token,u)) {
+			if (u.getIdUsuario() == puja.bidder_id) {
+				
+				Optional<Subasta> subastaOp = subastas.findById(auction_id);
+				if (subastaOp.isPresent()) {
+					
+					Subasta subasta = subastaOp.get();
+					Bid puja2 = pujas.findById_subasta(subasta.getidSubasta());
+					
+					if (puja2.getPuja() < puja.getAmount()) {
+						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
+						LocalDateTime now = LocalDateTime.now(); 
+						pujas.delete(puja2);
+						puja2.setPuja(puja.getAmount());
+						puja2.setClave(new ClavePrimaria(puja.getBidder_id(), puja2.getClave().getSubasta_id_producto(), puja2.getClave().getSubasta_id_usuario()));
+						puja2.setFecha(dtf.format(now));
+						pujas.save(puja2);
+						response.setStatus(201);
+						return "Guardada la puja correctamente";
+					} else {
+						response.sendError(409, "No se ha superado el precio actual de " + puja2.getPuja());
+						return null;
+					} 
+				} else {
+					response.sendError(404, "No existe la subasta con id " + auction_id);
+					return null;
+				}
+			} else {
+				response.sendError(402, "No tienes permisos para realizar la puja");
+				return null;
+			}
+					
+		} else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}
+	}
 }

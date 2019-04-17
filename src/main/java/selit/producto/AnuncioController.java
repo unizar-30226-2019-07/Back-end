@@ -385,7 +385,6 @@ public class AnuncioController {
 		}
 	}
 	
-	/* sort page y size ?? */
 	@GetMapping(path="")
 	public @ResponseBody List<AnuncioAux2> obtenerAnuncios(HttpServletRequest request, 
 			HttpServletResponse response, 

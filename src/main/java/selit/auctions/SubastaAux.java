@@ -1,11 +1,9 @@
 package selit.auctions;
 
-import selit.bid.Bid;
-
+import selit.bid.BidAux2;
 import java.util.List;
 import selit.Location.Location;
 import selit.picture.Picture;
-import selit.usuario.Usuario;
 import selit.usuario.UsuarioAux;
 
 public class SubastaAux {
@@ -31,20 +29,17 @@ public class SubastaAux {
     private Long distance;
     
     private String category;
-    
-    private String status;
-    
+        
     private List<Picture> media;
     
     private float startPrice;
     
     private String currency;
     
-    private Bid lastBid;
+    private BidAux2 lastBid;
     
     public SubastaAux(Long id,String published,String description, String title,Location location,float startPrice,String endDate,
-    		String category, UsuarioAux owner) {
-    	super();
+    		String category, UsuarioAux owner, BidAux2 lastBid) {
     	this.id = id;
     	this.published = published;
     	this.description = description;
@@ -54,6 +49,8 @@ public class SubastaAux {
     	this.endDate = endDate;
     	this.category = category;
     	this.owner = owner;
+    	this.owner_id = owner.getIdUsuario();
+    	this.lastBid = lastBid;
     }
 
 	public Long getId() {
@@ -104,14 +101,6 @@ public class SubastaAux {
 		this.owner = owner;
 	}
 
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
-
 	public String getPublished() {
 		return published;
 	}
@@ -128,12 +117,12 @@ public class SubastaAux {
 		this.distance = distance;
 	}
 
-	public String getStatus() {
-		return status;
+	public String getType() {
+		return type;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public List<Picture> getMedia() {
@@ -160,11 +149,11 @@ public class SubastaAux {
 		this.currency = currency;
 	}
 
-	public Bid getLastBid() {
+	public BidAux2 getLastBid() {
 		return lastBid;
 	}
 
-	public void setLastBid(Bid lastBid) {
+	public void setLastBid(BidAux2 lastBid) {
 		this.lastBid = lastBid;
 	}
 
