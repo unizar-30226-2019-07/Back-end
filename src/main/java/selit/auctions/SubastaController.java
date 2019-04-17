@@ -315,17 +315,18 @@ public class SubastaController {
 					
 					Subasta subasta = subastaOp.get();
 					Bid puja2 = pujas.findById_subasta(subasta.getidSubasta());
+					Bid puja3 = new Bid();
 					if (puja2 == null) {
-						puja2 = new Bid();
-						puja2.setClave(new ClavePrimaria(puja.getBidder_id(), auction_id, subasta.getId_owner()));
+						puja3 = new Bid();
+						puja3.setClave(new ClavePrimaria(puja.getBidder_id(), auction_id, subasta.getId_owner()));
 					}
 					if ( puja2.getPuja() < puja.getAmount()) {
 						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 						LocalDateTime now = LocalDateTime.now(); 
-						puja2.setPuja(puja.getAmount());
-						puja2.setClave(new ClavePrimaria(puja.getBidder_id(), puja2.getClave().getSubasta_id_producto(), puja2.getClave().getSubasta_id_usuario()));
-						puja2.setFecha(dtf.format(now));
-						pujas.save(puja2);
+						puja3.setPuja(puja.getAmount());
+						puja3.setClave(new ClavePrimaria(puja.getBidder_id(), puja2.getClave().getSubasta_id_producto(), puja2.getClave().getSubasta_id_usuario()));
+						puja3.setFecha(dtf.format(now));
+						pujas.save(puja3);
 						response.setStatus(201);
 						return "Guardada la puja correctamente";
 					} else {
