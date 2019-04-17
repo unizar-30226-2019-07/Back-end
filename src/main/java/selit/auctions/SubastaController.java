@@ -298,7 +298,7 @@ public class SubastaController {
 	}
 	
 	@PostMapping(path="/{auction_id}/bid")
-	public @ResponseBody String anyadirSubasta(@PathVariable Long auction_id, @RequestBody BidAux puja, HttpServletRequest request, HttpServletResponse response) throws IOException { 
+	public @ResponseBody String anyadirPuja(@PathVariable Long auction_id, @RequestBody BidAux puja, HttpServletRequest request, HttpServletResponse response) throws IOException { 
 
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
