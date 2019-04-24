@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -31,12 +33,15 @@ import selit.verificacion.VerificacionRepository;
 import selit.Location.Location;
 import selit.picture.Picture;
 import selit.picture.PictureRepository;
+import selit.producto.Anuncio;
+import selit.producto.AnuncioAux2;
 import selit.security.TokenCheck;
 import selit.bid.Bid;
 import selit.bid.BidAux;
 import selit.bid.BidAux2;
 import selit.bid.BidRepository;
 import selit.bid.ClavePrimaria;
+import selit.media.Media;
 import io.jsonwebtoken.Jwts;
 
 @RestController   
@@ -67,6 +72,69 @@ public class SubastaController {
 		UsuarioController.usuarios = usuarios;
 		UsuarioController.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
+	
+	private <T> List<T> intersection(List<T> list1, List<T> list2) {
+        List<T> list = new ArrayList<T>();
+
+        for (T t : list1) {
+            if(list2.contains(t)) {
+                list.add(t);
+            }
+        }
+
+        return list;
+    }
+	
+	private String elegirAtributo(String parametro) {
+		if (parametro.equals("id")) {
+			return "id_producto";
+		} else if (parametro.equals("title")) {
+			return "titulo";
+		} else if (parametro.equals("owner")) {
+			return "usuario_id_usuario";
+		} else if (parametro.equals("published")) {
+			return "fecha_publicacion";
+		} else if (parametro.equals("distance")) {
+			return "distancia";
+		} else if (parametro.equals("category")) {
+			return "nombre_categoria";
+		} else if (parametro.equals("status")) {
+			return "estado";
+		} else if (parametro.equals("media")) {
+			return "???????????";
+		} else if (parametro.equals("price")) {
+			return "precio";
+		} else if (parametro.equals("currency")) {
+			return "moneda";
+		} else if (parametro.equals("views")) {
+			return "nvisitas";
+		} else if (parametro.equals("likes")) {
+			return "nfavoritos";
+		} else {
+			return null;
+		}
+	}
+	
+	private <T> List<T> paginar(List<T> list1, Integer page, Integer size) {
+        
+		List<T> list = new ArrayList<T>();
+
+		Integer i=1, pagina = 0;
+		
+        for (T t: list1) {
+        	if (pagina == page) {
+        		list.add(t);
+        	}
+        	if (i == size) {
+        		pagina++;
+        		i=1;
+        	} else {
+        		i++;
+        	}
+        }
+
+        return list;
+    }
 	
 	@PostMapping(path="")
 	public @ResponseBody String anyadirSubasta(@RequestBody SubastaAux subastaAux, HttpServletRequest request, HttpServletResponse response) throws IOException { 
@@ -190,9 +258,9 @@ public class SubastaController {
 			return null;
 			
 		} else {
-			Subasta aaux = subasta.get();
-			Location loc = new Location(aaux.getPosX(),aaux.getPosY());
-			Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
+			Subasta saux = subasta.get();
+			Location loc = new Location(saux.getPosX(),saux.getPosY());
+			Usuario userFind = usuarios.buscarPorId(saux.getId_owner().toString());
 			userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 			Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 			
@@ -212,8 +280,8 @@ public class SubastaController {
 			} else {
 				puja2 = null;
 			}
-			rSubasta = new SubastaAux(aaux.getidSubasta(),aaux.getPublicate_date(),aaux.getDescription(),
-					aaux.getTitle(),loc,aaux.getStartPrice(),aaux.getFecha_finalizacion(),aaux.getCategory(),
+			rSubasta = new SubastaAux(saux.getidSubasta(),saux.getPublicate_date(),saux.getDescription(),
+					saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
 					rUser, puja2);
 			
 			return rSubasta;
@@ -223,12 +291,150 @@ public class SubastaController {
 	}
 	
 	@GetMapping(path="")
-	public @ResponseBody List<Subasta> obtenerSubastas(HttpServletRequest request, 
+	public @ResponseBody List<SubastaAux> obtenerSubastas(HttpServletRequest request, 
 			HttpServletResponse response, 
 			@RequestParam (name = "lat") String lat,
 			@RequestParam (name = "lng") String lng,
-			@RequestParam (name = "distance") String distance) {
-		return subastas.selectSubastaCommonDistance(lat, lng,distance, null);
+			@RequestParam (name = "distance") String distance,
+			@RequestParam (name = "category", required = false) String category,
+			@RequestParam (name = "search", required = false) String search,
+			@RequestParam (name = "priceFrom", required = false) String priceFrom,
+			@RequestParam (name = "priceTo", required = false) String priceTo,
+			@RequestParam (name = "publishedFrom", required = false) String publishedFrom,
+			@RequestParam (name = "publishedTo", required = false) String publishedTo,
+			@RequestParam (name = "owner", required = false) String owner,
+			@RequestParam (name = "status", required = false) String status,
+			@RequestParam (name = "?size", required = false) String size,
+			@RequestParam (name = "?page", required = false) String page,
+			@RequestParam (name = "?sort", required = false) String sort 
+			){
+		
+		List<Subasta> mySubastaListAux = new ArrayList<Subasta>();
+		List<Long> mySubastaList = new ArrayList<Long>();
+		List<Long> categories = new ArrayList<Long>();
+		List<BigInteger> foundAux = new ArrayList<BigInteger>();
+		List<Long> found = new ArrayList<Long>();
+		List<Long> pFrom = new ArrayList<Long>();
+		List<Long> pTo = new ArrayList<Long>();
+		List<Long> pubFrom = new ArrayList<Long>();
+		List<Long> pubTo = new ArrayList<Long>();
+		List<Long> ownerL = new ArrayList<Long>();
+		List<Long> statusL = new ArrayList<Long>();
+		
+		if ( sort != null) {
+			String campos[] = sort.split("\\s");
+			if ( (campos.length == 2) && ( (campos[1].equals("ASC")) || (campos[1].equals("DESC")) )  && ( elegirAtributo(campos[0]) != null) ) {
+				campos[0] = elegirAtributo(campos[0]);
+				if ( campos[1].equals("ASC")) {
+					mySubastaListAux = subastas.selectSubastaCommonDistance(lat, lng, distance, Sort.by(campos[0]).ascending());
+				} else {
+					mySubastaListAux = subastas.selectSubastaCommonDistance(lat, lng, distance, Sort.by(campos[0]).descending());
+				}
+			} else {
+				try {
+					response.sendError(412, "Valores incorrectos en el parametro $sort");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		} else {
+			mySubastaListAux = subastas.selectSubastaCommonDistance(lat, lng, distance, null);
+		}
+		for(Subasta id : mySubastaListAux){
+			mySubastaList.add(id.getidSubasta().longValue());
+		}
+		if(category != null) {
+			categories = subastas.selectSubastaCommonCategory(category);
+			mySubastaList = intersection(mySubastaList,categories);
+		}
+		if(search != null) {
+			foundAux = subastas.selectSubastaCommonSearch(search);
+			for(BigInteger id : foundAux){
+				found.add(id.longValue());
+			}
+			mySubastaList = intersection(mySubastaList,found);				
+		}
+		if(priceFrom != null) {
+			 pFrom = subastas.selectSubastaCommonPriceFrom(Float.parseFloat(priceFrom));
+			 mySubastaList = intersection(mySubastaList,pFrom);
+		}
+		if(priceTo != null) {
+			pTo = subastas.selectSubastaCommonPriceTo(Float.parseFloat(priceTo));
+			mySubastaList = intersection(mySubastaList,pTo);				 
+		}
+		if(publishedFrom != null) {
+			pubFrom = subastas.selectSubastaCommonPublishedFrom(publishedFrom);
+			mySubastaList = intersection(mySubastaList,pubFrom);
+		}			
+		if(publishedTo != null) {
+			pubTo = subastas.selectSubastaCommonPublishedTo(publishedTo);
+			mySubastaList = intersection(mySubastaList,pubTo);
+		}
+		if(owner != null) {
+			ownerL = subastas.selectSubastaCommonOwner(Long.parseLong(owner));
+			mySubastaList = intersection(mySubastaList,ownerL);
+		}
+		if(status != null) {
+			statusL = subastas.selectSubastaCommonStatus(status);
+			mySubastaList = intersection(mySubastaList,statusL);
+		}
+		List<SubastaAux> ListaSubastasDevolver = new ArrayList<SubastaAux>();
+		for(Long id : mySubastaList) {
+			Optional<Subasta> a = subastas.findSubastaCommon(id.toString());
+			Subasta saux = a.get();
+			
+			Location loc = new Location(saux.getPosX(),saux.getPosY());
+			Usuario userFind = usuarios.buscarPorId(saux.getId_owner().toString());
+			userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
+			Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
+			
+			//Obtengo los id de las imagenes
+			List<Media> idList = new ArrayList<Media>();
+			
+			List<BigInteger> idListBI = pictures.findIdImages(id.toString());
+			for(BigInteger idB : idListBI){
+				Media med = new Media(idB.longValue());
+				idList.add(med);
+			}	
+			
+			UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
+					loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
+					userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
+			List<Bid> pujas2 =  pujas.findById_subasta(saux.getidSubasta(), Sort.by("publicate_date").descending());
+			UsuarioAux usuarioSubasta2;
+			BidAux2 puja2;
+			if (pujas2.isEmpty()) {
+				usuarioSubasta2 = null;
+				puja2 = null;
+			} else {
+				Bid puja = pujas2.get(0);
+				Usuario usuarioPuja = usuarios.buscarPorId(puja.getClave().getUsuario_id_usuario().toString());
+				Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());
+				Location locUsuario = new Location(usuarioSubasta.getPosX(), usuarioSubasta.getPosY());
+				Optional<Picture> picUsuario = pictures.findById(usuarioSubasta.getIdImagen());
+				Picture picUsuario2;
+				if (picUsuario.isEmpty()) {
+					picUsuario2 = null;
+				} else {
+					picUsuario2 = picUsuario.get();
+				}
+				usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(), usuarioSubasta.getPassword(), usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), usuarioSubasta.getTipo(), picUsuario2);
+				puja2 = new BidAux2(puja.getPuja(), usuarioPuja, puja.getFecha());
+			}
+
+			SubastaAux subastaDevolver;	
+			subastaDevolver = new SubastaAux(saux.getidSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), loc2, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), usuarioSubasta2, puja2);	
+			
+			ListaSubastasDevolver.add(subastaDevolver);
+			
+		}
+		if ( ( size != null) && ( page != null ) ) {
+			System.out.println("Hola");
+			ListaSubastasDevolver = paginar(ListaSubastasDevolver, Integer.parseInt(page), Integer.parseInt(size));
+		}
+		return ListaSubastasDevolver;		
+		
 	}
 	
 	@PutMapping(path="/{auction_id}")
