@@ -87,7 +87,7 @@ public class SubastaController {
 	
 	private String elegirAtributo(String parametro) {
 		if (parametro.equals("id")) {
-			return "id_producto";
+			return "id_subasta";
 		} else if (parametro.equals("title")) {
 			return "titulo";
 		} else if (parametro.equals("owner")) {
@@ -100,16 +100,10 @@ public class SubastaController {
 			return "nombre_categoria";
 		} else if (parametro.equals("status")) {
 			return "estado";
-		} else if (parametro.equals("media")) {
-			return "???????????";
 		} else if (parametro.equals("price")) {
-			return "precio";
+			return "precio_salida";
 		} else if (parametro.equals("currency")) {
 			return "moneda";
-		} else if (parametro.equals("views")) {
-			return "nvisitas";
-		} else if (parametro.equals("likes")) {
-			return "nfavoritos";
 		} else {
 			return null;
 		}
@@ -381,9 +375,10 @@ public class SubastaController {
 		}
 		List<SubastaAux> ListaSubastasDevolver = new ArrayList<SubastaAux>();
 		for(Long id : mySubastaList) {
-			Optional<Subasta> a = subastas.findSubastaCommon(id.toString());
-			Subasta saux = a.get();
-			
+			Optional<Subasta> a = subastas.findSubastaCommon(id);
+			Subasta saux;
+			saux = a.get();
+
 			Location loc = new Location(saux.getPosX(),saux.getPosY());
 			Usuario userFind = usuarios.buscarPorId(saux.getId_owner().toString());
 			userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
@@ -401,7 +396,7 @@ public class SubastaController {
 			UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 					loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
 					userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
-			List<Bid> pujas2 =  pujas.findById_subasta(saux.getidSubasta(), Sort.by("publicate_date").descending());
+			List<Bid> pujas2 =  pujas.findById_subasta(saux.getidSubasta(), Sort.by("fecha").descending());
 			UsuarioAux usuarioSubasta2;
 			BidAux2 puja2;
 			if (pujas2.isEmpty()) {
@@ -412,12 +407,17 @@ public class SubastaController {
 				Usuario usuarioPuja = usuarios.buscarPorId(puja.getClave().getUsuario_id_usuario().toString());
 				Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());
 				Location locUsuario = new Location(usuarioSubasta.getPosX(), usuarioSubasta.getPosY());
-				Optional<Picture> picUsuario = pictures.findById(usuarioSubasta.getIdImagen());
 				Picture picUsuario2;
-				if (picUsuario.isEmpty()) {
-					picUsuario2 = null;
+				if (usuarioSubasta.getIdImagen() != null) {
+					Optional<Picture> picUsuario;
+					picUsuario = pictures.findById(usuarioSubasta.getIdImagen());
+					if (picUsuario.isEmpty()) {
+						picUsuario2 = null;
+					} else {
+						picUsuario2 = picUsuario.get();
+					}
 				} else {
-					picUsuario2 = picUsuario.get();
+					picUsuario2 = null;
 				}
 				usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(), usuarioSubasta.getPassword(), usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), usuarioSubasta.getTipo(), picUsuario2);
 				puja2 = new BidAux2(puja.getPuja(), usuarioPuja, puja.getFecha());
@@ -430,7 +430,6 @@ public class SubastaController {
 			
 		}
 		if ( ( size != null) && ( page != null ) ) {
-			System.out.println("Hola");
 			ListaSubastasDevolver = paginar(ListaSubastasDevolver, Integer.parseInt(page), Integer.parseInt(size));
 		}
 		return ListaSubastasDevolver;		

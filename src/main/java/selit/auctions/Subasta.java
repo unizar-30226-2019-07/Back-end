@@ -1,5 +1,7 @@
 package selit.auctions;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -81,12 +83,35 @@ public class Subasta {
 		this.status = status;
 		this.currency = currency;
 	}
+	
+	public Subasta(Long idSubasta, String publicate_date, String description, String title, String fecha_finalizacion,
+			Float startPrice, Long id_owner, String category, float posX, float posY, String currency) {
+		this.idSubasta = idSubasta;
+		this.publicate_date = publicate_date;
+		this.description = description;
+		this.title = title;
+		this.fecha_finalizacion = fecha_finalizacion;
+		this.startPrice = startPrice;
+		this.id_owner = id_owner;
+		this.category = category;
+		this.posX = posX;
+		this.posY = posY;
+		this.currency = currency;
+	}
 
 	public Long getidSubasta() {
 		return idSubasta;
 	}
 
 	public void setidSubasta(Long idSubasta) {
+		this.idSubasta = idSubasta;
+	}
+
+	public Long getIdSubasta() {
+		return idSubasta;
+	}
+
+	public void setIdSubasta(Long idSubasta) {
 		this.idSubasta = idSubasta;
 	}
 

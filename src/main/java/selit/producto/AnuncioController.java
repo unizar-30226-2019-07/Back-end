@@ -87,8 +87,6 @@ public class AnuncioController {
 			return "nombre_categoria";
 		} else if (parametro.equals("status")) {
 			return "estado";
-		} else if (parametro.equals("media")) {
-			return "???????????";
 		} else if (parametro.equals("price")) {
 			return "precio";
 		} else if (parametro.equals("currency")) {
