@@ -152,18 +152,16 @@ public class AnuncioController {
 				List<Picture> lp = anuncio.getMedia();
 				Long idProducto = an.getId_producto();
 				
-				boolean delete = false;
 				
 				for(Picture pic : lp){
 					pic.setIdProducto(idProducto);
-					Picture pTest = pictures.save(pic);
-					if(pTest == null) {
-						delete = true;
+					try {
+						pictures.save(pic);
 					}
-				}
-				
-				if(delete) {
-					anuncios.deleteById(idProducto);
+					catch(Exception e){
+						anuncios.deleteById(idProducto);
+					}
+					
 				}
 				
 				// Se contesta a la peticion con un mensaje de exito.
