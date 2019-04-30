@@ -49,8 +49,31 @@ public class SubastaAux {
     	this.endDate = endDate;
     	this.category = category;
     	this.owner = owner;
-    	this.owner_id = owner.getIdUsuario();
+    	if (owner!=null) {
+    		this.owner_id = owner.getIdUsuario();
+    	} else {
+    		this.owner_id = null;
+    	}
     	this.lastBid = lastBid;
+    }
+    
+    // Con id_usuario en ved del usuario
+    public SubastaAux(Long id,String published,String description, String title,Location location,float startPrice,String endDate,
+    		String category, Long owner_id, BidAux2 lastBid) {
+    	this.id = id;
+    	this.published = published;
+    	this.description = description;
+    	this.title = title;
+    	this.location = location;
+    	this.startPrice = startPrice;
+    	this.endDate = endDate;
+    	this.category = category;
+    	this.owner_id = owner_id;
+    	this.lastBid = lastBid;
+    }
+    
+    public SubastaAux() {
+    	
     }
 
 	public Long getId() {

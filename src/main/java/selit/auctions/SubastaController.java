@@ -33,8 +33,6 @@ import selit.verificacion.VerificacionRepository;
 import selit.Location.Location;
 import selit.picture.Picture;
 import selit.picture.PictureRepository;
-import selit.producto.Anuncio;
-import selit.producto.AnuncioAux2;
 import selit.security.TokenCheck;
 import selit.bid.Bid;
 import selit.bid.BidAux;
@@ -379,7 +377,6 @@ public class SubastaController {
 			Subasta saux;
 			saux = a.get();
 
-			Location loc = new Location(saux.getPosX(),saux.getPosY());
 			Usuario userFind = usuarios.buscarPorId(saux.getId_owner().toString());
 			userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 			Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
@@ -393,9 +390,6 @@ public class SubastaController {
 				idList.add(med);
 			}	
 			
-			UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
-					loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
-					userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 			List<Bid> pujas2 =  pujas.findById_subasta(saux.getidSubasta(), Sort.by("fecha").descending());
 			UsuarioAux usuarioSubasta2;
 			BidAux2 puja2;
@@ -531,14 +525,16 @@ public class SubastaController {
 					}
 					Bid puja3 = new Bid();
 					if (puja2 == null) {
-						puja3 = new Bid();
 						puja3.setClave(new ClavePrimaria(puja.getBidder_id(), auction_id, subasta.getId_owner()));
+						puja3.setPuja(puja.getAmount());
+						puja2 = new Bid();
+					} else {
+						puja3.setClave(new ClavePrimaria(puja.getBidder_id(), puja2.getClave().getSubasta_id_producto(), puja2.getClave().getSubasta_id_usuario()));
 					}
-					if ( puja2.getPuja() < puja.getAmount()) {
+					if ( puja2 == null || puja2.getPuja() < puja.getAmount()) {
 						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 						LocalDateTime now = LocalDateTime.now(); 
 						puja3.setPuja(puja.getAmount());
-						puja3.setClave(new ClavePrimaria(puja.getBidder_id(), puja2.getClave().getSubasta_id_producto(), puja2.getClave().getSubasta_id_usuario()));
 						puja3.setFecha(dtf.format(now));
 						pujas.save(puja3);
 						response.setStatus(201);
