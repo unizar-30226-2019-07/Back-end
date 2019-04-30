@@ -160,6 +160,9 @@ public class AnuncioController {
 					}
 					catch(Exception e){
 						anuncios.deleteById(idProducto);
+						String error = "The image can´t be saved.";
+						response.sendError(500, error);
+						return null;
 					}
 					
 				}
