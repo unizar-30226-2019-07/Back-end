@@ -8,7 +8,7 @@ import selit.usuario.UsuarioAux;
 
 public class SubastaAux {
 	
-    private Long id;
+    private Long idSubasta;
     
     private String type;
 
@@ -38,9 +38,9 @@ public class SubastaAux {
     
     private BidAux2 lastBid;
     
-    public SubastaAux(Long id,String published,String description, String title,Location location,float startPrice,String endDate,
+    public SubastaAux(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
     		String category, UsuarioAux owner, BidAux2 lastBid) {
-    	this.id = id;
+    	this.idSubasta = idSubasta;
     	this.published = published;
     	this.description = description;
     	this.title = title;
@@ -58,9 +58,9 @@ public class SubastaAux {
     }
     
     // Con id_usuario en ved del usuario
-    public SubastaAux(Long id,String published,String description, String title,Location location,float startPrice,String endDate,
+    public SubastaAux(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
     		String category, Long owner_id, BidAux2 lastBid) {
-    	this.id = id;
+    	this.idSubasta = idSubasta;
     	this.published = published;
     	this.description = description;
     	this.title = title;
@@ -76,12 +76,12 @@ public class SubastaAux {
     	
     }
 
-	public Long getId() {
-		return id;
+	public Long getIdSubasta() {
+		return idSubasta;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setIdSubasta(Long idSubasta) {
+		this.idSubasta = idSubasta;
 	}
 
 	public String getDescription() {
