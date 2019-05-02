@@ -512,7 +512,6 @@ public class AnuncioController {
 				
 			}
 			if ( ( size != null) && ( page != null ) ) {
-				System.out.println("Hola");
 				rListAn = paginar(rListAn, Integer.parseInt(page), Integer.parseInt(size));
 			}
 			return rListAn;		
