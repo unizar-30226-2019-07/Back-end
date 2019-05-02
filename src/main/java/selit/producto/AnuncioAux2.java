@@ -1,10 +1,8 @@
 package selit.producto;
 
 import java.util.List;
-
 import selit.Location.Location;
 import selit.media.Media;
-import selit.picture.Picture;
 import selit.usuario.UsuarioAux;
 
 public class AnuncioAux2 {

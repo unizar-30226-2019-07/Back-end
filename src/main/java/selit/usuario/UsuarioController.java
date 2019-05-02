@@ -30,6 +30,12 @@ import selit.usuario.Usuario;
 import selit.usuario.UsuarioRepository;
 import selit.verificacion.Verificacion;
 import selit.verificacion.VerificacionRepository;
+import selit.wishes.WishA;
+import selit.wishes.WishAId;
+import selit.wishes.WishS;
+import selit.wishes.WishSId;
+import selit.wishes.WishesARepository;
+import selit.wishes.WishesSRepository;
 import selit.Location.Location;
 import selit.mail.MailMail;
 import selit.picture.Picture;
@@ -50,6 +56,12 @@ public class UsuarioController {
 	
 	@Autowired public 
 	PictureRepository pictures;	
+	
+	@Autowired public 
+	WishesARepository wishesA;	
+	
+	@Autowired public 
+	WishesSRepository wishesS;	
 	
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -393,6 +405,13 @@ public class UsuarioController {
 							pictures.deleteById(idIm);
 						}
 					}
+					else {
+						//Actualizo el usuario
+						usuarios.actualizarUsuario(usuario.getEmail(), 
+								usuario.getFirst_name(), usuario.getLast_name(), 
+								usuario.getGender(), usuario.getBirth_date(), usuario.getLocation().getLat(), 
+								usuario.getLocation().getLng(), user_id,u2.getIdImagen());
+					}
 
 			
 					
@@ -550,5 +569,53 @@ public class UsuarioController {
 		}
 	}
 	
+	@PutMapping(path="/{user_id}/wishes_products/{product_id}")
+	public @ResponseBody String anyadirDeseadoProduct(@PathVariable String user_id,@PathVariable String product_id, HttpServletResponse response) throws IOException {
+		WishAId wId = new WishAId(Long.parseLong(user_id),Long.parseLong(product_id));
+		WishA w = new WishA(wId);
+		wishesA.save(w);
+		return "OK";
+	}
+	
+	@GetMapping(path="/{user_id}/wishes_products/")
+	public @ResponseBody List<WishAId> getDeseadosProduct(@PathVariable String user_id, HttpServletResponse response) throws IOException {
+		List<WishA> listWa = wishesA.buscarPorIdUsuario(Long.parseLong(user_id));
+		List<WishAId> listWaId = new ArrayList<WishAId>();
+		for (WishA wAux : listWa) {
+			listWaId.add(new WishAId(wAux.getWishAId().getIdUsuario(),wAux.getWishAId().getIdProducto()));
+		}
+		return listWaId;
+	}
+	
+	@DeleteMapping(path="/{user_id}/wishes_products/{product_id}")
+	public @ResponseBody String deleteDeseadosProduct(@PathVariable String user_id, @PathVariable String product_id, HttpServletResponse response) throws IOException {
+		wishesA.deleteById(new WishAId(Long.parseLong(user_id),Long.parseLong(product_id)));
+		return "OK";
+	}
+	
+	
+	@PutMapping(path="/{user_id}/wishes_auctions/{product_id}")
+	public @ResponseBody String anyadirDeseadoAuction(@PathVariable String user_id,@PathVariable String product_id, HttpServletResponse response) throws IOException {
+		WishSId wId = new WishSId(Long.parseLong(user_id),Long.parseLong(product_id));
+		WishS w = new WishS(wId);
+		wishesS.save(w);
+		return "OK";
+	}
+	
+	@GetMapping(path="/{user_id}/wishes_auctions/")
+	public @ResponseBody List<WishSId> getDeseadosAuction(@PathVariable String user_id, HttpServletResponse response) throws IOException {
+		List<WishS> listWa = wishesS.buscarPorIdUsuario(Long.parseLong(user_id));
+		List<WishSId> listWaId = new ArrayList<WishSId>();
+		for (WishS wAux : listWa) {
+			listWaId.add(new WishSId(wAux.getWishSId().getIdUsuario(),wAux.getWishSId().getIdSubasta()));
+		}
+		return listWaId;
+	}
+	
+	@DeleteMapping(path="/{user_id}/wishes_auctions/{product_id}")
+	public @ResponseBody String deleteDeseadoAuction(@PathVariable String user_id, @PathVariable String product_id, HttpServletResponse response) throws IOException {
+		wishesS.deleteById(new WishSId(Long.parseLong(user_id),Long.parseLong(product_id)));
+		return "OK";
+	}
 	
 }

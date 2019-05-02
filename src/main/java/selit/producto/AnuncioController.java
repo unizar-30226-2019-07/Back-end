@@ -87,8 +87,6 @@ public class AnuncioController {
 			return "nombre_categoria";
 		} else if (parametro.equals("status")) {
 			return "estado";
-		} else if (parametro.equals("media")) {
-			return "???????????";
 		} else if (parametro.equals("price")) {
 			return "precio";
 		} else if (parametro.equals("currency")) {
@@ -154,9 +152,19 @@ public class AnuncioController {
 				List<Picture> lp = anuncio.getMedia();
 				Long idProducto = an.getId_producto();
 				
+				
 				for(Picture pic : lp){
 					pic.setIdProducto(idProducto);
-					pictures.save(pic);
+					try {
+						pictures.save(pic);
+					}
+					catch(Exception e){
+						anuncios.deleteById(idProducto);
+						String error = "The image can´t be saved.";
+						response.sendError(500, error);
+						return null;
+					}
+					
 				}
 				
 				// Se contesta a la peticion con un mensaje de exito.
@@ -208,7 +216,10 @@ public class AnuncioController {
 				// o es el propietario del producto.
 				Anuncio anuncio2 = anuncio.get();
 				if (u.getTipo().equals("administrador") || anuncio2.getId_owner() == u.getIdUsuario()) {
-					
+					List<BigInteger> listPic = pictures.findIdImages(product_id);
+					for(BigInteger idP : listPic) {
+						pictures.deleteById(idP.longValue());
+					}
 					// Se elimina el producto.
 					anuncios.deleteById(Long.parseLong(product_id));
 					
@@ -320,27 +331,33 @@ public class AnuncioController {
 				if(anuncio3.getStatus().equals("en venta")) {
 					if (u.getTipo().equals("administrador") || anuncio3.getId_owner() == u.getIdUsuario()) {
 						List<BigInteger> listIds = pictures.findIdImages(product_id);
+						List<Long> auxIds = new ArrayList<Long>();
 						List<Long> realIds = new ArrayList<Long>();
 						
 						for(BigInteger id: listIds) {
-							realIds.add(id.longValue());
+							auxIds.add(id.longValue());
 						}
 						
-						
-						
+												
 						List<Picture> picL = anuncio.getMedia();
 						for(Picture pi : picL) {
-							Long idIm = pi.getIdImagen();					
+							Long idIm = pi.getIdImagen();
 							
-							if(idIm != null) {
-								if(realIds.contains(idIm))
-								pictures.deleteById(idIm);
-							}
-							else {
+							if(idIm == null) {
 								pi.setIdProducto(Long.parseLong(product_id));
 								pictures.save(pi);
 							}
+							else {
+								realIds.add(idIm);
+							}
 						}
+						
+						for(Long idAux : auxIds) {
+							if(!realIds.contains(idAux)) {
+								pictures.deleteById(idAux);
+							}
+						}
+						
 						// Se actualiza el producto.
 						anuncios.actualizarAnuncio(anuncio3.getPublicate_date(),anuncio.getDescription(),
 								anuncio.getTitle(),anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),
@@ -376,7 +393,6 @@ public class AnuncioController {
 		}
 	}
 	
-	/* sort page y size ?? */
 	@GetMapping(path="")
 	public @ResponseBody List<AnuncioAux2> obtenerAnuncios(HttpServletRequest request, 
 			HttpServletResponse response, 

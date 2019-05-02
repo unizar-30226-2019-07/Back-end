@@ -1,40 +1,57 @@
 package selit.bid;
 
-import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
-import selit.usuario.Usuario;
-
+@Entity 
+@Table(name="participa", schema="selit")
 public class Bid {
+
+	@EmbeddedId
+	private ClavePrimaria clave;
 	
-	private float amount;
+	@Column(name="puja")
+    private float puja;
 	
-	private Usuario bidder;
+	@Column(name="fecha", columnDefinition="DATE")
+    private String fecha;
+
+	public Bid(ClavePrimaria clave, float puja, String fecha) {
+		this.clave = clave;
+		this.puja = puja;
+		this.fecha = fecha;
+	}
+
+	public Bid() {
+		
+	}
 	
-	private Date date;
-
-	public float getAmount() {
-		return amount;
+	public float getPuja() {
+		return puja;
 	}
 
-	public void setAmount(float amount) {
-		this.amount = amount;
+	public void setPuja(float puja) {
+		this.puja = puja;
 	}
 
-	public Usuario getBidder() {
-		return bidder;
+	public ClavePrimaria getClave() {
+		return clave;
 	}
 
-	public void setBidder(Usuario bidder) {
-		this.bidder = bidder;
+	public void setClave(ClavePrimaria clave) {
+		this.clave = clave;
 	}
 
-	public Date getDate() {
-		return date;
+	public String getFecha() {
+		return fecha;
 	}
 
-	public void setDate(Date date) {
-		this.date = date;
+	public void setFecha(String fecha) {
+		this.fecha = fecha;
 	}
+	
 	
 	
 }
