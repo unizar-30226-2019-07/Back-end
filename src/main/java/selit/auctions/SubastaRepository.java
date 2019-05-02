@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 	
-	@Query("select new Subasta(idSubasta, publicate_date, description, title, fecha_finalizacion, startPrice, id_owner, category, posX, posY, currency)"
+	@Query("select new Subasta(idSubasta, publicate_date, description, title, fecha_finalizacion, startPrice, id_owner, category, posX, posY, currency, nfav, nvis)"
 			+ " from Subasta where idSubasta=:id_subasta")
 	public Optional<Subasta> findSubastaCommon(@Param("id_subasta") Long id_subasta);
 	
@@ -66,4 +66,10 @@ public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 			@Param("usuario_id_usuario") Long id_owner,
 			@Param("nombre_categoria") String category, 
 			@Param("id_subasta") String id_subasta
-   			);}	
+   			);
+	
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Subasta set nfavoritos=:nfavoritos where id_subasta=:id_subasta")
+	public void actualizarNFav(@Param("nfavoritos") Long nfav, @Param("id_subasta") Long id_subasta);	
+}	

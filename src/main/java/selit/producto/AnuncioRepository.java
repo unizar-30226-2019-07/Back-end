@@ -70,8 +70,13 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 	public void actualizarAnuncio(@Param("fecha_publicacion") String publicate_date, 
 			@Param("descripcion") String description, @Param("titulo") String title,
 			@Param("posX") float posX, @Param("posY") float posY,
-			@Param("precio") float price,@Param("moneda") String currency, @Param("nfavoritos") int nfav,
-			@Param("nvisitas") int nvis, @Param("usuario_id_usuario") Long id_owner,
+			@Param("precio") float price,@Param("moneda") String currency, @Param("nfavoritos") Long nfav,
+			@Param("nvisitas") Long nvis, @Param("usuario_id_usuario") Long id_owner,
 			@Param("nombre_categoria") String category, @Param("id_producto") String id_producto,
 			@Param("status") String status);
+	
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Anuncio set nfavoritos=:nfavoritos where id_producto=:id_producto")
+	public void actualizarNFav(@Param("nfavoritos") Long nfav, @Param("id_producto") Long id_producto);
 }

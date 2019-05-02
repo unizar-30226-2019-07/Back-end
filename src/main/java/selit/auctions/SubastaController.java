@@ -151,7 +151,7 @@ public class SubastaController {
 				LocalDateTime now = LocalDateTime.now();  
 				
 				Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getEndDate(), subastaAux.getStartPrice(),u.getIdUsuario(),subastaAux.getCategory(),
-								subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng(),"en venta",subastaAux.getCurrency()); 
+								subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng(),"en venta",subastaAux.getCurrency(),new Long(0),new Long(0)); 
 				
 				// Se guarda la subasta.
 				subasta = subastas.save(subasta);
@@ -274,7 +274,7 @@ public class SubastaController {
 			}
 			rSubasta = new SubastaAux(saux.getidSubasta(),saux.getPublicate_date(),saux.getDescription(),
 					saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
-					rUser, puja2);
+					rUser, puja2,saux.getNfav(),saux.getNvis());
 			
 			return rSubasta;
 			
@@ -418,7 +418,7 @@ public class SubastaController {
 			}
 
 			SubastaAux subastaDevolver;	
-			subastaDevolver = new SubastaAux(saux.getidSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), loc2, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), usuarioSubasta2, puja2);	
+			subastaDevolver = new SubastaAux(saux.getidSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), loc2, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis());	
 			
 			ListaSubastasDevolver.add(subastaDevolver);
 			

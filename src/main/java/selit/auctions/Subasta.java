@@ -49,12 +49,19 @@ public class Subasta {
     @Column(name="moneda")
     private String currency;
     
-    public Subasta() {
+	@Column(name="nfavoritos")
+    private Long nfav;
+
+    @Column(name="nvisitas")
+    private Long nvis;
+    
+
+	public Subasta() {
 
     }
 
 	public Subasta(Long idSubasta, String publicate_date, String description, String title, String fecha_finalizacion,
-			Float startPrice, Long id_owner, String category, float posX, float posY) {
+			Float startPrice, Long id_owner, String category, float posX, float posY, Long nfav, Long nvis) {
 		this.idSubasta = idSubasta;
 		this.publicate_date = publicate_date;
 		this.description = description;
@@ -65,10 +72,12 @@ public class Subasta {
 		this.category = category;
 		this.posX = posX;
 		this.posY = posY;
+		this.nfav = nfav;
+		this.nvis = nvis;
 	}
 
 	public Subasta( String publicate_date, String description, String title, String fecha_finalizacion, Float startPrice,
-			Long id_owner, String category, float posX, float posY, String status, String currency) {
+			Long id_owner, String category, float posX, float posY, String status, String currency, Long nfav, Long nvis) {
 		this.publicate_date = publicate_date;
 		this.description = description;
 		this.title = title;
@@ -80,10 +89,12 @@ public class Subasta {
 		this.posY = posY;
 		this.status = status;
 		this.currency = currency;
+		this.nfav = nfav;
+		this.nvis = nvis;
 	}
 	
 	public Subasta(Long idSubasta, String publicate_date, String description, String title, String fecha_finalizacion,
-			Float startPrice, Long id_owner, String category, float posX, float posY, String currency) {
+			Float startPrice, Long id_owner, String category, float posX, float posY, String currency, Long nfav, Long nvis) {
 		this.idSubasta = idSubasta;
 		this.publicate_date = publicate_date;
 		this.description = description;
@@ -95,6 +106,8 @@ public class Subasta {
 		this.posX = posX;
 		this.posY = posY;
 		this.currency = currency;
+		this.nfav = nfav;
+		this.nvis = nvis;
 	}
 
 	public Long getidSubasta() {
@@ -199,6 +212,22 @@ public class Subasta {
 
 	public void setCurrency(String currency) {
 		this.currency = currency;
+	}
+	
+    public Long getNfav() {
+		return nfav;
+	}
+
+	public void setNfav(Long nfav) {
+		this.nfav = nfav;
+	}
+
+	public Long getNvis() {
+		return nvis;
+	}
+
+	public void setNvis(Long nvis) {
+		this.nvis = nvis;
 	}
     
 }

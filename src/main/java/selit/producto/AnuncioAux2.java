@@ -21,9 +21,9 @@ public class AnuncioAux2 {
 
     private String currency;
 
-    private int nfav;
+    private Long nfav;
 
-    private int nvis;
+    private Long nvis;
 
     private String category;
     
@@ -40,7 +40,7 @@ public class AnuncioAux2 {
     }
     
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
-    		float price,String currency,int nfav,int nvis,String category, String status, UsuarioAux owner, double distance, List<Media> media) {
+    		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, double distance, List<Media> media) {
 		super();
 		this.idProducto = idProducto;
 		this.publicate_date = publicate_date;
@@ -59,7 +59,7 @@ public class AnuncioAux2 {
 	} 
     
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
-    		float price,String currency,int nfav,int nvis,String category, String status, UsuarioAux owner, List<Media> media) {
+    		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, List<Media> media) {
 		super();
 		this.idProducto = idProducto;
 		this.publicate_date = publicate_date;
@@ -141,19 +141,19 @@ public class AnuncioAux2 {
 		this.currency = currency;
 	}
 
-	public int getNfav() {
+	public Long getNfav() {
 		return nfav;
 	}
 
-	public void setNfav(int nfav) {
+	public void setNfav(Long nfav) {
 		this.nfav = nfav;
 	}
 
-	public int getNvis() {
+	public Long getNvis() {
 		return nvis;
 	}
 
-	public void setNvis(int nvis) {
+	public void setNvis(Long nvis) {
 		this.nvis = nvis;
 	}
 

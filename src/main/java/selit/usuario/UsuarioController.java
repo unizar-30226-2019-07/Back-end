@@ -37,9 +37,13 @@ import selit.wishes.WishSId;
 import selit.wishes.WishesARepository;
 import selit.wishes.WishesSRepository;
 import selit.Location.Location;
+import selit.auctions.Subasta;
+import selit.auctions.SubastaRepository;
 import selit.mail.MailMail;
 import selit.picture.Picture;
 import selit.picture.PictureRepository;
+import selit.producto.Anuncio;
+import selit.producto.AnuncioRepository;
 import selit.security.TokenCheck;
 import io.jsonwebtoken.Jwts;
 
@@ -48,8 +52,13 @@ import io.jsonwebtoken.Jwts;
 public class UsuarioController {
 	
 	@Autowired
-	public 
-	static UsuarioRepository usuarios;	
+	public static UsuarioRepository usuarios;	
+	
+	@Autowired public 
+	AnuncioRepository anuncios;	
+	
+	@Autowired public 
+	SubastaRepository subastas;	
 	
 	@Autowired public 
 	VerificacionRepository verificaciones;	
@@ -562,7 +571,8 @@ public class UsuarioController {
 											loc,u.getRating(),u.getStatus(),null,u.getEmail(),
 											u.getLast_name(),u.getFirst_name(),u.getTipo(),new Picture(u.getIdImagen()));
 			return rUser;
-		} else {
+		} 
+		else {
 			String error = "The user credentials does not exist or are not correct.";
 			response.sendError(401, error);
 			return null;
@@ -570,51 +580,325 @@ public class UsuarioController {
 	}
 	
 	@PutMapping(path="/{user_id}/wishes_products/{product_id}")
-	public @ResponseBody String anyadirDeseadoProduct(@PathVariable String user_id,@PathVariable String product_id, HttpServletResponse response) throws IOException {
-		WishAId wId = new WishAId(Long.parseLong(user_id),Long.parseLong(product_id));
-		WishA w = new WishA(wId);
-		wishesA.save(w);
+	public @ResponseBody String anyadirDeseadoProduct(@PathVariable String user_id,@PathVariable String product_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);	
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			//Se comprueba si existe el usuario
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
+					Optional<Anuncio> anun = anuncios.findById(Long.parseLong(product_id));
+					if(anun.isPresent()) {
+						WishAId wId = new WishAId(Long.parseLong(user_id),Long.parseLong(product_id));
+						Optional<WishA> waux = wishesA.findById(wId);
+						if(waux.isEmpty()) {
+							//Si el anuncio no existe en la lista de deseados incremento el numero de favoritos de la subasta y la guardo en la lista de deseados
+							Anuncio a = anun.get();
+							Long numFav = a.getNfav();
+							numFav++;
+							a.setNfav(numFav);
+							anuncios.actualizarNFav(Long.parseLong(product_id),numFav);
+							WishA w = new WishA(wId);
+							wishesA.save(w);	
+						}
+						else {
+							String error = "The product is already on the wish list.";
+							response.sendError(412, error);
+							return null;
+						}
+											
+					} 
+					else {
+						String error = "The product can´t be found.";
+						response.sendError(404, error);
+						return null;
+					}
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(402, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
+			
+		} 
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}
+		
 		return "OK";
+		
 	}
 	
-	@GetMapping(path="/{user_id}/wishes_products/")
-	public @ResponseBody List<WishAId> getDeseadosProduct(@PathVariable String user_id, HttpServletResponse response) throws IOException {
-		List<WishA> listWa = wishesA.buscarPorIdUsuario(Long.parseLong(user_id));
-		List<WishAId> listWaId = new ArrayList<WishAId>();
-		for (WishA wAux : listWa) {
-			listWaId.add(new WishAId(wAux.getWishAId().getIdUsuario(),wAux.getWishAId().getIdProducto()));
+	@GetMapping(path="/{user_id}/wishes_products")
+	public @ResponseBody List<WishAId> getDeseadosProduct(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);	
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			//Se comprueba si existe el usuario
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
+					//Se devuelve la lista de deseados
+					List<WishA> listWa = wishesA.buscarPorIdUsuario(Long.parseLong(user_id));
+					List<WishAId> listWaId = new ArrayList<WishAId>();
+					for (WishA wAux : listWa) {
+						listWaId.add(new WishAId(wAux.getWishAId().getIdUsuario(),wAux.getWishAId().getIdProducto()));
+					}
+					return listWaId;
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(402, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
 		}
-		return listWaId;
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}			
+			
 	}
 	
 	@DeleteMapping(path="/{user_id}/wishes_products/{product_id}")
-	public @ResponseBody String deleteDeseadosProduct(@PathVariable String user_id, @PathVariable String product_id, HttpServletResponse response) throws IOException {
-		wishesA.deleteById(new WishAId(Long.parseLong(user_id),Long.parseLong(product_id)));
+	public @ResponseBody String deleteDeseadosProduct(@PathVariable String user_id, @PathVariable String product_id, HttpServletRequest request , HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			//Se comprueba si existe el usuario
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
+					Optional<Anuncio> anun = anuncios.findById(Long.parseLong(product_id));
+					if(anun.isPresent()) {		
+						//Si existe el anuncio en la lista de deseados, se borra
+						wishesA.deleteById(new WishAId(Long.parseLong(user_id),Long.parseLong(product_id)));			
+					} 
+					else {
+						String error = "The product can´t be found.";
+						response.sendError(404, error);
+						return null;
+					}
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(402, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
+		}
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}			
+	
 		return "OK";
 	}
 	
 	
 	@PutMapping(path="/{user_id}/wishes_auctions/{product_id}")
-	public @ResponseBody String anyadirDeseadoAuction(@PathVariable String user_id,@PathVariable String product_id, HttpServletResponse response) throws IOException {
-		WishSId wId = new WishSId(Long.parseLong(user_id),Long.parseLong(product_id));
-		WishS w = new WishS(wId);
-		wishesS.save(w);
+	public @ResponseBody String anyadirDeseadoAuction(@PathVariable String user_id,@PathVariable String product_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);		
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			//Se comprueba si existe el usuario
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {					
+					Optional<Subasta> anun = subastas.findById(Long.parseLong(product_id));
+					if(anun.isPresent()) {
+						WishSId wId = new WishSId(Long.parseLong(user_id),Long.parseLong(product_id));
+						Optional<WishS> waux = wishesS.findById(wId);
+						if(waux.isEmpty()) {
+							//Si la subasta no existe en la lista de deseados incremento el numero de favoritos de la subasta y la guardo en la lista de deseados
+							Subasta a = anun.get();
+							Long numFav = a.getNfav();
+							numFav++;
+							a.setNfav(numFav);
+							subastas.actualizarNFav(Long.parseLong(product_id),numFav);
+							WishS w = new WishS(wId);
+							wishesS.save(w);	
+						}
+						else {
+							String error = "The auction is already on the wish list.";
+							response.sendError(412, error);
+							return null;
+						}
+											
+					} 
+					else {
+						String error = "The product can´t be found.";
+						response.sendError(404, error);
+						return null;
+					}
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(402, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
+			
+		} 
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}
+		
 		return "OK";
+		
 	}
 	
-	@GetMapping(path="/{user_id}/wishes_auctions/")
-	public @ResponseBody List<WishSId> getDeseadosAuction(@PathVariable String user_id, HttpServletResponse response) throws IOException {
-		List<WishS> listWa = wishesS.buscarPorIdUsuario(Long.parseLong(user_id));
-		List<WishSId> listWaId = new ArrayList<WishSId>();
-		for (WishS wAux : listWa) {
-			listWaId.add(new WishSId(wAux.getWishSId().getIdUsuario(),wAux.getWishSId().getIdSubasta()));
+	@GetMapping(path="/{user_id}/wishes_auctions")
+	public @ResponseBody List<WishSId> getDeseadosAuction(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);	
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			//Se comprueba si existe el usuario
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
+					//Se devuelve la lista de deseados
+					List<WishS> listWa = wishesS.buscarPorIdUsuario(Long.parseLong(user_id));
+					List<WishSId> listWaId = new ArrayList<WishSId>();
+					for (WishS wAux : listWa) {
+						listWaId.add(new WishSId(wAux.getWishSId().getIdUsuario(),wAux.getWishSId().getIdSubasta()));
+					}
+					return listWaId;
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(402, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
 		}
-		return listWaId;
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}			
+			
 	}
 	
 	@DeleteMapping(path="/{user_id}/wishes_auctions/{product_id}")
-	public @ResponseBody String deleteDeseadoAuction(@PathVariable String user_id, @PathVariable String product_id, HttpServletResponse response) throws IOException {
-		wishesS.deleteById(new WishSId(Long.parseLong(user_id),Long.parseLong(product_id)));
+	public @ResponseBody String deleteDeseadosAuctions(@PathVariable String user_id, @PathVariable String product_id, HttpServletRequest request , HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			//Se comprueba si existe el usuario
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
+					Optional<Subasta> anun = subastas.findById(Long.parseLong(product_id));
+					if(anun.isPresent()) {		
+						//Si existe la subasta en la lista de deseados, se borra
+						wishesS.deleteById(new WishSId(Long.parseLong(user_id),Long.parseLong(product_id)));			
+					} 
+					else {
+						String error = "The product can´t be found.";
+						response.sendError(404, error);
+						return null;
+					}
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(402, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
+		}
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}			
+	
 		return "OK";
 	}
 	

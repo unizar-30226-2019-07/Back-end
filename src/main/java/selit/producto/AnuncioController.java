@@ -145,7 +145,7 @@ public class AnuncioController {
 
 				Anuncio anun = new Anuncio(dtf.format(now).toString(),anuncio.getDescription(),anuncio.getTitle(),
 								anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),anuncio.getPrice(),
-								anuncio.getCurrency(),0,0,u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
+								anuncio.getCurrency(),new Long(0),new Long(0),u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
 				// Se guarda el anuncio.
 				Anuncio an = anuncios.save(anun);
 				

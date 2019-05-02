@@ -2,6 +2,9 @@ package selit.auctions;
 
 import selit.bid.BidAux2;
 import java.util.List;
+
+import javax.persistence.Column;
+
 import selit.Location.Location;
 import selit.picture.Picture;
 import selit.usuario.UsuarioAux;
@@ -38,8 +41,12 @@ public class SubastaAux {
     
     private BidAux2 lastBid;
     
+    private Long nfav;
+
+	private Long nvis;
+    
     public SubastaAux(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
-    		String category, UsuarioAux owner, BidAux2 lastBid) {
+    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis) {
     	this.idSubasta = idSubasta;
     	this.published = published;
     	this.description = description;
@@ -55,11 +62,13 @@ public class SubastaAux {
     		this.owner_id = null;
     	}
     	this.lastBid = lastBid;
+		this.nfav = nfav;
+		this.nvis = nvis;
     }
     
-    // Con id_usuario en ved del usuario
+    // Con id_usuario en vez del usuario
     public SubastaAux(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
-    		String category, Long owner_id, BidAux2 lastBid) {
+    		String category, Long owner_id, BidAux2 lastBid, Long nfav, Long nvis) {
     	this.idSubasta = idSubasta;
     	this.published = published;
     	this.description = description;
@@ -70,6 +79,8 @@ public class SubastaAux {
     	this.category = category;
     	this.owner_id = owner_id;
     	this.lastBid = lastBid;
+		this.nfav = nfav;
+		this.nvis = nvis;
     }
     
     public SubastaAux() {
@@ -195,6 +206,22 @@ public class SubastaAux {
 	public void setEndDate(String endDate) {
 		this.endDate = endDate;
 	}	
+	
+    public Long getNfav() {
+		return nfav;
+	}
+
+	public void setNfav(Long nfav) {
+		this.nfav = nfav;
+	}
+
+	public Long getNvis() {
+		return nvis;
+	}
+
+	public void setNvis(Long nvis) {
+		this.nvis = nvis;
+	}
     
 }
 
