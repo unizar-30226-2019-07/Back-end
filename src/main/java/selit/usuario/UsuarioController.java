@@ -564,12 +564,14 @@ public class UsuarioController {
 				.getSubject();
 		Usuario u = new Usuario();
 		u = usuarios.buscarPorEmail(user);		
+		//Se comprueba si el token es válido
 		if (TokenCheck.checkAccess(token, u)) {
 			Location loc = new Location(u.getPosX(), u.getPosY());
 			
 			UsuarioAux rUser = new UsuarioAux(u.getIdUsuario(),u.getGender(),u.getBirth_date(),
 											loc,u.getRating(),u.getStatus(),null,u.getEmail(),
 											u.getLast_name(),u.getFirst_name(),u.getTipo(),new Picture(u.getIdImagen()));
+			//Devuelvo la información del usuario que me ha realizado la petición
 			return rUser;
 		} 
 		else {

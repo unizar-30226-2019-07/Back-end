@@ -361,8 +361,8 @@ public class AnuncioController {
 						// Se actualiza el producto.
 						anuncios.actualizarAnuncio(anuncio3.getPublicate_date(),anuncio.getDescription(),
 								anuncio.getTitle(),anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),
-								anuncio.getPrice(),anuncio.getCurrency(),anuncio.getNfav(),
-								anuncio.getNvis(),anuncio3.getId_owner(),anuncio.getCategory(),product_id,anuncio.getStatus());
+								anuncio.getPrice(),anuncio.getCurrency(),
+								anuncio3.getId_owner(),anuncio.getCategory(),product_id,anuncio.getStatus());
 						
 						// Se devuelve mensaje de confirmacion.
 						return "Anuncio actualizado";
