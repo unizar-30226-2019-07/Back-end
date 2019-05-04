@@ -10,15 +10,17 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import selit.producto.Anuncio;
+
 public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 	
-	@Query("select new Subasta(idSubasta, publicate_date, description, title, fecha_finalizacion, startPrice, id_owner, category, posX, posY, currency)"
+	@Query("select new Subasta(idSubasta, publicate_date, description, title, fecha_finalizacion, startPrice, id_owner, category, posX, posY, currency, nfav, nvis)"
 			+ " from Subasta where idSubasta=:id_subasta")
 	public Optional<Subasta> findSubastaCommon(@Param("id_subasta") Long id_subasta);
 	
 	//public Optional<Subasta> findSubastaByIdSubasta(@Param("idSubasta") Long id_subasta);
 	
-	@Query(value = "select id_subasta,fecha_publicacion, fecha_finalizacion, descripcion,titulo,posX,posY,moneda,usuario_id_usuario,nombre_categoria,estado, precio_salida, "+ "( 6371 * acos( cos( radians(?1) ) * cos( radians( subasta.posX ) )" +
+	@Query(value = "select id_subasta,fecha_publicacion, fecha_finalizacion, descripcion,titulo,posX,posY,moneda,usuario_id_usuario,nombre_categoria,estado, precio_salida,nfavoritos,nvisitas, "+ "( 6371 * acos( cos( radians(?1) ) * cos( radians( subasta.posX ) )" +
 			   "* cos( radians(subasta.posY) - radians(?2)) + sin(radians(?1))" +
 			   "* sin( radians(subasta.posX)))) AS distancia " + "FROM subasta " +
 			"WHERE ( 6371 * acos( cos( radians(?1) ) * cos( radians( subasta.posX ) )" +
@@ -50,6 +52,9 @@ public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 	@Query("select idSubasta from Subasta where status = :status")
 	public List<Long> selectSubastaCommonStatus(@Param("status") String status);
 	
+	@Query("from Subasta where id_subasta=:id_subasta")
+	public Subasta buscarPorId(@Param("id_subasta") String id_subasta);
+	
 	@Transactional
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Subasta set fecha_publicacion=:fecha_publicacion, descripcion=:descripcion, titulo=:titulo, "
@@ -66,4 +71,10 @@ public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 			@Param("usuario_id_usuario") Long id_owner,
 			@Param("nombre_categoria") String category, 
 			@Param("id_subasta") String id_subasta
-   			);}	
+   			);
+	
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Subasta set nfavoritos=:nfavoritos where id_subasta=:id_subasta")
+	public void actualizarNFav(@Param("nfavoritos") Long nfav, @Param("id_subasta") Long id_subasta);	
+}	

@@ -20,7 +20,6 @@ public class VerificacionController {
 		Long idUsuario = verificaciones.buscarPorRandom(random);
 		verificaciones.deleteRandom(random);
 		UsuarioController.usuarios.updateStatus(idUsuario,"activa");
-		System.out.println(idUsuario);
 		return "OK";
 	}
 }

@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
 import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioRepository;
+import selit.wishes.WishA;
+import selit.wishes.WishesARepository;
 import selit.Location.Location;
 import selit.media.Media;
 import selit.picture.Picture;
@@ -55,6 +57,9 @@ public class AnuncioController {
 
 	@Autowired public 
 	PictureRepository pictures;	
+	
+	@Autowired public 
+	WishesARepository wishesA;	
 	
 	public AnuncioController(AnuncioRepository productos) {
 		anuncios = productos;
@@ -145,7 +150,7 @@ public class AnuncioController {
 
 				Anuncio anun = new Anuncio(dtf.format(now).toString(),anuncio.getDescription(),anuncio.getTitle(),
 								anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),anuncio.getPrice(),
-								anuncio.getCurrency(),0,0,u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
+								anuncio.getCurrency(),new Long(0),new Long(0),u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
 				// Se guarda el anuncio.
 				Anuncio an = anuncios.save(anun);
 				
@@ -247,7 +252,8 @@ public class AnuncioController {
 
 	@GetMapping(path="/{product_id}")
 	public @ResponseBody AnuncioAux2 obtenerAnuncio(@PathVariable String product_id, @RequestParam (name = "lat", required = false) String lat,
-			@RequestParam (name = "lng", required = false) String lng, HttpServletRequest request, HttpServletResponse response) throws IOException {			
+			@RequestParam (name = "lng", required = false) String lng, @RequestParam (name = "token", required = false) String tokenBool,
+			HttpServletRequest request, HttpServletResponse response) throws IOException {			
 			// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
 			Optional<Anuncio> anuncio = anuncios.findById(Long.parseLong(product_id));
 			if ( !anuncio.isPresent() ) {			
@@ -266,7 +272,7 @@ public class AnuncioController {
 
 				
 				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
-						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
+						loc2,userFind.getRating(),userFind.getStatus(),null,userFind.getEmail(),
 						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 				
 				AnuncioAux2 rAnuncio;	
@@ -279,17 +285,49 @@ public class AnuncioController {
 					idList.add(med);
 				}	
 				
+				boolean in = false;
+				if(tokenBool.equals("yes")) {
+					String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+					String user = Jwts.parser()
+							.setSigningKey(SUPER_SECRET_KEY)
+							.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+							.getBody()
+							.getSubject();
+					
+					Usuario u = new Usuario();
+					u = usuarios.buscarPorEmail(user);
+
+					// Se compreba si el token es valido.
+					if(TokenCheck.checkAccess(token,u)) {
+						//Compruebo si esta en la lista de deseados
+						WishA wAux = wishesA.buscarInWishList(u.getIdUsuario().toString(),product_id);		
+						
+						if(wAux != null) {
+							in = true;
+						}
+					}
+					else {
+						
+						// El token es incorrecto.
+						String error = "The user credentials does not exist or are not correct.";
+						response.sendError(401, error);
+						return null;
+					}
+				}
+				
+				
+				
 				if(lat != null && lng != null) {
 					rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 							aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-							rUser,anuncios.selectDistance(lat, lng, product_id),idList);
+							rUser,anuncios.selectDistance(lat, lng, product_id),idList,in);
 				}
 				else {
 					rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 							aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-							rUser,idList);
+							rUser,idList,in);
 				}
 	
 				
@@ -361,8 +399,8 @@ public class AnuncioController {
 						// Se actualiza el producto.
 						anuncios.actualizarAnuncio(anuncio3.getPublicate_date(),anuncio.getDescription(),
 								anuncio.getTitle(),anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),
-								anuncio.getPrice(),anuncio.getCurrency(),anuncio.getNfav(),
-								anuncio.getNvis(),anuncio3.getId_owner(),anuncio.getCategory(),product_id,anuncio.getStatus());
+								anuncio.getPrice(),anuncio.getCurrency(),
+								anuncio3.getId_owner(),anuncio.getCategory(),product_id,anuncio.getStatus());
 						
 						// Se devuelve mensaje de confirmacion.
 						return "Anuncio actualizado";
@@ -409,7 +447,8 @@ public class AnuncioController {
 			@RequestParam (name = "status", required = false) String status,
 			@RequestParam (name = "$sort", required = false) String sort,
 			@RequestParam (name = "$page", required = false) String page,
-			@RequestParam (name = "$size", required = false) String size
+			@RequestParam (name = "$size", required = false) String size,
+			@RequestParam (name = "token", required = false) String tokenBool
 			) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
 		
@@ -497,22 +536,52 @@ public class AnuncioController {
 					idList.add(med);
 				}	
 				
+				//Check del token
+				boolean in = false;
+				if(tokenBool.equals("yes")) {
+					String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+					String user = Jwts.parser()
+							.setSigningKey(SUPER_SECRET_KEY)
+							.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+							.getBody()
+							.getSubject();
+					
+					Usuario u = new Usuario();
+					u = usuarios.buscarPorEmail(user);
+
+					// Se compreba si el token es valido.
+					if(TokenCheck.checkAccess(token,u)) {
+						//Compruebo si esta en la lista de deseados
+						WishA wAux = wishesA.buscarInWishList(u.getIdUsuario().toString(),id.toString());		
+						
+						if(wAux != null) {
+							in = true;
+						}
+					}
+					else {
+						
+						// El token es incorrecto.
+						String error = "The user credentials does not exist or are not correct.";
+						response.sendError(401, error);
+						return null;
+					}
+				}
+				
 				//Creo el usuario a devolver
 				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
-						loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
+						loc2,userFind.getRating(),userFind.getStatus(),null,userFind.getEmail(),
 						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 				
 				AnuncioAux2 rAnuncio;	
 				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 						aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-						rUser,anuncios.selectDistance(lat, lng, id.toString()),idList);	
+						rUser,anuncios.selectDistance(lat, lng, id.toString()),idList,in);	
 				
 				rListAn.add(rAnuncio);
 				
 			}
 			if ( ( size != null) && ( page != null ) ) {
-				System.out.println("Hola");
 				rListAn = paginar(rListAn, Integer.parseInt(page), Integer.parseInt(size));
 			}
 			return rListAn;		

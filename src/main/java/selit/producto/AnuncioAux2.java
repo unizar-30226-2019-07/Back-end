@@ -21,9 +21,9 @@ public class AnuncioAux2 {
 
     private String currency;
 
-    private int nfav;
+    private Long nfav;
 
-    private int nvis;
+    private Long nvis;
 
     private String category;
     
@@ -35,12 +35,15 @@ public class AnuncioAux2 {
     
     private List<Media> media;
     
-    public AnuncioAux2() {
+    private boolean in;
+    
+
+	public AnuncioAux2() {
     	
     }
-    
+	
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
-    		float price,String currency,int nfav,int nvis,String category, String status, UsuarioAux owner, double distance, List<Media> media) {
+    		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, double distance, List<Media> media) {
 		super();
 		this.idProducto = idProducto;
 		this.publicate_date = publicate_date;
@@ -59,7 +62,27 @@ public class AnuncioAux2 {
 	} 
     
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
-    		float price,String currency,int nfav,int nvis,String category, String status, UsuarioAux owner, List<Media> media) {
+    		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, double distance, List<Media> media,boolean in) {
+		super();
+		this.idProducto = idProducto;
+		this.publicate_date = publicate_date;
+		this.description = description;
+		this.title = title;
+		this.location = location;
+		this.price = price;
+		this.currency = currency;
+		this.nfav = nfav;
+		this.nvis = nvis;
+		this.category = category;
+		this.status = status;
+		this.owner = owner;
+		this.distance = distance;
+		this.media = media;
+		this.in = in;
+	} 
+    
+    public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
+    		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, List<Media> media,boolean in) {
 		super();
 		this.idProducto = idProducto;
 		this.publicate_date = publicate_date;
@@ -74,6 +97,7 @@ public class AnuncioAux2 {
 		this.status = status;
 		this.owner = owner;
 		this.media = media;
+		this.in = in;
 	} 
     
 	public AnuncioAux2(String publicate_date,String description,String title,float price){
@@ -141,19 +165,19 @@ public class AnuncioAux2 {
 		this.currency = currency;
 	}
 
-	public int getNfav() {
+	public Long getNfav() {
 		return nfav;
 	}
 
-	public void setNfav(int nfav) {
+	public void setNfav(Long nfav) {
 		this.nfav = nfav;
 	}
 
-	public int getNvis() {
+	public Long getNvis() {
 		return nvis;
 	}
 
-	public void setNvis(int nvis) {
+	public void setNvis(Long nvis) {
 		this.nvis = nvis;
 	}
 
@@ -195,6 +219,14 @@ public class AnuncioAux2 {
 
 	public void setMedia(List<Media> media) {
 		this.media = media;
+	}
+	
+    public boolean getIn() {
+		return in;
+	}
+
+	public void setIn(boolean in) {
+		this.in = in;
 	}
 
 }

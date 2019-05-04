@@ -65,13 +65,18 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 	@Transactional
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Anuncio set fecha_publicacion=:fecha_publicacion, descripcion=:descripcion, titulo=:titulo, status=:status, "
-			+ "posX=:posX, posY=:posY, precio=:precio, moneda=:moneda, nfavoritos=:nfavoritos,nvisitas=:nvisitas,"
+			+ "posX=:posX, posY=:posY, precio=:precio, moneda=:moneda,"
 			+ "usuario_id_usuario=:usuario_id_usuario,nombre_categoria=:nombre_categoria where id_producto=:id_producto")
 	public void actualizarAnuncio(@Param("fecha_publicacion") String publicate_date, 
 			@Param("descripcion") String description, @Param("titulo") String title,
 			@Param("posX") float posX, @Param("posY") float posY,
-			@Param("precio") float price,@Param("moneda") String currency, @Param("nfavoritos") int nfav,
-			@Param("nvisitas") int nvis, @Param("usuario_id_usuario") Long id_owner,
+			@Param("precio") float price,@Param("moneda") String currency, 
+			@Param("usuario_id_usuario") Long id_owner,
 			@Param("nombre_categoria") String category, @Param("id_producto") String id_producto,
 			@Param("status") String status);
+	
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Anuncio set nfavoritos=:nfavoritos where id_producto=:id_producto")
+	public void actualizarNFav(@Param("nfavoritos") Long nfav, @Param("id_producto") Long id_producto);
 }

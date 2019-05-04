@@ -39,10 +39,10 @@ public class Anuncio {
     private String currency;
 
 	@Column(name="nfavoritos")
-    private int nfav;
+    private Long nfav;
 
     @Column(name="nvisitas")
-    private int nvis;
+    private Long nvis;
 
     @Column(name="usuario_id_usuario")
     private Long id_owner;
@@ -58,7 +58,7 @@ public class Anuncio {
     }
 
     public Anuncio(String publicate_date,String description,String title,float posX,float posY,
-    		float price,String currency,int nfav,int nvis,Long id_owner,String category,String status) {
+    		float price,String currency,Long nfav,Long nvis,Long id_owner,String category,String status) {
 		super();
 		this.publicate_date = publicate_date;
 		this.description = description;
@@ -74,7 +74,7 @@ public class Anuncio {
 		this.status = status;
 	}
   public Anuncio(Long id_producto,String publicate_date,String description,String title,float posX,float posY,
-      float price,String currency,int nfav,int nvis,Long id_owner,String category,String status) {
+      float price,String currency,Long nfav,Long nvis,Long id_owner,String category,String status) {
   super();
   this.idProducto = id_producto;
   this.publicate_date = publicate_date;
@@ -164,19 +164,19 @@ public class Anuncio {
 		this.currency = currency;
 	}
 
-	public int getNfav() {
+	public Long getNfav() {
 		return nfav;
 	}
 
-	public void setNfav(int nfav) {
+	public void setNfav(Long nfav) {
 		this.nfav = nfav;
 	}
 
-	public int getNvis() {
+	public Long getNvis() {
 		return nvis;
 	}
 
-	public void setNvis(int nvis) {
+	public void setNvis(Long nvis) {
 		this.nvis = nvis;
 	}
 
