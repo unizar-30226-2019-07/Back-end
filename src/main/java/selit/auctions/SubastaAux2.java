@@ -46,8 +46,11 @@ public class SubastaAux2 {
     private Long nfav;
 
 	private Long nvis;
-    
-    public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
+	
+	private boolean in;
+   
+
+	public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
     		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media) {
     	this.idSubasta = idSubasta; 
     	this.published = published;
@@ -68,6 +71,29 @@ public class SubastaAux2 {
 		this.nvis = nvis;
 		this.media = media;
     }
+	
+	public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
+    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in) {
+    	this.idSubasta = idSubasta; 
+    	this.published = published;
+    	this.description = description;
+    	this.title = title;
+    	this.location = location;
+    	this.startPrice = startPrice;
+    	this.endDate = endDate;
+    	this.category = category;
+    	this.owner = owner;
+    	if (owner!=null) {
+    		this.owner_id = owner.getIdUsuario();
+    	} else {
+    		this.owner_id = null;
+    	}
+    	this.lastBid = lastBid;
+		this.nfav = nfav;
+		this.nvis = nvis;
+		this.media = media;
+		this.in = in;
+    }
     
     // Con id_usuario en vez del usuario
     public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
@@ -85,6 +111,25 @@ public class SubastaAux2 {
 		this.nfav = nfav;
 		this.nvis = nvis;
 		this.media = media;
+    }
+    
+    // Con id_usuario en vez del usuario
+    public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
+    		String category, Long owner_id, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in) {
+    	this.idSubasta = idSubasta;
+    	this.published = published;
+    	this.description = description;
+    	this.title = title;
+    	this.location = location;
+    	this.startPrice = startPrice;
+    	this.endDate = endDate;
+    	this.category = category;
+    	this.owner_id = owner_id;
+    	this.lastBid = lastBid;
+		this.nfav = nfav;
+		this.nvis = nvis;
+		this.media = media;
+		this.in = in;
     }
     
     public SubastaAux2() {
@@ -225,6 +270,14 @@ public class SubastaAux2 {
 
 	public void setNvis(Long nvis) {
 		this.nvis = nvis;
+	}
+	
+    public boolean getIn() {
+		return in;
+	}
+
+	public void setIn(boolean in) {
+		this.in = in;
 	}
     
 }

@@ -30,6 +30,9 @@ import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioController;
 import selit.usuario.UsuarioRepository;
 import selit.verificacion.VerificacionRepository;
+import selit.wishes.WishA;
+import selit.wishes.WishS;
+import selit.wishes.WishesSRepository;
 import selit.Location.Location;
 import selit.picture.Picture;
 import selit.picture.PictureRepository;
@@ -62,6 +65,9 @@ public class SubastaController {
 	
 	@Autowired public
 	BidRepository pujas;
+	
+	@Autowired public
+	WishesSRepository wishesS;
 
 	
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -242,7 +248,8 @@ public class SubastaController {
 	
 	@GetMapping(path="/{auction_id}")
 	public @ResponseBody SubastaAux2 obtenerSubasta(@PathVariable String auction_id, @RequestParam (name = "lat", required = false) String lat,
-			@RequestParam (name = "lng", required = false) String lng, HttpServletRequest request, HttpServletResponse response) throws IOException {
+			@RequestParam (name = "lng", required = false) String lng,@RequestParam (name = "token", required = false) String tokenBool, 
+			HttpServletRequest request, HttpServletResponse response) throws IOException {
 	
 		// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
 		Optional<Subasta> subasta = subastas.findById(Long.parseLong(auction_id));
@@ -273,6 +280,38 @@ public class SubastaController {
 				idList.add(med);
 			}	
 			
+			//Check del token
+			boolean in = false;
+			if(tokenBool.equals("yes")) {
+				String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+				String user = Jwts.parser()
+						.setSigningKey(SUPER_SECRET_KEY)
+						.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+						.getBody()
+						.getSubject();
+				
+				Usuario u = new Usuario();
+				u = usuarios.buscarPorEmail(user);
+
+				// Se compreba si el token es valido.
+				if(TokenCheck.checkAccess(token,u)) {
+					//Compruebo si esta en la lista de deseados
+					WishS wAux = wishesS.buscarInWishList(u.getIdUsuario().toString(),auction_id);		
+					
+					if(wAux != null) {
+						in = true;
+					}
+				}
+				else {
+					
+					// El token es incorrecto.
+					String error = "The user credentials does not exist or are not correct.";
+					response.sendError(401, error);
+					return null;
+				}
+			}
+			
+			
 			SubastaAux2 rSubasta;
 			BidAux2 puja2;
 			List<Bid> pujas2 = pujas.findById_subasta(Long.parseLong(auction_id), Sort.by(Sort.Direction.DESC, "fecha"));
@@ -287,7 +326,7 @@ public class SubastaController {
 			}
 			rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
 					saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
-					rUser, puja2,saux.getNfav(),saux.getNvis(),idList);
+					rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in);
 			
 			return rSubasta;
 			
@@ -311,8 +350,9 @@ public class SubastaController {
 			@RequestParam (name = "status", required = false) String status,
 			@RequestParam (name = "?size", required = false) String size,
 			@RequestParam (name = "?page", required = false) String page,
-			@RequestParam (name = "?sort", required = false) String sort 
-			){
+			@RequestParam (name = "?sort", required = false) String sort,
+			@RequestParam (name = "token", required = false) String tokenBool		
+			) throws IOException{
 		
 		List<Subasta> mySubastaListAux = new ArrayList<Subasta>();
 		List<Long> mySubastaList = new ArrayList<Long>();
@@ -403,6 +443,39 @@ public class SubastaController {
 				idList.add(med);
 			}	
 			
+			
+			//Check del token
+			boolean in = false;
+			if(tokenBool.equals("yes")) {
+				String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+				String user = Jwts.parser()
+						.setSigningKey(SUPER_SECRET_KEY)
+						.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+						.getBody()
+						.getSubject();
+				
+				Usuario u = new Usuario();
+				u = usuarios.buscarPorEmail(user);
+
+				// Se compreba si el token es valido.
+				if(TokenCheck.checkAccess(token,u)) {
+					//Compruebo si esta en la lista de deseados
+					WishS wAux = wishesS.buscarInWishList(u.getIdUsuario().toString(),id.toString());		
+					
+					if(wAux != null) {
+						in = true;
+					}
+				}
+				else {
+					
+					// El token es incorrecto.
+					String error = "The user credentials does not exist or are not correct.";
+					response.sendError(401, error);
+					return null;
+				}
+			}
+			
+			
 			List<Bid> pujas2 =  pujas.findById_subasta(saux.getIdSubasta(), Sort.by("fecha").descending());
 			UsuarioAux usuarioSubasta2;
 			BidAux2 puja2;
@@ -437,7 +510,7 @@ public class SubastaController {
 			SubastaAux2 subastaDevolver;	
 			subastaDevolver = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), 
 					saux.getTitle(), loc2, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-					usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList);	
+					usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in);	
 			
 			ListaSubastasDevolver.add(subastaDevolver);
 			
