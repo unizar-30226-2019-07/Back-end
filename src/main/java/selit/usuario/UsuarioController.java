@@ -691,6 +691,13 @@ public class UsuarioController {
 							idList.add(med);
 						}	
 						
+						//Compruebo si esta en la lista de deseados
+						WishA wAux2 = wishesA.buscarInWishList(u.getIdUsuario().toString(),id);		
+						boolean in = false;
+						if(wAux2 != null) {
+							in = true;
+						}
+						
 						Anuncio aaux = anuncios.buscarPorId(id);
 						
 						Location loc = new Location(aaux.getPosX(),aaux.getPosY());
@@ -708,7 +715,7 @@ public class UsuarioController {
 						rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 								aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 								aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-								rUser,anuncios.selectDistance(lat, lng, id.toString()),idList);	
+								rUser,anuncios.selectDistance(lat, lng, id.toString()),idList,in);	
 						
 						listWaId.add(rAnuncio);
 					}
@@ -879,15 +886,19 @@ public class UsuarioController {
 						List<Media> idList = new ArrayList<Media>();
 						
 						List<BigInteger> idListBI = pictures.findIdImagesSub(id.toString());
-						if(idListBI.isEmpty()) {
-							System.out.println("VACIA");
-						}
 						for(BigInteger idB : idListBI){
 							Media med = new Media(idB.longValue());
 							idList.add(med);
 						}	
 						
 						Subasta saux = subastas.buscarPorId(id);
+						
+						//Compruebo si esta en la lista de deseados
+						WishS wAux2 = wishesS.buscarInWishList(u.getIdUsuario().toString(),id);		
+						boolean in = false;
+						if(wAux2 != null) {
+							in = true;
+						}
 						
 						List<Bid> pujas2 =  pujas.findById_subasta(saux.getIdSubasta(), Sort.by("fecha").descending());
 						UsuarioAux usuarioSubasta2;
@@ -930,7 +941,7 @@ public class UsuarioController {
 						SubastaAux2 rAnuncio;	
 						rAnuncio = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), 
 								loc, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList);	
+								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in);	
 						
 						listWsId.add(rAnuncio);
 					}

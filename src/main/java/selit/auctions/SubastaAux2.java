@@ -47,7 +47,7 @@ public class SubastaAux2 {
 
 	private Long nvis;
 	
-	private boolean in;
+	private boolean in_wishlist;
    
 
 	public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
@@ -73,7 +73,7 @@ public class SubastaAux2 {
     }
 	
 	public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
-    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in) {
+    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist) {
     	this.idSubasta = idSubasta; 
     	this.published = published;
     	this.description = description;
@@ -92,7 +92,7 @@ public class SubastaAux2 {
 		this.nfav = nfav;
 		this.nvis = nvis;
 		this.media = media;
-		this.in = in;
+		this.in_wishlist = in_wishlist;
     }
     
     // Con id_usuario en vez del usuario
@@ -115,7 +115,7 @@ public class SubastaAux2 {
     
     // Con id_usuario en vez del usuario
     public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
-    		String category, Long owner_id, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in) {
+    		String category, Long owner_id, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist) {
     	this.idSubasta = idSubasta;
     	this.published = published;
     	this.description = description;
@@ -129,7 +129,7 @@ public class SubastaAux2 {
 		this.nfav = nfav;
 		this.nvis = nvis;
 		this.media = media;
-		this.in = in;
+		this.in_wishlist = in_wishlist;
     }
     
     public SubastaAux2() {
@@ -272,12 +272,12 @@ public class SubastaAux2 {
 		this.nvis = nvis;
 	}
 	
-    public boolean getIn() {
-		return in;
+    public boolean getIn_wishlist() {
+		return in_wishlist;
 	}
 
-	public void setIn(boolean in) {
-		this.in = in;
+	public void setIn_wishlist(boolean in_wishlist) {
+		this.in_wishlist = in_wishlist;
 	}
     
 }

@@ -79,4 +79,9 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Anuncio set nfavoritos=:nfavoritos where id_producto=:id_producto")
 	public void actualizarNFav(@Param("nfavoritos") Long nfav, @Param("id_producto") Long id_producto);
+	
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Anuncio set nvisitas=:nvisitas where id_producto=:id_producto")
+	public void actualizarNVis(@Param("nvisitas") Long nvis, @Param("id_producto") Long id_producto);
 }

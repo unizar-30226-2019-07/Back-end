@@ -282,35 +282,41 @@ public class SubastaController {
 			
 			//Check del token
 			boolean in = false;
-			if(tokenBool.equals("yes")) {
-				String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
-				String user = Jwts.parser()
-						.setSigningKey(SUPER_SECRET_KEY)
-						.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
-						.getBody()
-						.getSubject();
-				
-				Usuario u = new Usuario();
-				u = usuarios.buscarPorEmail(user);
-
-				// Se compreba si el token es valido.
-				if(TokenCheck.checkAccess(token,u)) {
-					//Compruebo si esta en la lista de deseados
-					WishS wAux = wishesS.buscarInWishList(u.getIdUsuario().toString(),auction_id);		
+			if(tokenBool != null) {
+				if(tokenBool.equals("yes")) {
+					String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+					String user = Jwts.parser()
+							.setSigningKey(SUPER_SECRET_KEY)
+							.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+							.getBody()
+							.getSubject();
 					
-					if(wAux != null) {
-						in = true;
+					Usuario u = new Usuario();
+					u = usuarios.buscarPorEmail(user);
+
+					// Se compreba si el token es valido.
+					if(TokenCheck.checkAccess(token,u)) {
+						//Compruebo si esta en la lista de deseados
+						WishS wAux = wishesS.buscarInWishList(u.getIdUsuario().toString(),auction_id);		
+						
+						if(wAux != null) {
+							in = true;
+						}
+					}
+					else {
+						
+						// El token es incorrecto.
+						String error = "The user credentials does not exist or are not correct.";
+						response.sendError(401, error);
+						return null;
 					}
 				}
-				else {
-					
-					// El token es incorrecto.
-					String error = "The user credentials does not exist or are not correct.";
-					response.sendError(401, error);
-					return null;
-				}
-			}
+			}			
 			
+			Long numVis = saux.getNvis();
+			numVis++;
+			saux.setNvis(numVis);
+			subastas.actualizarNVis(Long.parseLong(auction_id),numVis);
 			
 			SubastaAux2 rSubasta;
 			BidAux2 puja2;
@@ -446,34 +452,37 @@ public class SubastaController {
 			
 			//Check del token
 			boolean in = false;
-			if(tokenBool.equals("yes")) {
-				String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
-				String user = Jwts.parser()
-						.setSigningKey(SUPER_SECRET_KEY)
-						.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
-						.getBody()
-						.getSubject();
-				
-				Usuario u = new Usuario();
-				u = usuarios.buscarPorEmail(user);
-
-				// Se compreba si el token es valido.
-				if(TokenCheck.checkAccess(token,u)) {
-					//Compruebo si esta en la lista de deseados
-					WishS wAux = wishesS.buscarInWishList(u.getIdUsuario().toString(),id.toString());		
+			if(tokenBool != null) {
+				if(tokenBool.equals("yes")) {
+					String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+					String user = Jwts.parser()
+							.setSigningKey(SUPER_SECRET_KEY)
+							.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+							.getBody()
+							.getSubject();
 					
-					if(wAux != null) {
-						in = true;
+					Usuario u = new Usuario();
+					u = usuarios.buscarPorEmail(user);
+
+					// Se compreba si el token es valido.
+					if(TokenCheck.checkAccess(token,u)) {
+						//Compruebo si esta en la lista de deseados
+						WishS wAux = wishesS.buscarInWishList(u.getIdUsuario().toString(),id.toString());		
+						
+						if(wAux != null) {
+							in = true;
+						}
+					}
+					else {
+						
+						// El token es incorrecto.
+						String error = "The user credentials does not exist or are not correct.";
+						response.sendError(401, error);
+						return null;
 					}
 				}
-				else {
-					
-					// El token es incorrecto.
-					String error = "The user credentials does not exist or are not correct.";
-					response.sendError(401, error);
-					return null;
-				}
 			}
+			
 			
 			
 			List<Bid> pujas2 =  pujas.findById_subasta(saux.getIdSubasta(), Sort.by("fecha").descending());
