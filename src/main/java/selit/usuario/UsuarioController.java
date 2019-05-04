@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,11 +39,18 @@ import selit.wishes.WishesARepository;
 import selit.wishes.WishesSRepository;
 import selit.Location.Location;
 import selit.auctions.Subasta;
+import selit.auctions.SubastaAux;
+import selit.auctions.SubastaAux2;
 import selit.auctions.SubastaRepository;
+import selit.bid.Bid;
+import selit.bid.BidAux2;
+import selit.bid.BidRepository;
 import selit.mail.MailMail;
+import selit.media.Media;
 import selit.picture.Picture;
 import selit.picture.PictureRepository;
 import selit.producto.Anuncio;
+import selit.producto.AnuncioAux2;
 import selit.producto.AnuncioRepository;
 import selit.security.TokenCheck;
 import io.jsonwebtoken.Jwts;
@@ -71,6 +79,9 @@ public class UsuarioController {
 	
 	@Autowired public 
 	WishesSRepository wishesS;	
+	
+	@Autowired public
+	BidRepository pujas;
 	
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -649,7 +660,8 @@ public class UsuarioController {
 	}
 	
 	@GetMapping(path="/{user_id}/wishes_products")
-	public @ResponseBody List<WishAId> getDeseadosProduct(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody List<AnuncioAux2> getDeseadosProduct(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response,
+			@RequestParam (name = "lat") String lat,@RequestParam (name = "lng") String lng) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
 				.setSigningKey(SUPER_SECRET_KEY)
@@ -667,9 +679,38 @@ public class UsuarioController {
 				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
 					//Se devuelve la lista de deseados
 					List<WishA> listWa = wishesA.buscarPorIdUsuario(Long.parseLong(user_id));
-					List<WishAId> listWaId = new ArrayList<WishAId>();
+					List<AnuncioAux2> listWaId = new ArrayList<AnuncioAux2>();
 					for (WishA wAux : listWa) {
-						listWaId.add(new WishAId(wAux.getWishAId().getIdUsuario(),wAux.getWishAId().getIdProducto()));
+						String id = wAux.getWishAId().getIdProducto().toString();
+						//Obtengo los id de las imagenes
+						List<Media> idList = new ArrayList<Media>();
+						
+						List<BigInteger> idListBI = pictures.findIdImages(id.toString());
+						for(BigInteger idB : idListBI){
+							Media med = new Media(idB.longValue());
+							idList.add(med);
+						}	
+						
+						Anuncio aaux = anuncios.buscarPorId(id);
+						
+						Location loc = new Location(aaux.getPosX(),aaux.getPosY());
+						Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
+						userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
+						Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
+						
+						//Creo el usuario a devolver
+						UsuarioAux rUser = new UsuarioAux(u2.getIdUsuario(),u2.getGender(),u2.getBirth_date(),
+								loc2,u2.getRating(),u2.getStatus(),null,u2.getEmail(),
+								u2.getLast_name(),u2.getFirst_name(),u2.getTipo(),new Picture(u2.getIdImagen()));
+						
+						
+						AnuncioAux2 rAnuncio;	
+						rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
+								aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
+								aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
+								rUser,anuncios.selectDistance(lat, lng, id.toString()),idList);	
+						
+						listWaId.add(rAnuncio);
 					}
 					return listWaId;
 				}
@@ -811,7 +852,8 @@ public class UsuarioController {
 	}
 	
 	@GetMapping(path="/{user_id}/wishes_auctions")
-	public @ResponseBody List<WishSId> getDeseadosAuction(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody List<SubastaAux2> getDeseadosAuction(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response,
+			@RequestParam (name = "lat") String lat,@RequestParam (name = "lng") String lng) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
 				.setSigningKey(SUPER_SECRET_KEY)
@@ -828,12 +870,71 @@ public class UsuarioController {
 			if(u2!=null) {
 				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
 					//Se devuelve la lista de deseados
-					List<WishS> listWa = wishesS.buscarPorIdUsuario(Long.parseLong(user_id));
-					List<WishSId> listWaId = new ArrayList<WishSId>();
-					for (WishS wAux : listWa) {
-						listWaId.add(new WishSId(wAux.getWishSId().getIdUsuario(),wAux.getWishSId().getIdSubasta()));
+					List<WishS> listWs = wishesS.buscarPorIdUsuario(Long.parseLong(user_id));
+					List<SubastaAux2> listWsId = new ArrayList<SubastaAux2>();
+					for (WishS wAux : listWs) {
+						String id = wAux.getWishSId().getIdSubasta().toString();
+
+						//Obtengo los id de las imagenes
+						List<Media> idList = new ArrayList<Media>();
+						
+						List<BigInteger> idListBI = pictures.findIdImagesSub(id.toString());
+						if(idListBI.isEmpty()) {
+							System.out.println("VACIA");
+						}
+						for(BigInteger idB : idListBI){
+							Media med = new Media(idB.longValue());
+							idList.add(med);
+						}	
+						
+						Subasta saux = subastas.buscarPorId(id);
+						
+						List<Bid> pujas2 =  pujas.findById_subasta(saux.getIdSubasta(), Sort.by("fecha").descending());
+						UsuarioAux usuarioSubasta2;
+						BidAux2 puja2;
+						if (pujas2.isEmpty()) {
+							usuarioSubasta2 = null;
+							puja2 = null;
+						} else {
+							Bid puja = pujas2.get(0);
+							Usuario usuarioPuja = usuarios.buscarPorId(puja.getClave().getUsuario_id_usuario().toString());
+							usuarioPuja.setPassword(null);
+							Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());
+							Location locUsuario = new Location(usuarioSubasta.getPosX(), usuarioSubasta.getPosY());
+							Picture picUsuario2;
+							if (usuarioSubasta.getIdImagen() != null) {
+								Optional<Picture> picUsuario;
+								picUsuario = pictures.findById(usuarioSubasta.getIdImagen());
+								if (picUsuario.isEmpty()) {
+									picUsuario2 = null;
+								} else {
+									picUsuario2 = picUsuario.get();
+								}
+							} else {
+								picUsuario2 = null;
+							}
+							usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), 
+									usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(), 
+									null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
+									usuarioSubasta.getTipo(), picUsuario2);
+							
+							puja2 = new BidAux2(puja.getPuja(), usuarioPuja, puja.getFecha());
+						}
+							
+						
+						Location loc = new Location(saux.getPosX(),saux.getPosY());
+						Usuario userFind = usuarios.buscarPorId(saux.getId_owner().toString());
+						userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
+						
+						
+						SubastaAux2 rAnuncio;	
+						rAnuncio = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), 
+								loc, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
+								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList);	
+						
+						listWsId.add(rAnuncio);
 					}
-					return listWaId;
+					return listWsId;
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";

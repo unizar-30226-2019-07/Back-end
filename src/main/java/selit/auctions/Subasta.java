@@ -110,13 +110,6 @@ public class Subasta {
 		this.nvis = nvis;
 	}
 
-	public Long getidSubasta() {
-		return idSubasta;
-	}
-
-	public void setidSubasta(Long idSubasta) {
-		this.idSubasta = idSubasta;
-	}
 
 	public Long getIdSubasta() {
 		return idSubasta;

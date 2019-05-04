@@ -211,6 +211,10 @@ public class SubastaController {
 				Subasta subasta2 = subasta.get();
 				if (u.getTipo().equals("administrador") || subasta2.getId_owner() == u.getIdUsuario()) {
 					
+					List<BigInteger> listPic = pictures.findIdImagesSub(auction_id);
+					for(BigInteger idP : listPic) {
+						pictures.deleteById(idP.longValue());
+					}
 					// Se elimina el producto.
 					subastas.deleteById(Long.parseLong(auction_id));
 					
@@ -237,7 +241,7 @@ public class SubastaController {
 	}
 	
 	@GetMapping(path="/{auction_id}")
-	public @ResponseBody SubastaAux obtenerSubasta(@PathVariable String auction_id, @RequestParam (name = "lat", required = false) String lat,
+	public @ResponseBody SubastaAux2 obtenerSubasta(@PathVariable String auction_id, @RequestParam (name = "lat", required = false) String lat,
 			@RequestParam (name = "lng", required = false) String lng, HttpServletRequest request, HttpServletResponse response) throws IOException {
 	
 		// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
@@ -257,10 +261,19 @@ public class SubastaController {
 			Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 			
 			UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
-					loc2,userFind.getRating(),userFind.getStatus(),userFind.getPassword(),userFind.getEmail(),
+					loc2,userFind.getRating(),userFind.getStatus(),null,userFind.getEmail(),
 					userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 			
-			SubastaAux rSubasta;
+			//Obtengo los id de las imagenes
+			List<Media> idList = new ArrayList<Media>();
+			
+			List<BigInteger> idListBI = pictures.findIdImagesSub(auction_id);
+			for(BigInteger idB : idListBI){
+				Media med = new Media(idB.longValue());
+				idList.add(med);
+			}	
+			
+			SubastaAux2 rSubasta;
 			BidAux2 puja2;
 			List<Bid> pujas2 = pujas.findById_subasta(Long.parseLong(auction_id), Sort.by(Sort.Direction.DESC, "fecha"));
 			Bid puja;
@@ -272,9 +285,9 @@ public class SubastaController {
 			} else {
 				puja2 = null;
 			}
-			rSubasta = new SubastaAux(saux.getidSubasta(),saux.getPublicate_date(),saux.getDescription(),
+			rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
 					saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
-					rUser, puja2,saux.getNfav(),saux.getNvis());
+					rUser, puja2,saux.getNfav(),saux.getNvis(),idList);
 			
 			return rSubasta;
 			
@@ -283,7 +296,7 @@ public class SubastaController {
 	}
 	
 	@GetMapping(path="")
-	public @ResponseBody List<SubastaAux> obtenerSubastas(HttpServletRequest request, 
+	public @ResponseBody List<SubastaAux2> obtenerSubastas(HttpServletRequest request, 
 			HttpServletResponse response, 
 			@RequestParam (name = "lat") String lat,
 			@RequestParam (name = "lng") String lng,
@@ -334,7 +347,7 @@ public class SubastaController {
 			mySubastaListAux = subastas.selectSubastaCommonDistance(lat, lng, distance, null);
 		}
 		for(Subasta id : mySubastaListAux){
-			mySubastaList.add(id.getidSubasta().longValue());
+			mySubastaList.add(id.getIdSubasta().longValue());
 		}
 		if(category != null) {
 			categories = subastas.selectSubastaCommonCategory(category);
@@ -371,7 +384,7 @@ public class SubastaController {
 			statusL = subastas.selectSubastaCommonStatus(status);
 			mySubastaList = intersection(mySubastaList,statusL);
 		}
-		List<SubastaAux> ListaSubastasDevolver = new ArrayList<SubastaAux>();
+		List<SubastaAux2> ListaSubastasDevolver = new ArrayList<SubastaAux2>();
 		for(Long id : mySubastaList) {
 			Optional<Subasta> a = subastas.findSubastaCommon(id);
 			Subasta saux;
@@ -390,7 +403,7 @@ public class SubastaController {
 				idList.add(med);
 			}	
 			
-			List<Bid> pujas2 =  pujas.findById_subasta(saux.getidSubasta(), Sort.by("fecha").descending());
+			List<Bid> pujas2 =  pujas.findById_subasta(saux.getIdSubasta(), Sort.by("fecha").descending());
 			UsuarioAux usuarioSubasta2;
 			BidAux2 puja2;
 			if (pujas2.isEmpty()) {
@@ -399,6 +412,7 @@ public class SubastaController {
 			} else {
 				Bid puja = pujas2.get(0);
 				Usuario usuarioPuja = usuarios.buscarPorId(puja.getClave().getUsuario_id_usuario().toString());
+				usuarioPuja.setPassword(null);
 				Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());
 				Location locUsuario = new Location(usuarioSubasta.getPosX(), usuarioSubasta.getPosY());
 				Picture picUsuario2;
@@ -413,12 +427,17 @@ public class SubastaController {
 				} else {
 					picUsuario2 = null;
 				}
-				usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(), usuarioSubasta.getPassword(), usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), usuarioSubasta.getTipo(), picUsuario2);
+				usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), 
+						usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(),
+						null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
+						usuarioSubasta.getTipo(), picUsuario2);
 				puja2 = new BidAux2(puja.getPuja(), usuarioPuja, puja.getFecha());
 			}
 
-			SubastaAux subastaDevolver;	
-			subastaDevolver = new SubastaAux(saux.getidSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), loc2, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis());	
+			SubastaAux2 subastaDevolver;	
+			subastaDevolver = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), 
+					saux.getTitle(), loc2, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
+					usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList);	
 			
 			ListaSubastasDevolver.add(subastaDevolver);
 			
@@ -461,6 +480,34 @@ public class SubastaController {
 				
 				if(subasta3.getStatus().equals("en venta")) {
 					if (u.getTipo().equals("administrador") || subasta3.getId_owner() == u.getIdUsuario()) {
+						
+						List<BigInteger> listIds = pictures.findIdImagesSub(auction_id);
+						List<Long> auxIds = new ArrayList<Long>();
+						List<Long> realIds = new ArrayList<Long>();
+						
+						for(BigInteger id: listIds) {
+							auxIds.add(id.longValue());
+						}
+						
+												
+						List<Picture> picL = subasta.getMedia();
+						for(Picture pi : picL) {
+							Long idIm = pi.getIdImagen();
+							
+							if(idIm == null) {
+								pi.setIdProducto(Long.parseLong(auction_id));
+								pictures.save(pi);
+							}
+							else {
+								realIds.add(idIm);
+							}
+						}
+						
+						for(Long idAux : auxIds) {
+							if(!realIds.contains(idAux)) {
+								pictures.deleteById(idAux);
+							}
+						}
 						
 						// Se actualiza el producto.
 						subastas.actualizarSubasta(subasta3.getPublicate_date(),subasta.getDescription(),subasta.getTitle(), 
@@ -516,7 +563,7 @@ public class SubastaController {
 				if (subastaOp.isPresent()) {
 					
 					Subasta subasta = subastaOp.get();
-					List<Bid> pujas2 = pujas.findById_subasta(subasta.getidSubasta(), Sort.by(Sort.Direction.DESC, "fecha"));
+					List<Bid> pujas2 = pujas.findById_subasta(subasta.getIdSubasta(), Sort.by(Sort.Direction.DESC, "fecha"));
 					Bid puja2;
 					if (pujas2.isEmpty() ) {
 						puja2 = null;
