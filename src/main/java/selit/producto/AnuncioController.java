@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -286,35 +287,41 @@ public class AnuncioController {
 				}	
 				
 				boolean in = false;
-				if(tokenBool.equals("yes")) {
-					String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
-					String user = Jwts.parser()
-							.setSigningKey(SUPER_SECRET_KEY)
-							.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
-							.getBody()
-							.getSubject();
-					
-					Usuario u = new Usuario();
-					u = usuarios.buscarPorEmail(user);
+				if(tokenBool!=null) {
+					if(tokenBool.equals("yes")) {
+						String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+						String user = Jwts.parser()
+								.setSigningKey(SUPER_SECRET_KEY)
+								.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+								.getBody()
+								.getSubject();
+						
+						Usuario u = new Usuario();
+						u = usuarios.buscarPorEmail(user);
 
-					// Se compreba si el token es valido.
-					if(TokenCheck.checkAccess(token,u)) {
-						//Compruebo si esta en la lista de deseados
-						WishA wAux = wishesA.buscarInWishList(u.getIdUsuario().toString(),product_id);		
-						
-						if(wAux != null) {
-							in = true;
+						// Se compreba si el token es valido.
+						if(TokenCheck.checkAccess(token,u)) {
+							//Compruebo si esta en la lista de deseados
+							WishA wAux = wishesA.buscarInWishList(u.getIdUsuario().toString(),product_id);		
+							
+							if(wAux != null) {
+								in = true;
+							}
 						}
-					}
-					else {
-						
-						// El token es incorrecto.
-						String error = "The user credentials does not exist or are not correct.";
-						response.sendError(401, error);
-						return null;
+						else {
+							
+							// El token es incorrecto.
+							String error = "The user credentials does not exist or are not correct.";
+							response.sendError(401, error);
+							return null;
+						}
 					}
 				}
 				
+				Long numVis = aaux.getNvis();
+				numVis++;
+				aaux.setNvis(numVis);
+				anuncios.actualizarNVis(Long.parseLong(product_id),numVis);
 				
 				
 				if(lat != null && lng != null) {
@@ -538,34 +545,37 @@ public class AnuncioController {
 				
 				//Check del token
 				boolean in = false;
-				if(tokenBool.equals("yes")) {
-					String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
-					String user = Jwts.parser()
-							.setSigningKey(SUPER_SECRET_KEY)
-							.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
-							.getBody()
-							.getSubject();
-					
-					Usuario u = new Usuario();
-					u = usuarios.buscarPorEmail(user);
-
-					// Se compreba si el token es valido.
-					if(TokenCheck.checkAccess(token,u)) {
-						//Compruebo si esta en la lista de deseados
-						WishA wAux = wishesA.buscarInWishList(u.getIdUsuario().toString(),id.toString());		
+				if(tokenBool != null) {
+					if(tokenBool.equals("yes")) {
+						String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+						String user = Jwts.parser()
+								.setSigningKey(SUPER_SECRET_KEY)
+								.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+								.getBody()
+								.getSubject();
 						
-						if(wAux != null) {
-							in = true;
+						Usuario u = new Usuario();
+						u = usuarios.buscarPorEmail(user);
+
+						// Se compreba si el token es valido.
+						if(TokenCheck.checkAccess(token,u)) {
+							//Compruebo si esta en la lista de deseados
+							WishA wAux = wishesA.buscarInWishList(u.getIdUsuario().toString(),id.toString());		
+							
+							if(wAux != null) {
+								in = true;
+							}
+						}
+						else {
+							
+							// El token es incorrecto.
+							String error = "The user credentials does not exist or are not correct.";
+							response.sendError(401, error);
+							return null;
 						}
 					}
-					else {
-						
-						// El token es incorrecto.
-						String error = "The user credentials does not exist or are not correct.";
-						response.sendError(401, error);
-						return null;
-					}
 				}
+				
 				
 				//Creo el usuario a devolver
 				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),

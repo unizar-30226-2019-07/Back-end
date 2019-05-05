@@ -35,7 +35,7 @@ public class AnuncioAux2 {
     
     private List<Media> media;
     
-    private boolean in;
+    private boolean in_wishlist;
     
 
 	public AnuncioAux2() {
@@ -62,7 +62,7 @@ public class AnuncioAux2 {
 	} 
     
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
-    		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, double distance, List<Media> media,boolean in) {
+    		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, double distance, List<Media> media,boolean in_wishlist) {
 		super();
 		this.idProducto = idProducto;
 		this.publicate_date = publicate_date;
@@ -78,11 +78,11 @@ public class AnuncioAux2 {
 		this.owner = owner;
 		this.distance = distance;
 		this.media = media;
-		this.in = in;
+		this.in_wishlist = in_wishlist;
 	} 
     
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
-    		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, List<Media> media,boolean in) {
+    		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, List<Media> media,boolean in_wishlist) {
 		super();
 		this.idProducto = idProducto;
 		this.publicate_date = publicate_date;
@@ -97,7 +97,7 @@ public class AnuncioAux2 {
 		this.status = status;
 		this.owner = owner;
 		this.media = media;
-		this.in = in;
+		this.in_wishlist = in_wishlist;
 	} 
     
 	public AnuncioAux2(String publicate_date,String description,String title,float price){
@@ -221,12 +221,12 @@ public class AnuncioAux2 {
 		this.media = media;
 	}
 	
-    public boolean getIn() {
-		return in;
+    public boolean getIn_wishlist() {
+		return in_wishlist;
 	}
 
-	public void setIn(boolean in) {
-		this.in = in;
+	public void setI_wishlistn(boolean in_wishlist) {
+		this.in_wishlist = in_wishlist;
 	}
 
 }
