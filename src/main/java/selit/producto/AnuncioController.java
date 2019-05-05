@@ -318,10 +318,10 @@ public class AnuncioController {
 					}
 				}
 				
-				Long numFav = aaux.getNvis();
-				numFav++;
-				aaux.setNfav(numFav);
-				anuncios.actualizarNVis(Long.parseLong(product_id),numFav);
+				Long numVis = aaux.getNvis();
+				numVis++;
+				aaux.setNvis(numVis);
+				anuncios.actualizarNVis(Long.parseLong(product_id),numVis);
 				
 				
 				if(lat != null && lng != null) {
@@ -340,24 +340,6 @@ public class AnuncioController {
 				
 				return rAnuncio;
 			}					 
-	}
-
-	@RequestMapping(path="/{product_id}",method = RequestMethod.HEAD)
-	public @ResponseBody void obtenerAnuncio(@PathVariable String product_id, HttpServletRequest request, HttpServletResponse response) throws IOException {	
-			// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
-			Optional<Anuncio> anuncio = anuncios.findById(Long.parseLong(product_id));
-			if ( !anuncio.isPresent() ) {			
-				// Se devuelve error 404.
-				response.sendError(404, "El producto con id "+product_id+" no existe");
-				
-			}
-			else {
-				Anuncio aaux = anuncio.get();
-				Long numVis = aaux.getNvis();
-				numVis++;
-				anuncios.actualizarNVis(Long.parseLong(product_id),numVis);
-			}
-							 
 	}
 	
 	@PutMapping(path="/{product_id}")
