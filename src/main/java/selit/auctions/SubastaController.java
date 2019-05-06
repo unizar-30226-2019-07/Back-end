@@ -161,10 +161,23 @@ public class SubastaController {
 				
 				// Se guarda la subasta.
 				subasta = subastas.save(subasta);
-				if (subastaAux.getMedia() != null) {
-					for (Picture p: subastaAux.getMedia() ) {
-						pictures.save(p);
+				
+				List<Picture> lp = subastaAux.getMedia();
+				Long idSubasta = subasta.getIdSubasta();
+				
+				
+				for(Picture pic : lp){
+					pic.setIdSubasta(idSubasta);
+					try {
+						pictures.save(pic);
 					}
+					catch(Exception e){
+						subastas.deleteById(idSubasta);
+						String error = "The image can´t be saved.";
+						response.sendError(500, error);
+						return null;
+					}
+					
 				}
 				
 				// Se contesta a la peticion con un mensaje de exito.
@@ -332,7 +345,7 @@ public class SubastaController {
 			}
 			rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
 					saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
-					rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in);
+					rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, auction_id),saux.getCurrency());
 			
 			return rSubasta;
 			
@@ -495,31 +508,32 @@ public class SubastaController {
 				Bid puja = pujas2.get(0);
 				Usuario usuarioPuja = usuarios.buscarPorId(puja.getClave().getUsuario_id_usuario().toString());
 				usuarioPuja.setPassword(null);
-				Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());
-				Location locUsuario = new Location(usuarioSubasta.getPosX(), usuarioSubasta.getPosY());
-				Picture picUsuario2;
-				if (usuarioSubasta.getIdImagen() != null) {
-					Optional<Picture> picUsuario;
-					picUsuario = pictures.findById(usuarioSubasta.getIdImagen());
-					if (picUsuario.isEmpty()) {
-						picUsuario2 = null;
-					} else {
-						picUsuario2 = picUsuario.get();
-					}
-				} else {
-					picUsuario2 = null;
-				}
-				usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), 
-						usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(),
-						null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
-						usuarioSubasta.getTipo(), picUsuario2);
 				puja2 = new BidAux2(puja.getPuja(), usuarioPuja, puja.getFecha());
 			}
-
+			
+			Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());
+			Location locUsuario = new Location(usuarioSubasta.getPosX(), usuarioSubasta.getPosY());
+			Picture picUsuario2;
+			if (usuarioSubasta.getIdImagen() != null) {
+				Optional<Picture> picUsuario;
+				picUsuario = pictures.findById(usuarioSubasta.getIdImagen());
+				if (picUsuario.isEmpty()) {
+					picUsuario2 = null;
+				} else {
+					picUsuario2 = picUsuario.get();
+				}
+			} else {
+				picUsuario2 = null;
+			}
+			
+			usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), 
+					usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(),
+					null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
+					usuarioSubasta.getTipo(), picUsuario2);
 			SubastaAux2 subastaDevolver;	
 			subastaDevolver = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), 
 					saux.getTitle(), loc2, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-					usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in);	
+					usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id.toString()),saux.getCurrency());	
 			
 			ListaSubastasDevolver.add(subastaDevolver);
 			
@@ -577,7 +591,7 @@ public class SubastaController {
 							Long idIm = pi.getIdImagen();
 							
 							if(idIm == null) {
-								pi.setIdProducto(Long.parseLong(auction_id));
+								pi.setIdSubasta(Long.parseLong(auction_id));
 								pictures.save(pi);
 							}
 							else {

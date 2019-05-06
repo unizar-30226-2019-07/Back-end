@@ -397,7 +397,15 @@ public class UsuarioController {
 					//Si me pasan una imagen compruebo que no sea vacia
 					if(usuario.getPicture().getBase64() != null) {
 						Picture pic = new Picture(usuario.getPicture().getMime(),usuario.getPicture().getCharset(),usuario.getPicture().getBase64());
-						p = pictures.save(pic);
+						try {
+							p = pictures.save(pic);
+						}
+						catch(Exception e){
+							String error = "The image can´t be saved.";
+							response.sendError(500, error);
+							return null;
+						}
+						
 						
 						//Actualizo el usuario
 						usuarios.actualizarUsuario(usuario.getEmail(), 
@@ -1024,7 +1032,7 @@ public class UsuarioController {
 						SubastaAux2 rAnuncio;	
 						rAnuncio = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), 
 								loc, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in);	
+								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id),saux.getCurrency());	
 						
 						listWsId.add(rAnuncio);
 					}
@@ -1134,7 +1142,7 @@ public class UsuarioController {
 						SubastaAux2 rAnuncio;	
 						rAnuncio = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), 
 								loc, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in);	
+								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id),saux.getCurrency());	
 						
 						listWsId.add(rAnuncio);
 					}
