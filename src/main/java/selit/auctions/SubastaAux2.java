@@ -14,12 +14,9 @@ import selit.usuario.UsuarioAux;
 public class SubastaAux2 {
 	
     private Long idSubasta;
-    
-    private String type;
 
     private String title;
-    
-    
+     
     private String endDate;
     
     private UsuarioAux owner;
@@ -68,6 +65,26 @@ public class SubastaAux2 {
 	
 	public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
     		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist,double distance,String currency) {
+    	this.idSubasta = idSubasta; 
+    	this.published = published;
+    	this.description = description;
+    	this.title = title;
+    	this.location = location;
+    	this.startPrice = startPrice;
+    	this.endDate = endDate;
+    	this.category = category;
+    	this.owner = owner;
+    	this.lastBid = lastBid;
+		this.nfav = nfav;
+		this.nvis = nvis;
+		this.media = media;
+		this.in_wishlist = in_wishlist;
+		this.distance = distance;
+		this.currency = currency;
+    }
+	
+	public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
+    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist,String currency) {
     	this.idSubasta = idSubasta; 
     	this.published = published;
     	this.description = description;
@@ -189,14 +206,6 @@ public class SubastaAux2 {
 
 	public void setDistance(double distance) {
 		this.distance = distance;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
 	}
 
 	public List<Media> getMedia() {

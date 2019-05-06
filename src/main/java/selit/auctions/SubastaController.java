@@ -343,9 +343,18 @@ public class SubastaController {
 			} else {
 				puja2 = null;
 			}
-			rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
-					saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
-					rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, auction_id),saux.getCurrency());
+			
+			if(lat != null && lng != null) {
+				rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
+						saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
+						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, auction_id),saux.getCurrency());
+			}
+			else {
+				rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
+						saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
+						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,saux.getCurrency());
+			}
+
 			
 			return rSubasta;
 			
@@ -456,7 +465,7 @@ public class SubastaController {
 			//Obtengo los id de las imagenes
 			List<Media> idList = new ArrayList<Media>();
 			
-			List<BigInteger> idListBI = pictures.findIdImages(id.toString());
+			List<BigInteger> idListBI = pictures.findIdImagesSub(id.toString());
 			for(BigInteger idB : idListBI){
 				Media med = new Media(idB.longValue());
 				idList.add(med);
@@ -513,23 +522,12 @@ public class SubastaController {
 			
 			Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());
 			Location locUsuario = new Location(usuarioSubasta.getPosX(), usuarioSubasta.getPosY());
-			Picture picUsuario2;
-			if (usuarioSubasta.getIdImagen() != null) {
-				Optional<Picture> picUsuario;
-				picUsuario = pictures.findById(usuarioSubasta.getIdImagen());
-				if (picUsuario.isEmpty()) {
-					picUsuario2 = null;
-				} else {
-					picUsuario2 = picUsuario.get();
-				}
-			} else {
-				picUsuario2 = null;
-			}
+
 			
 			usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), 
 					usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(),
 					null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
-					usuarioSubasta.getTipo(), picUsuario2);
+					usuarioSubasta.getTipo(), new Picture(userFind.getIdImagen()));
 			SubastaAux2 subastaDevolver;	
 			subastaDevolver = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), 
 					saux.getTitle(), loc2, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
