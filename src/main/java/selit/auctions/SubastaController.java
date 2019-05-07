@@ -339,7 +339,14 @@ public class SubastaController {
 				puja = pujas2.get(0);
 				Optional<Usuario> propietario = usuarios.findById(puja.getClave().getUsuario_id_usuario());
 				Usuario propietario2 = propietario.get();
-				puja2 = new BidAux2(puja.getPuja(), propietario2, puja.getFecha());
+				
+				Location locUsuario2 = new Location(propietario2.getPosX(), propietario2.getPosY());
+				UsuarioAux usuarioPujaAux = new UsuarioAux(propietario2.getIdUsuario(), propietario2.getGender(), 
+						propietario2.getBirth_date(), locUsuario2, propietario2.getRating(), propietario2.getStatus(), 
+						null, propietario2.getEmail(), propietario2.getLast_name(), propietario2.getFirst_name(), 
+						propietario2.getTipo(), new Picture(propietario2.getIdImagen()));
+				
+				puja2 = new BidAux2(puja.getPuja(), usuarioPujaAux, puja.getFecha());
 			} else {
 				puja2 = null;
 			}
@@ -376,9 +383,9 @@ public class SubastaController {
 			@RequestParam (name = "publishedTo", required = false) String publishedTo,
 			@RequestParam (name = "owner", required = false) String owner,
 			@RequestParam (name = "status", required = false) String status,
-			@RequestParam (name = "?size", required = false) String size,
-			@RequestParam (name = "?page", required = false) String page,
-			@RequestParam (name = "?sort", required = false) String sort,
+			@RequestParam (name = "$size", required = false) String size,
+			@RequestParam (name = "$page", required = false) String page,
+			@RequestParam (name = "$sort", required = false) String sort,
 			@RequestParam (name = "token", required = false) String tokenBool		
 			) throws IOException{
 		
@@ -517,7 +524,14 @@ public class SubastaController {
 				Bid puja = pujas2.get(0);
 				Usuario usuarioPuja = usuarios.buscarPorId(puja.getClave().getUsuario_id_usuario().toString());
 				usuarioPuja.setPassword(null);
-				puja2 = new BidAux2(puja.getPuja(), usuarioPuja, puja.getFecha());
+				
+				Location locUsuario2 = new Location(usuarioPuja.getPosX(), usuarioPuja.getPosY());
+				UsuarioAux usuarioPujaAux = new UsuarioAux(usuarioPuja.getIdUsuario(), usuarioPuja.getGender(), 
+						usuarioPuja.getBirth_date(), locUsuario2, usuarioPuja.getRating(), usuarioPuja.getStatus(), 
+						null, usuarioPuja.getEmail(), usuarioPuja.getLast_name(), usuarioPuja.getFirst_name(), 
+						usuarioPuja.getTipo(), new Picture(usuarioPuja.getIdImagen()));
+				
+				puja2 = new BidAux2(puja.getPuja(), usuarioPujaAux, puja.getFecha());
 			}
 			
 			Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());

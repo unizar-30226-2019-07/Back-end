@@ -1019,7 +1019,13 @@ public class UsuarioController {
 									null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
 									usuarioSubasta.getTipo(), picUsuario2);
 							
-							puja2 = new BidAux2(puja.getPuja(), usuarioPuja, puja.getFecha());
+							Location locUsuario2 = new Location(usuarioPuja.getPosX(), usuarioPuja.getPosY());
+							UsuarioAux usuarioPujaAux = new UsuarioAux(usuarioPuja.getIdUsuario(), usuarioPuja.getGender(), 
+									usuarioPuja.getBirth_date(), locUsuario2, usuarioPuja.getRating(), usuarioPuja.getStatus(), 
+									null, usuarioPuja.getEmail(), usuarioPuja.getLast_name(), usuarioPuja.getFirst_name(), 
+									usuarioPuja.getTipo(), new Picture(usuarioPuja.getIdImagen()));
+							
+							puja2 = new BidAux2(puja.getPuja(), usuarioPujaAux, puja.getFecha());
 						}
 							
 						
@@ -1129,7 +1135,13 @@ public class UsuarioController {
 									null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
 									usuarioSubasta.getTipo(), picUsuario2);
 							
-							puja2 = new BidAux2(puja.getPuja(), usuarioPuja, puja.getFecha());
+							Location locUsuario2 = new Location(usuarioPuja.getPosX(), usuarioPuja.getPosY());
+							UsuarioAux usuarioPujaAux = new UsuarioAux(usuarioPuja.getIdUsuario(), usuarioPuja.getGender(), 
+									usuarioPuja.getBirth_date(), locUsuario2, usuarioPuja.getRating(), usuarioPuja.getStatus(), 
+									null, usuarioPuja.getEmail(), usuarioPuja.getLast_name(), usuarioPuja.getFirst_name(), 
+									usuarioPuja.getTipo(), new Picture(usuarioPuja.getIdImagen()));
+							
+							puja2 = new BidAux2(puja.getPuja(), usuarioPujaAux, puja.getFecha());
 						}
 							
 						
