@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioController;
 import selit.usuario.UsuarioRepository;
 import selit.verificacion.VerificacionRepository;
-import selit.wishes.WishA;
 import selit.wishes.WishS;
 import selit.wishes.WishesSRepository;
 import selit.Location.Location;
@@ -157,7 +157,7 @@ public class SubastaController {
 				LocalDateTime now = LocalDateTime.now();  
 				
 				Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getEndDate(), subastaAux.getStartPrice(),u.getIdUsuario(),subastaAux.getCategory(),
-								subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng(),"en venta",subastaAux.getCurrency(),new Long(0),new Long(0)); 
+								subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng(),"en venta",subastaAux.getCurrency(),Long.valueOf(0),Long.valueOf(0)); 
 				
 				// Se guarda la subasta.
 				subasta = subastas.save(subasta);
@@ -675,11 +675,16 @@ public class SubastaController {
 					if ( puja2 == null || puja2.getPuja() < puja.getAmount()) {
 						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 						LocalDateTime now = LocalDateTime.now(); 
-						puja3.setPuja(puja.getAmount());
-						puja3.setFecha(dtf.format(now));
-						pujas.save(puja3);
-						response.setStatus(201);
-						return "Guardada la puja correctamente";
+						if (LocalDate.parse(subasta.getFecha_finalizacion(), dtf).isAfter(now.toLocalDate())) {
+							puja3.setPuja(puja.getAmount());
+							puja3.setFecha(dtf.format(now));
+							pujas.save(puja3);
+							response.setStatus(201);
+							return "Guardada la puja correctamente";
+						} else {
+							response.sendError(409, "La subasta termino " + subasta.getFecha_finalizacion());
+							return null;
+						}
 					} else {
 						response.sendError(409, "No se ha superado el precio actual de " + puja2.getPuja());
 						return null;

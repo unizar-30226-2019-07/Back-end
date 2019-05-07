@@ -2,13 +2,8 @@ package selit.auctions;
 
 import selit.bid.BidAux2;
 import selit.media.Media;
-
 import java.util.List;
-
-import javax.persistence.Column;
-
 import selit.Location.Location;
-import selit.picture.Picture;
 import selit.usuario.UsuarioAux;
 
 public class SubastaAux2 {
@@ -99,7 +94,6 @@ public class SubastaAux2 {
 		this.nvis = nvis;
 		this.media = media;
 		this.in_wishlist = in_wishlist;
-		this.distance = distance;
 		this.currency = currency;
     }
     

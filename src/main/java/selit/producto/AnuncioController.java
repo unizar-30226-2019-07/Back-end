@@ -18,14 +18,11 @@ import java.util.List;
 import java.util.Optional;
 import java.lang.Float;
 import java.math.BigInteger;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -151,7 +148,7 @@ public class AnuncioController {
 
 				Anuncio anun = new Anuncio(dtf.format(now).toString(),anuncio.getDescription(),anuncio.getTitle(),
 								anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),anuncio.getPrice(),
-								anuncio.getCurrency(),new Long(0),new Long(0),u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
+								anuncio.getCurrency(),Long.valueOf(0),Long.valueOf(0),u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
 				// Se guarda el anuncio.
 				Anuncio an = anuncios.save(anun);
 				

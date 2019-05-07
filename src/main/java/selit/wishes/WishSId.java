@@ -4,13 +4,13 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
 
 @Embeddable
 public class WishSId  implements Serializable {
 
-    @Column(name="id_usuario")
+	private static final long serialVersionUID = 1L;
+
+	@Column(name="id_usuario")
     private Long idUsuario;
     
     @Column(name="id_subasta")

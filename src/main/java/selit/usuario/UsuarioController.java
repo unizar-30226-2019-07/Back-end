@@ -39,7 +39,6 @@ import selit.wishes.WishesARepository;
 import selit.wishes.WishesSRepository;
 import selit.Location.Location;
 import selit.auctions.Subasta;
-import selit.auctions.SubastaAux;
 import selit.auctions.SubastaAux2;
 import selit.auctions.SubastaRepository;
 import selit.bid.Bid;

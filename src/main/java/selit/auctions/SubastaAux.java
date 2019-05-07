@@ -2,9 +2,6 @@ package selit.auctions;
 
 import selit.bid.BidAux2;
 import java.util.List;
-
-import javax.persistence.Column;
-
 import selit.Location.Location;
 import selit.picture.Picture;
 import selit.usuario.UsuarioAux;
