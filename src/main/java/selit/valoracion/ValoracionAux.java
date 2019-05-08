@@ -2,8 +2,6 @@ package selit.valoracion;
 
 public class ValoracionAux {
 
-    private Long id_valoracion;
-
     private Long id_comprador;
 
     private Long id_anunciante;
@@ -21,25 +19,15 @@ public class ValoracionAux {
 	}
 
 	
-	public ValoracionAux(Long id_valoracion, Long id_comprador, Long id_anunciante, float valor, String comentario,
+	public ValoracionAux(Long id_comprador, Long id_anunciante, float valor, String comentario,
 			Long id_subasta, Long id_producto) {
 		super();
-		this.id_valoracion = id_valoracion;
 		this.id_comprador = id_comprador;
 		this.id_anunciante = id_anunciante;
 		this.valor = valor;
 		this.comentario = comentario;
 		this.id_subasta = id_subasta;
 		this.id_producto = id_producto;
-	}
-
-
-	public Long getId_valoracion() {
-		return id_valoracion;
-	}
-
-	public void setId_valoracion(Long id_valoracion) {
-		this.id_valoracion = id_valoracion;
 	}
 
 	public Long getId_comprador() {

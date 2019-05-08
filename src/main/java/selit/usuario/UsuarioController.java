@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ import selit.usuario.Usuario;
 import selit.usuario.UsuarioRepository;
 import selit.valoracion.Valoracion;
 import selit.valoracion.ValoracionAux;
-import selit.valoracion.ValoracionesId;
 import selit.valoracion.ValoracionesRepository;
 import selit.verificacion.Verificacion;
 import selit.verificacion.VerificacionRepository;
@@ -1252,13 +1252,11 @@ public class UsuarioController {
 			//Se comprueba si existe el usuario
 			if(u2!=null) {
 				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
-					List<Valoracion> vList = valoraciones.buscarPorIdComprador(user_id);
+					List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(u2.getIdUsuario());
 					List<ValoracionAux> vAux = new ArrayList<ValoracionAux>();
 					
 					for(Valoracion v : vList) {
-						ValoracionesId vId = v.getValoracionesId();
-						
-						ValoracionAux vAuxAdd = new ValoracionAux(vId.getId_valoracion(),vId.getId_comprador(),vId.getId_anunciante(),
+						ValoracionAux vAuxAdd = new ValoracionAux(v.getId_comprador(),v.getId_anunciante(),
 								v.getValor(),v.getComentario(),v.getId_subasta(),v.getId_producto());
 						vAux.add(vAuxAdd);
 					}
@@ -1284,8 +1282,8 @@ public class UsuarioController {
 		}	
 	}
 	
-	@PostMapping(path="/reviews")
-	public @ResponseBody String getUserReviews(@RequestBody ValoracionAux valoracion,HttpServletRequest request, HttpServletResponse response) throws IOException {
+	@PostMapping(path="/{user_id}/reviews")
+	public @ResponseBody String getUserReviews(@PathVariable String user_id, @RequestBody ValoracionAux valoracion,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
 				.setSigningKey(SUPER_SECRET_KEY)
@@ -1295,26 +1293,84 @@ public class UsuarioController {
 		Usuario u = new Usuario();
 		u = usuarios.buscarPorEmail(user);
 		
-		String user_id = u.getIdUsuario().toString();
 		//Se comprueba si el token es válido
 		if (TokenCheck.checkAccess(token, u)) {
 			Usuario u2 = new Usuario();
 			u2 = usuarios.buscarPorId(user_id);
 			//Se comprueba si existe el usuario
-			if(u2!=null) {
-				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
-					ValoracionesId vId = new ValoracionesId(valoracion.getId_valoracion(),valoracion.getId_comprador(),valoracion.getId_anunciante());
-					Valoracion v = new Valoracion(vId,valoracion.getValor(),valoracion.getComentario(),valoracion.getId_subasta(),valoracion.getId_producto());
-					valoraciones.save(v);
+			if((u2!=null && !u2.getIdUsuario().equals(u.getIdUsuario())) || (u2!=null && u.getTipo().contentEquals("administrador"))) {
+
+					Valoracion v = new Valoracion(valoracion.getId_comprador(),valoracion.getId_anunciante(),
+							valoracion.getValor(),valoracion.getComentario(),valoracion.getId_subasta(),valoracion.getId_producto());
 					
-					List<Valoracion> vList = valoraciones.buscarPorIdComprador(valoracion.getId_comprador().toString());
-					return "OK";
-				}
-				else {
-					String error = "You are not an administrator or the user is not you.";
-					response.sendError(402, error);
-					return null;
-				}
+					List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(valoracion.getId_anunciante());
+					
+					Boolean guardar = true;
+					
+					for(Valoracion vAux : vList) {
+						if(vAux.getId_anunciante().equals(Long.valueOf(user_id)) && vAux.getId_comprador().equals(u.getIdUsuario())) {
+							if(vAux.getId_producto() != null) {
+								if(vAux.getId_producto().equals(valoracion.getId_producto())) {
+									guardar = false;
+									break;
+								}
+							}
+							if(vAux.getId_subasta() != null) {
+								if(vAux.getId_subasta().equals(valoracion.getId_subasta())) {
+									guardar = false;
+									break;
+								}
+							}
+						}
+					}
+					if(guardar) {
+						Anuncio a = null;
+						Subasta s = null;
+						if(valoracion.getId_producto() != null) {
+							 a = anuncios.buscarPorId(valoracion.getId_producto().toString());
+							 if(!a.getId_owner().equals(u2.getIdUsuario())) {
+								 guardar = false;
+							 }
+						}
+						if(valoracion.getId_subasta() != null) {
+							 s = subastas.buscarPorId(valoracion.getId_subasta().toString());
+							 if(!s.getId_owner().equals(u2.getIdUsuario())) {
+								 guardar = false;
+							 }
+						}
+										
+						if((a != null || s  != null) && guardar) {
+						
+							
+							int num = vList.size();
+							float valoracionAux = valoracion.getValor();
+							
+							if(valoracionAux >= 0.0 && valoracionAux <= 5.0) {
+								float valor = (valoracionAux + u2.getRating()*num)/(num + 1);
+								valoraciones.save(v);	
+								usuarios.updateRating(user_id, valor);
+								return "OK";
+							}
+							else {
+								String error = "The value must be between 0.0 and 5.0.";
+								response.sendError(412, error);
+								return null;
+							}
+							
+						}
+						else {
+							String error = "The product doesn´t exist or is not a product of the user.";
+							response.sendError(404, error);
+							return null;
+						}
+						
+					}
+					else {
+						String error = "The review for this product has already been done.";
+						response.sendError(412, error);
+						return null;
+					}
+					
 			}
 			else {
 				String error = "The user can´t be found.";

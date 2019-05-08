@@ -1,8 +1,10 @@
 package selit.valoracion;
 
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 
@@ -10,8 +12,16 @@ import javax.persistence.Table;
 @Table(name="valoracion", schema="selit")
 public class Valoracion {
 
-	@EmbeddedId
-	private ValoracionesId valoracionesId;
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name="id_valoracion")
+    private Long id_valoracion;
+
+	@Column(name="id_comprador")
+    private Long id_comprador;
+
+	@Column(name="id_anunciante")
+    private Long id_anunciante;
 	
 	@Column(name="valor")
 	private float valor;
@@ -29,23 +39,55 @@ public class Valoracion {
 		
 	}
 
-	public Valoracion(ValoracionesId valoracionesId, float valor, String comentario, Long id_subasta,
+
+
+	public Valoracion(Long id_comprador, Long id_anunciante, float valor, String comentario, Long id_subasta,
 			Long id_producto) {
 		super();
-		this.valoracionesId = valoracionesId;
+		this.id_comprador = id_comprador;
+		this.id_anunciante = id_anunciante;
 		this.valor = valor;
 		this.comentario = comentario;
 		this.id_subasta = id_subasta;
 		this.id_producto = id_producto;
 	}
 
-	public ValoracionesId getValoracionesId() {
-		return valoracionesId;
+
+
+	public Long getId_valoracion() {
+		return id_valoracion;
 	}
 
-	public void setValoracionesId(ValoracionesId valoracionesId) {
-		this.valoracionesId = valoracionesId;
+
+
+	public void setId_valoracion(Long id_valoracion) {
+		this.id_valoracion = id_valoracion;
 	}
+
+
+
+	public Long getId_comprador() {
+		return id_comprador;
+	}
+
+
+
+	public void setId_comprador(Long id_comprador) {
+		this.id_comprador = id_comprador;
+	}
+
+
+
+	public Long getId_anunciante() {
+		return id_anunciante;
+	}
+
+
+
+	public void setId_anunciante(Long id_anunciante) {
+		this.id_anunciante = id_anunciante;
+	}
+
 
 	public float getValor() {
 		return valor;
