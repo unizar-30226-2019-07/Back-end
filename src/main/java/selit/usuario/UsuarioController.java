@@ -29,6 +29,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
 import selit.usuario.UsuarioRepository;
+import selit.valoracion.Valoracion;
+import selit.valoracion.ValoracionAux;
+import selit.valoracion.ValoracionesId;
+import selit.valoracion.ValoracionesRepository;
 import selit.verificacion.Verificacion;
 import selit.verificacion.VerificacionRepository;
 import selit.wishes.WishA;
@@ -81,6 +85,9 @@ public class UsuarioController {
 	
 	@Autowired public
 	BidRepository pujas;
+	
+	@Autowired public
+	ValoracionesRepository valoraciones;
 	
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -1228,4 +1235,97 @@ public class UsuarioController {
 		return "OK";
 	}
 	
+	@GetMapping(path="/{user_id}/reviews")
+	public @ResponseBody List<ValoracionAux> getUserReviews(@PathVariable String user_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			//Se comprueba si existe el usuario
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
+					List<Valoracion> vList = valoraciones.buscarPorIdComprador(user_id);
+					List<ValoracionAux> vAux = new ArrayList<ValoracionAux>();
+					
+					for(Valoracion v : vList) {
+						ValoracionesId vId = v.getValoracionesId();
+						
+						ValoracionAux vAuxAdd = new ValoracionAux(vId.getId_valoracion(),vId.getId_comprador(),vId.getId_anunciante(),
+								v.getValor(),v.getComentario(),v.getId_subasta(),v.getId_producto());
+						vAux.add(vAuxAdd);
+					}
+
+					return vAux;
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(402, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
+		}
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}	
+	}
+	
+	@PostMapping(path="/reviews")
+	public @ResponseBody String getUserReviews(@RequestBody ValoracionAux valoracion,HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		
+		String user_id = u.getIdUsuario().toString();
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			//Se comprueba si existe el usuario
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
+					ValoracionesId vId = new ValoracionesId(valoracion.getId_valoracion(),valoracion.getId_comprador(),valoracion.getId_anunciante());
+					Valoracion v = new Valoracion(vId,valoracion.getValor(),valoracion.getComentario(),valoracion.getId_subasta(),valoracion.getId_producto());
+					valoraciones.save(v);
+					
+					List<Valoracion> vList = valoraciones.buscarPorIdComprador(valoracion.getId_comprador().toString());
+					return "OK";
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(402, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
+		}
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}	
+	}
 }
