@@ -55,6 +55,7 @@ import selit.picture.PictureRepository;
 import selit.producto.Anuncio;
 import selit.producto.AnuncioAux2;
 import selit.producto.AnuncioRepository;
+import selit.report.ReportRepository;
 import selit.security.TokenCheck;
 import io.jsonwebtoken.Jwts;
 
@@ -88,6 +89,9 @@ public class UsuarioController {
 	
 	@Autowired public
 	ValoracionesRepository valoraciones;
+	
+	@Autowired public
+	ReportRepository informes;
 	
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -1283,7 +1287,7 @@ public class UsuarioController {
 	}
 	
 	@PostMapping(path="/{user_id}/reviews")
-	public @ResponseBody String getUserReviews(@PathVariable String user_id, @RequestBody ValoracionAux valoracion,HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody String addUserReviews(@PathVariable String user_id, @RequestBody ValoracionAux valoracion,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
 				.setSigningKey(SUPER_SECRET_KEY)
@@ -1373,7 +1377,7 @@ public class UsuarioController {
 					
 			}
 			else {
-				String error = "The user can´t be found.";
+				String error = "The user can´t be found or you are the user.";
 				response.sendError(404, error);
 				return null;
 			}
@@ -1384,4 +1388,5 @@ public class UsuarioController {
 			return null;
 		}	
 	}
+	
 }
