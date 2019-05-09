@@ -5,6 +5,7 @@ import static selit.security.Constants.SUPER_SECRET_KEY;
 import static selit.security.Constants.TOKEN_BEARER_PREFIX;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -80,7 +82,7 @@ public class ReportController {
 	}
 	
 	@GetMapping(path="")
-	public @ResponseBody List<Report> getReports(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody List<Report> getReports(HttpServletRequest request, HttpServletResponse response,@RequestParam (name = "status", required = false) String status) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
 				.setSigningKey(SUPER_SECRET_KEY)
@@ -91,10 +93,23 @@ public class ReportController {
 		u = usuarios.buscarPorEmail(user);
 		//Se comprueba si el token es válido
 		if (TokenCheck.checkAccess(token, u)) {
-			//Se comprueba si existe el usuario
+			//Se comprueba que sea administrador
 			if(u.getTipo().contentEquals("administrador")) {
 				List<Report> reportList = informes.findAll();
-				return reportList;
+				List<Report> reportListAux = new ArrayList<Report> ();
+				
+				if(status != null) {
+					for(Report r :  reportList) {
+						if(r.getEstado_informe().contentEquals(status)) {
+							reportListAux.add(r);
+						}
+					}
+					return reportListAux;
+				}
+				else {
+					return reportList;
+				}
+				
 			}
 			else {
 				String error = "You aren´t an administrator.";
