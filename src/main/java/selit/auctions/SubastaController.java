@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioController;
 import selit.usuario.UsuarioRepository;
 import selit.verificacion.VerificacionRepository;
-import selit.wishes.WishA;
 import selit.wishes.WishS;
 import selit.wishes.WishesSRepository;
 import selit.Location.Location;
@@ -157,14 +157,27 @@ public class SubastaController {
 				LocalDateTime now = LocalDateTime.now();  
 				
 				Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getEndDate(), subastaAux.getStartPrice(),u.getIdUsuario(),subastaAux.getCategory(),
-								subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng(),"en venta",subastaAux.getCurrency(),new Long(0),new Long(0)); 
+								subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng(),"en venta",subastaAux.getCurrency(),Long.valueOf(0),Long.valueOf(0)); 
 				
 				// Se guarda la subasta.
 				subasta = subastas.save(subasta);
-				if (subastaAux.getMedia() != null) {
-					for (Picture p: subastaAux.getMedia() ) {
-						pictures.save(p);
+				
+				List<Picture> lp = subastaAux.getMedia();
+				Long idSubasta = subasta.getIdSubasta();
+				
+				
+				for(Picture pic : lp){
+					pic.setIdSubasta(idSubasta);
+					try {
+						pictures.save(pic);
 					}
+					catch(Exception e){
+						subastas.deleteById(idSubasta);
+						String error = "The image can´t be saved.";
+						response.sendError(500, error);
+						return null;
+					}
+					
 				}
 				
 				// Se contesta a la peticion con un mensaje de exito.
@@ -326,13 +339,29 @@ public class SubastaController {
 				puja = pujas2.get(0);
 				Optional<Usuario> propietario = usuarios.findById(puja.getClave().getUsuario_id_usuario());
 				Usuario propietario2 = propietario.get();
-				puja2 = new BidAux2(puja.getPuja(), propietario2, puja.getFecha());
+				
+				Location locUsuario2 = new Location(propietario2.getPosX(), propietario2.getPosY());
+				UsuarioAux usuarioPujaAux = new UsuarioAux(propietario2.getIdUsuario(), propietario2.getGender(), 
+						propietario2.getBirth_date(), locUsuario2, propietario2.getRating(), propietario2.getStatus(), 
+						null, propietario2.getEmail(), propietario2.getLast_name(), propietario2.getFirst_name(), 
+						propietario2.getTipo(), new Picture(propietario2.getIdImagen()));
+				
+				puja2 = new BidAux2(puja.getPuja(), usuarioPujaAux, puja.getFecha());
 			} else {
 				puja2 = null;
 			}
-			rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
-					saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
-					rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in);
+			
+			if(lat != null && lng != null) {
+				rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
+						saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
+						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, auction_id),saux.getCurrency());
+			}
+			else {
+				rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
+						saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
+						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,saux.getCurrency());
+			}
+
 			
 			return rSubasta;
 			
@@ -354,9 +383,9 @@ public class SubastaController {
 			@RequestParam (name = "publishedTo", required = false) String publishedTo,
 			@RequestParam (name = "owner", required = false) String owner,
 			@RequestParam (name = "status", required = false) String status,
-			@RequestParam (name = "?size", required = false) String size,
-			@RequestParam (name = "?page", required = false) String page,
-			@RequestParam (name = "?sort", required = false) String sort,
+			@RequestParam (name = "$size", required = false) String size,
+			@RequestParam (name = "$page", required = false) String page,
+			@RequestParam (name = "$sort", required = false) String sort,
 			@RequestParam (name = "token", required = false) String tokenBool		
 			) throws IOException{
 		
@@ -443,7 +472,7 @@ public class SubastaController {
 			//Obtengo los id de las imagenes
 			List<Media> idList = new ArrayList<Media>();
 			
-			List<BigInteger> idListBI = pictures.findIdImages(id.toString());
+			List<BigInteger> idListBI = pictures.findIdImagesSub(id.toString());
 			for(BigInteger idB : idListBI){
 				Media med = new Media(idB.longValue());
 				idList.add(med);
@@ -495,31 +524,28 @@ public class SubastaController {
 				Bid puja = pujas2.get(0);
 				Usuario usuarioPuja = usuarios.buscarPorId(puja.getClave().getUsuario_id_usuario().toString());
 				usuarioPuja.setPassword(null);
-				Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());
-				Location locUsuario = new Location(usuarioSubasta.getPosX(), usuarioSubasta.getPosY());
-				Picture picUsuario2;
-				if (usuarioSubasta.getIdImagen() != null) {
-					Optional<Picture> picUsuario;
-					picUsuario = pictures.findById(usuarioSubasta.getIdImagen());
-					if (picUsuario.isEmpty()) {
-						picUsuario2 = null;
-					} else {
-						picUsuario2 = picUsuario.get();
-					}
-				} else {
-					picUsuario2 = null;
-				}
-				usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), 
-						usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(),
-						null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
-						usuarioSubasta.getTipo(), picUsuario2);
-				puja2 = new BidAux2(puja.getPuja(), usuarioPuja, puja.getFecha());
+				
+				Location locUsuario2 = new Location(usuarioPuja.getPosX(), usuarioPuja.getPosY());
+				UsuarioAux usuarioPujaAux = new UsuarioAux(usuarioPuja.getIdUsuario(), usuarioPuja.getGender(), 
+						usuarioPuja.getBirth_date(), locUsuario2, usuarioPuja.getRating(), usuarioPuja.getStatus(), 
+						null, usuarioPuja.getEmail(), usuarioPuja.getLast_name(), usuarioPuja.getFirst_name(), 
+						usuarioPuja.getTipo(), new Picture(usuarioPuja.getIdImagen()));
+				
+				puja2 = new BidAux2(puja.getPuja(), usuarioPujaAux, puja.getFecha());
 			}
+			
+			Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());
+			Location locUsuario = new Location(usuarioSubasta.getPosX(), usuarioSubasta.getPosY());
 
+			
+			usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), 
+					usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(),
+					null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
+					usuarioSubasta.getTipo(), new Picture(userFind.getIdImagen()));
 			SubastaAux2 subastaDevolver;	
 			subastaDevolver = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), 
 					saux.getTitle(), loc2, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-					usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in);	
+					usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id.toString()),saux.getCurrency());	
 			
 			ListaSubastasDevolver.add(subastaDevolver);
 			
@@ -577,7 +603,7 @@ public class SubastaController {
 							Long idIm = pi.getIdImagen();
 							
 							if(idIm == null) {
-								pi.setIdProducto(Long.parseLong(auction_id));
+								pi.setIdSubasta(Long.parseLong(auction_id));
 								pictures.save(pi);
 							}
 							else {
@@ -663,11 +689,16 @@ public class SubastaController {
 					if ( puja2 == null || puja2.getPuja() < puja.getAmount()) {
 						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 						LocalDateTime now = LocalDateTime.now(); 
-						puja3.setPuja(puja.getAmount());
-						puja3.setFecha(dtf.format(now));
-						pujas.save(puja3);
-						response.setStatus(201);
-						return "Guardada la puja correctamente";
+						if (LocalDate.parse(subasta.getFecha_finalizacion(), dtf).isAfter(now.toLocalDate())) {
+							puja3.setPuja(puja.getAmount());
+							puja3.setFecha(dtf.format(now));
+							pujas.save(puja3);
+							response.setStatus(201);
+							return "Guardada la puja correctamente";
+						} else {
+							response.sendError(409, "La subasta termino " + subasta.getFecha_finalizacion());
+							return null;
+						}
 					} else {
 						response.sendError(409, "No se ha superado el precio actual de " + puja2.getPuja());
 						return null;

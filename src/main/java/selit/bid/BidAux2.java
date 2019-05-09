@@ -1,18 +1,18 @@
 package selit.bid;
 
-import selit.usuario.Usuario;
+import selit.usuario.UsuarioAux;
 
 public class BidAux2 {
 	
 	private float amount;
 	
-	private Usuario bidder;
+	private UsuarioAux bidder;
 	
 	private String date;
 
 	
 	
-	public BidAux2(float amount, Usuario bidder, String date) {
+	public BidAux2(float amount, UsuarioAux bidder, String date) {
 		this.amount = amount;
 		this.bidder = bidder;
 		this.date = date;
@@ -26,19 +26,19 @@ public class BidAux2 {
 		this.amount = amount;
 	}
 
-	public Usuario getBidder() {
+	public UsuarioAux getBidder() {
 		return bidder;
 	}
 
-	public void setBidder(Usuario bidder) {
+	public void setBidder(UsuarioAux bidder) {
 		this.bidder = bidder;
 	}
 
-	public String getString() {
+	public String getDate() {
 		return date;
 	}
 
-	public void setString(String date) {
+	public void setDate(String date) {
 		this.date = date;
 	}
 	

@@ -31,9 +31,13 @@ public class Picture {
     @Column(name="id_producto")
     private Long idProducto;
     
+    @Column(name="id_subasta")
+    private Long idSubasta;
+    
     public Picture() {
     	
     }
+
 
 
 	public Picture(Long idImagen, String mime, String charset, Integer tamanyo, byte[] base64, Long idProducto) {
@@ -106,4 +110,12 @@ public class Picture {
 		this.idProducto = idProducto;
 	}
 	
+	public Long getIdSubasta() {
+		return idSubasta;
+	}
+
+
+	public void setIdSubasta(Long idSubasta) {
+		this.idSubasta = idSubasta;
+	}
 }

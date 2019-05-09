@@ -10,8 +10,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import selit.producto.Anuncio;
-
 public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 	
 	@Query("select new Subasta(idSubasta, publicate_date, description, title, fecha_finalizacion, startPrice, id_owner, category, posX, posY, currency, nfav, nvis)"
@@ -27,6 +25,11 @@ public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 			   "* cos( radians(subasta.posY) - radians(?2)) + sin(radians(?1))" +
 			   "* sin( radians(subasta.posX)))) <= ?3 ORDER BY ?#{#sort}", nativeQuery = true)
 	public List<Subasta> selectSubastaCommonDistance(@Param("posX") String lat,@Param("posY") String lng,@Param("distance") String distance, Sort sort);
+	
+	@Query(value = "select ( 6371 * acos( cos( radians(?1) ) * cos( radians( subasta.posX ) )" + 
+			"   * cos( radians(subasta.posY) - radians(?2)) + sin(radians(?1))" + 
+			"   * sin( radians(subasta.posX)))) AS distancia  from subasta WHERE id_subasta = ?3", nativeQuery = true)
+	public double selectDistance(@Param("posX") String lat,@Param("posY") String lng, @Param("id_producto") String id_producto);
 
 	@Query("select idSubasta from Subasta where nombre_categoria=:nombre_categoria")
 	public List<Long> selectSubastaCommonCategory(@Param("nombre_categoria") String category);

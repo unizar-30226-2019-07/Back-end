@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -29,6 +30,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
 import selit.usuario.UsuarioRepository;
+import selit.valoracion.Valoracion;
+import selit.valoracion.ValoracionAux;
+import selit.valoracion.ValoracionesRepository;
 import selit.verificacion.Verificacion;
 import selit.verificacion.VerificacionRepository;
 import selit.wishes.WishA;
@@ -39,7 +43,6 @@ import selit.wishes.WishesARepository;
 import selit.wishes.WishesSRepository;
 import selit.Location.Location;
 import selit.auctions.Subasta;
-import selit.auctions.SubastaAux;
 import selit.auctions.SubastaAux2;
 import selit.auctions.SubastaRepository;
 import selit.bid.Bid;
@@ -52,6 +55,7 @@ import selit.picture.PictureRepository;
 import selit.producto.Anuncio;
 import selit.producto.AnuncioAux2;
 import selit.producto.AnuncioRepository;
+import selit.report.ReportRepository;
 import selit.security.TokenCheck;
 import io.jsonwebtoken.Jwts;
 
@@ -82,6 +86,12 @@ public class UsuarioController {
 	
 	@Autowired public
 	BidRepository pujas;
+	
+	@Autowired public
+	ValoracionesRepository valoraciones;
+	
+	@Autowired public
+	ReportRepository informes;
 	
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -397,7 +407,15 @@ public class UsuarioController {
 					//Si me pasan una imagen compruebo que no sea vacia
 					if(usuario.getPicture().getBase64() != null) {
 						Picture pic = new Picture(usuario.getPicture().getMime(),usuario.getPicture().getCharset(),usuario.getPicture().getBase64());
-						p = pictures.save(pic);
+						try {
+							p = pictures.save(pic);
+						}
+						catch(Exception e){
+							String error = "The image can´t be saved.";
+							response.sendError(500, error);
+							return null;
+						}
+						
 						
 						//Actualizo el usuario
 						usuarios.actualizarUsuario(usuario.getEmail(), 
@@ -1012,7 +1030,13 @@ public class UsuarioController {
 									null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
 									usuarioSubasta.getTipo(), picUsuario2);
 							
-							puja2 = new BidAux2(puja.getPuja(), usuarioPuja, puja.getFecha());
+							Location locUsuario2 = new Location(usuarioPuja.getPosX(), usuarioPuja.getPosY());
+							UsuarioAux usuarioPujaAux = new UsuarioAux(usuarioPuja.getIdUsuario(), usuarioPuja.getGender(), 
+									usuarioPuja.getBirth_date(), locUsuario2, usuarioPuja.getRating(), usuarioPuja.getStatus(), 
+									null, usuarioPuja.getEmail(), usuarioPuja.getLast_name(), usuarioPuja.getFirst_name(), 
+									usuarioPuja.getTipo(), new Picture(usuarioPuja.getIdImagen()));
+							
+							puja2 = new BidAux2(puja.getPuja(), usuarioPujaAux, puja.getFecha());
 						}
 							
 						
@@ -1024,7 +1048,7 @@ public class UsuarioController {
 						SubastaAux2 rAnuncio;	
 						rAnuncio = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), 
 								loc, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in);	
+								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id),saux.getCurrency());	
 						
 						listWsId.add(rAnuncio);
 					}
@@ -1122,7 +1146,13 @@ public class UsuarioController {
 									null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
 									usuarioSubasta.getTipo(), picUsuario2);
 							
-							puja2 = new BidAux2(puja.getPuja(), usuarioPuja, puja.getFecha());
+							Location locUsuario2 = new Location(usuarioPuja.getPosX(), usuarioPuja.getPosY());
+							UsuarioAux usuarioPujaAux = new UsuarioAux(usuarioPuja.getIdUsuario(), usuarioPuja.getGender(), 
+									usuarioPuja.getBirth_date(), locUsuario2, usuarioPuja.getRating(), usuarioPuja.getStatus(), 
+									null, usuarioPuja.getEmail(), usuarioPuja.getLast_name(), usuarioPuja.getFirst_name(), 
+									usuarioPuja.getTipo(), new Picture(usuarioPuja.getIdImagen()));
+							
+							puja2 = new BidAux2(puja.getPuja(), usuarioPujaAux, puja.getFecha());
 						}
 							
 						
@@ -1134,7 +1164,7 @@ public class UsuarioController {
 						SubastaAux2 rAnuncio;	
 						rAnuncio = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), 
 								loc, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in);	
+								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id),saux.getCurrency());	
 						
 						listWsId.add(rAnuncio);
 					}
@@ -1207,6 +1237,156 @@ public class UsuarioController {
 		}			
 	
 		return "OK";
+	}
+	
+	@GetMapping(path="/{user_id}/reviews")
+	public @ResponseBody List<ValoracionAux> getUserReviews(@PathVariable String user_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			//Se comprueba si existe el usuario
+			if(u2!=null) {
+				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
+					List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(u2.getIdUsuario());
+					List<ValoracionAux> vAux = new ArrayList<ValoracionAux>();
+					
+					for(Valoracion v : vList) {
+						ValoracionAux vAuxAdd = new ValoracionAux(v.getId_comprador(),v.getId_anunciante(),
+								v.getValor(),v.getComentario(),v.getId_subasta(),v.getId_producto());
+						vAux.add(vAuxAdd);
+					}
+
+					return vAux;
+				}
+				else {
+					String error = "You are not an administrator or the user is not you.";
+					response.sendError(402, error);
+					return null;
+				}
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
+		}
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}	
+	}
+	
+	@PostMapping(path="/{user_id}/reviews")
+	public @ResponseBody String addUserReviews(@PathVariable String user_id, @RequestBody ValoracionAux valoracion,HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			//Se comprueba si existe el usuario
+			if((u2!=null && !u2.getIdUsuario().equals(u.getIdUsuario())) || (u2!=null && u.getTipo().contentEquals("administrador"))) {
+
+					Valoracion v = new Valoracion(valoracion.getId_comprador(),valoracion.getId_anunciante(),
+							valoracion.getValor(),valoracion.getComentario(),valoracion.getId_subasta(),valoracion.getId_producto());
+					
+					List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(valoracion.getId_anunciante());
+					
+					Boolean guardar = true;
+					
+					for(Valoracion vAux : vList) {
+						if(vAux.getId_anunciante().equals(Long.valueOf(user_id)) && vAux.getId_comprador().equals(u.getIdUsuario())) {
+							if(vAux.getId_producto() != null) {
+								if(vAux.getId_producto().equals(valoracion.getId_producto())) {
+									guardar = false;
+									break;
+								}
+							}
+							if(vAux.getId_subasta() != null) {
+								if(vAux.getId_subasta().equals(valoracion.getId_subasta())) {
+									guardar = false;
+									break;
+								}
+							}
+						}
+					}
+					if(guardar) {
+						Anuncio a = null;
+						Subasta s = null;
+						if(valoracion.getId_producto() != null) {
+							 a = anuncios.buscarPorId(valoracion.getId_producto().toString());
+							 if(!a.getId_owner().equals(u2.getIdUsuario())) {
+								 guardar = false;
+							 }
+						}
+						if(valoracion.getId_subasta() != null) {
+							 s = subastas.buscarPorId(valoracion.getId_subasta().toString());
+							 if(!s.getId_owner().equals(u2.getIdUsuario())) {
+								 guardar = false;
+							 }
+						}
+										
+						if((a != null || s  != null) && guardar) {
+						
+							
+							int num = vList.size();
+							float valoracionAux = valoracion.getValor();
+							
+							if(valoracionAux >= 0.0 && valoracionAux <= 5.0) {
+								float valor = (valoracionAux + u2.getRating()*num)/(num + 1);
+								valoraciones.save(v);	
+								usuarios.updateRating(user_id, valor);
+								return "OK";
+							}
+							else {
+								String error = "The value must be between 0.0 and 5.0.";
+								response.sendError(412, error);
+								return null;
+							}
+							
+						}
+						else {
+							String error = "The product doesn´t exist or is not a product of the user.";
+							response.sendError(404, error);
+							return null;
+						}
+						
+					}
+					else {
+						String error = "The review for this product has already been done.";
+						response.sendError(412, error);
+						return null;
+					}
+					
+			}
+			else {
+				String error = "The user can´t be found or you are the user.";
+				response.sendError(404, error);
+				return null;
+			}
+		}
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}	
 	}
 	
 }

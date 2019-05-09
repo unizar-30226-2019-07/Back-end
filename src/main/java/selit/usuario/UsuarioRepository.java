@@ -70,4 +70,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Usuario set status=:status where id_usuario=:id_usuario")
 	public void updateStatus(@Param("id_usuario") Long id_usuario,@Param("status") String status);
+	
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Usuario set calificacion=:calificacion where id_usuario=:id_usuario")
+	public void updateRating(@Param("id_usuario") String id_usuario,@Param("calificacion") float calificacion);
 }	

@@ -2,25 +2,16 @@ package selit.auctions;
 
 import selit.bid.BidAux2;
 import selit.media.Media;
-
 import java.util.List;
-
-import javax.persistence.Column;
-
 import selit.Location.Location;
-import selit.picture.Picture;
 import selit.usuario.UsuarioAux;
 
 public class SubastaAux2 {
 	
     private Long idSubasta;
-    
-    private String type;
 
     private String title;
-    
-    private Long owner_id;
-    
+     
     private String endDate;
     
     private UsuarioAux owner;
@@ -31,7 +22,7 @@ public class SubastaAux2 {
 	
     private Location location;
 
-    private Long distance;
+    private double distance;
     
     private String category;
         
@@ -61,11 +52,6 @@ public class SubastaAux2 {
     	this.endDate = endDate;
     	this.category = category;
     	this.owner = owner;
-    	if (owner!=null) {
-    		this.owner_id = owner.getIdUsuario();
-    	} else {
-    		this.owner_id = null;
-    	}
     	this.lastBid = lastBid;
 		this.nfav = nfav;
 		this.nvis = nvis;
@@ -73,7 +59,7 @@ public class SubastaAux2 {
     }
 	
 	public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
-    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist) {
+    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist,double distance,String currency) {
     	this.idSubasta = idSubasta; 
     	this.published = published;
     	this.description = description;
@@ -83,21 +69,37 @@ public class SubastaAux2 {
     	this.endDate = endDate;
     	this.category = category;
     	this.owner = owner;
-    	if (owner!=null) {
-    		this.owner_id = owner.getIdUsuario();
-    	} else {
-    		this.owner_id = null;
-    	}
     	this.lastBid = lastBid;
 		this.nfav = nfav;
 		this.nvis = nvis;
 		this.media = media;
 		this.in_wishlist = in_wishlist;
+		this.distance = distance;
+		this.currency = currency;
+    }
+	
+	public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
+    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist,String currency) {
+    	this.idSubasta = idSubasta; 
+    	this.published = published;
+    	this.description = description;
+    	this.title = title;
+    	this.location = location;
+    	this.startPrice = startPrice;
+    	this.endDate = endDate;
+    	this.category = category;
+    	this.owner = owner;
+    	this.lastBid = lastBid;
+		this.nfav = nfav;
+		this.nvis = nvis;
+		this.media = media;
+		this.in_wishlist = in_wishlist;
+		this.currency = currency;
     }
     
     // Con id_usuario en vez del usuario
     public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
-    		String category, Long owner_id, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media) {
+    		String category, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media) {
     	this.idSubasta = idSubasta;
     	this.published = published;
     	this.description = description;
@@ -106,7 +108,6 @@ public class SubastaAux2 {
     	this.startPrice = startPrice;
     	this.endDate = endDate;
     	this.category = category;
-    	this.owner_id = owner_id;
     	this.lastBid = lastBid;
 		this.nfav = nfav;
 		this.nvis = nvis;
@@ -115,7 +116,7 @@ public class SubastaAux2 {
     
     // Con id_usuario en vez del usuario
     public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
-    		String category, Long owner_id, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist) {
+    		String category, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist,double distance,String currency) {
     	this.idSubasta = idSubasta;
     	this.published = published;
     	this.description = description;
@@ -124,12 +125,13 @@ public class SubastaAux2 {
     	this.startPrice = startPrice;
     	this.endDate = endDate;
     	this.category = category;
-    	this.owner_id = owner_id;
     	this.lastBid = lastBid;
 		this.nfav = nfav;
 		this.nvis = nvis;
 		this.media = media;
 		this.in_wishlist = in_wishlist;
+		this.distance = distance;
+		this.currency = currency;
     }
     
     public SubastaAux2() {
@@ -192,20 +194,12 @@ public class SubastaAux2 {
 		this.published = published;
 	}
 
-	public Long getDistance() {
+	public double getDistance() {
 		return distance;
 	}
 
-	public void setDistance(Long distance) {
+	public void setDistance(double distance) {
 		this.distance = distance;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
 	}
 
 	public List<Media> getMedia() {
@@ -238,14 +232,6 @@ public class SubastaAux2 {
 
 	public void setLastBid(BidAux2 lastBid) {
 		this.lastBid = lastBid;
-	}
-
-	public Long getOwner_id() {
-		return owner_id;
-	}
-
-	public void setOwner_id(Long owner_id) {
-		this.owner_id = owner_id;
 	}
 
 	public String getEndDate() {
