@@ -354,12 +354,12 @@ public class SubastaController {
 			if(lat != null && lng != null) {
 				rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
 						saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
-						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, auction_id),saux.getCurrency());
+						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, auction_id),saux.getCurrency(),saux.getStatus());
 			}
 			else {
 				rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
 						saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
-						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,saux.getCurrency());
+						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,saux.getCurrency(),saux.getStatus());
 			}
 
 			
@@ -545,7 +545,7 @@ public class SubastaController {
 			SubastaAux2 subastaDevolver;	
 			subastaDevolver = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), 
 					saux.getTitle(), loc2, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-					usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id.toString()),saux.getCurrency());	
+					usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id.toString()),saux.getCurrency(),saux.getStatus());	
 			
 			ListaSubastasDevolver.add(subastaDevolver);
 			

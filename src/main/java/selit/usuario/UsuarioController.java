@@ -1048,7 +1048,7 @@ public class UsuarioController {
 						SubastaAux2 rAnuncio;	
 						rAnuncio = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), 
 								loc, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id),saux.getCurrency());	
+								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id),saux.getCurrency(),saux.getStatus());	
 						
 						listWsId.add(rAnuncio);
 					}
@@ -1164,7 +1164,7 @@ public class UsuarioController {
 						SubastaAux2 rAnuncio;	
 						rAnuncio = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), saux.getTitle(), 
 								loc, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id),saux.getCurrency());	
+								usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id),saux.getCurrency(),saux.getStatus());	
 						
 						listWsId.add(rAnuncio);
 					}
