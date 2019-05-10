@@ -1255,23 +1255,17 @@ public class UsuarioController {
 			u2 = usuarios.buscarPorId(user_id);
 			//Se comprueba si existe el usuario
 			if(u2!=null) {
-				if(u.getTipo().contentEquals("administrador") || u.getIdUsuario().equals(u2.getIdUsuario())) {
-					List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(u2.getIdUsuario());
-					List<ValoracionAux> vAux = new ArrayList<ValoracionAux>();
-					
-					for(Valoracion v : vList) {
-						ValoracionAux vAuxAdd = new ValoracionAux(v.getId_comprador(),v.getId_anunciante(),
-								v.getValor(),v.getComentario(),v.getId_subasta(),v.getId_producto());
-						vAux.add(vAuxAdd);
-					}
+				List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(u2.getIdUsuario());
+				List<ValoracionAux> vAux = new ArrayList<ValoracionAux>();
+				
+				for(Valoracion v : vList) {
+					ValoracionAux vAuxAdd = new ValoracionAux(v.getId_comprador(),v.getId_anunciante(),
+							v.getValor(),v.getComentario(),v.getId_subasta(),v.getId_producto());
+					vAux.add(vAuxAdd);
+				}
 
-					return vAux;
-				}
-				else {
-					String error = "You are not an administrator or the user is not you.";
-					response.sendError(402, error);
-					return null;
-				}
+				return vAux;
+							
 			}
 			else {
 				String error = "The user can´t be found.";
