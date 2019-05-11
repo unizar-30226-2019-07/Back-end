@@ -37,6 +37,8 @@ public class AnuncioAux2 {
     
     private boolean in_wishlist;
     
+    private UsuarioAux buyer;
+    
 
 	public AnuncioAux2() {
     	
@@ -227,6 +229,14 @@ public class AnuncioAux2 {
 
 	public void setI_wishlistn(boolean in_wishlist) {
 		this.in_wishlist = in_wishlist;
+	}
+
+	public UsuarioAux getBuyer() {
+		return buyer;
+	}
+
+	public void setBuyer(UsuarioAux buyer) {
+		this.buyer = buyer;
 	}
 
 }

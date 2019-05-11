@@ -27,7 +27,7 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 			"   * sin( radians(anuncio.posX)))) AS distancia  from anuncio WHERE id_producto = ?3", nativeQuery = true)
 	public double selectDistance(@Param("posX") String lat,@Param("posY") String lng, @Param("id_producto") String id_producto);
 
-	@Query(value = "select id_producto,fecha_publicacion,descripcion,titulo,posX,posY,precio,moneda,nfavoritos,nvisitas,usuario_id_usuario,nombre_categoria,estado, "+ "( 6371 * acos( cos( radians(?1) ) * cos( radians( anuncio.posX ) )" +
+	@Query(value = "select id_producto,fecha_publicacion,descripcion,titulo,posX,posY,precio,moneda,nfavoritos,nvisitas,usuario_id_usuario,nombre_categoria,estado,id_comprador, "+ "( 6371 * acos( cos( radians(?1) ) * cos( radians( anuncio.posX ) )" +
 			   "* cos( radians(anuncio.posY) - radians(?2)) + sin(radians(?1))" +
 			   "* sin( radians(anuncio.posX)))) AS distancia " + "FROM anuncio " +
 			"WHERE ( 6371 * acos( cos( radians(?1) ) * cos( radians( anuncio.posX ) )" +
@@ -84,4 +84,9 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Anuncio set nvisitas=:nvisitas where id_producto=:id_producto")
 	public void actualizarNVis(@Param("nvisitas") Long nvisitas, @Param("id_producto") Long id_producto);
+	
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Anuncio set id_comprador=:buyer_id, estado='vendido' where id_producto=:id_producto")
+	public void actualizarVendido(@Param("buyer_id") Long buyer_id, @Param("id_producto") Long id_producto);
 }

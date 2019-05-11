@@ -52,9 +52,12 @@ public class Anuncio {
 
     @Column(name="estado")
     private String status;
+    
+    @Column(name="id_comprador")
+    private Long id_buyer;
 
     public Anuncio() {
-
+    	
     }
 
     public Anuncio(String publicate_date,String description,String title,float posX,float posY,
@@ -73,6 +76,7 @@ public class Anuncio {
 		this.category = category;
 		this.status = status;
 	}
+    
   public Anuncio(Long id_producto,String publicate_date,String description,String title,float posX,float posY,
       float price,String currency,Long nfav,Long nvis,Long id_owner,String category,String status) {
   super();
@@ -203,5 +207,15 @@ public class Anuncio {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+
+	public Long getId_buyer() {
+		return id_buyer;
+	}
+
+	public void setId_buyer(Long id_buyer) {
+		this.id_buyer = id_buyer;
+	}
+	
+	
 
 }

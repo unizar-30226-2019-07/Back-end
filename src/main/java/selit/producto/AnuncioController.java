@@ -594,4 +594,105 @@ public class AnuncioController {
 			return rListAn;		
 	}
 	
+	@PutMapping(path="/{product_id}/sell")
+	public @ResponseBody String actualizarVendido(@PathVariable String product_id, 
+						HttpServletRequest request, @RequestBody AnuncioAux anuncio, 
+						HttpServletResponse response) throws IOException {
+		
+		//Obtengo que usuario es el que realiza la petición
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		
+		// Se compreba si el token es valido.
+		if(TokenCheck.checkAccess(token,u)) {
+			// Se busca el producto con el id pasado en la ruta, si no existe se devuelve un error.
+			Optional<Anuncio> anuncio2 = anuncios.findById(Long.parseLong(product_id));
+			if ( !anuncio2.isPresent() ) {
+								
+				// Se devuelve error 404.
+				response.sendError(404, "El producto con id "+product_id+" no existe");
+				
+				return null;
+				
+			} else {
+				
+				// Se comrpueba que existe el usuario de buyer_id.
+				Optional<Usuario> usuario_comprador = usuarios.findById(anuncio.getBuyer_id());
+				
+				// Se comprueba que el usuario que realiza la peticion de actualizar es un administrador
+				// o es el propietario del producto.
+				Anuncio anuncio3 = anuncio2.get();
+				if (usuario_comprador.isEmpty()) {
+					response.sendError(404, "El comprador con id "+anuncio.getBuyer_id()+" no existe");
+					return null;
+				} else {
+					if(anuncio3.getStatus().equals("en venta")) {
+						if (u.getTipo().equals("administrador") || anuncio3.getId_owner() == u.getIdUsuario()) {
+							List<BigInteger> listIds = pictures.findIdImages(product_id);
+							List<Long> auxIds = new ArrayList<Long>();
+							List<Long> realIds = new ArrayList<Long>();
+							
+							for(BigInteger id: listIds) {
+								auxIds.add(id.longValue());
+							}
+							
+													
+							List<Picture> picL = anuncio.getMedia();
+							for(Picture pi : picL) {
+								Long idIm = pi.getIdImagen();
+								
+								if(idIm == null) {
+									pi.setIdProducto(Long.parseLong(product_id));
+									pictures.save(pi);
+								}
+								else {
+									realIds.add(idIm);
+								}
+							}
+							
+							for(Long idAux : auxIds) {
+								if(!realIds.contains(idAux)) {
+									pictures.deleteById(idAux);
+								}
+							}
+							
+							// Se actualiza el producto.
+							anuncios.actualizarVendido(anuncio.getBuyer_id(),Long.parseLong(product_id));
+							
+							// Se devuelve mensaje de confirmacion.
+							return "Anuncio actualizado";
+							
+						} else {
+							
+							// No es el administrador o el propietario del producto, se devuelve un error.
+							String error = "You can't update this product.";
+							response.sendError(402, error);
+							return null;
+						}
+					} else {
+					String error = "You can´t update this product, it has already been sold.";
+					response.sendError(409, error);
+					return null;
+					}
+				}
+				
+			}
+			
+		} else {
+			
+			// El token es incorrecto.
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}
+	}
+	
+	
 }

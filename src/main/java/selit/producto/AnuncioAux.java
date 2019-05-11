@@ -39,6 +39,10 @@ public class AnuncioAux {
     
     private List<Picture> media;
     
+    private Long buyer_id;
+    
+    private Usuario buyer;
+    
     public AnuncioAux() {
     	
     }
@@ -59,6 +63,25 @@ public class AnuncioAux {
 		this.category = category;
 		this.status = status;
 		this.owner = owner;
+		this.distance = distance;
+	} 
+    
+    public AnuncioAux(Long idProducto,String publicate_date,String description,String title,Location location,
+    		float price,String currency,Long nfav,Long nvis,Long owner_id,String category, String status, Long buyer_id, double distance) {
+		super();
+		this.idProducto = idProducto;
+		this.publicate_date = publicate_date;
+		this.description = description;
+		this.title = title;
+		this.location = location;
+		this.price = price;
+		this.currency = currency;
+		this.nfav = nfav;
+		this.nvis = nvis;
+		this.owner_id = owner_id;
+		this.category = category;
+		this.status = status;
+		this.buyer_id = buyer_id;
 		this.distance = distance;
 	} 
     
@@ -91,8 +114,7 @@ public class AnuncioAux {
 
     public Long getId_producto() {
 		return idProducto;
-	}
-    
+	} 
 
     public String getPublicate_date() {
 		return publicate_date;
@@ -125,7 +147,6 @@ public class AnuncioAux {
 	public void setLocation(Location location) {
 		this.location = location;
 	}
-
 		
 	public float getPrice() {
 		return price;
@@ -197,6 +218,22 @@ public class AnuncioAux {
 
 	public void setDistance(double distance) {
 		this.distance = distance;
+	}
+
+	public Usuario getBuyer() {
+		return buyer;
+	}
+
+	public void setBuyer(Usuario buyer) {
+		this.buyer = buyer;
+	}
+
+	public Long getBuyer_id() {
+		return buyer_id;
+	}
+
+	public void setBuyer_id(Long buyer_id) {
+		this.buyer_id = buyer_id;
 	}
 
 }
