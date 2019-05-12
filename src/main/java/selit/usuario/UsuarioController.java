@@ -723,6 +723,17 @@ public class UsuarioController {
 						userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 						Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 						
+						Location loc3 = null;
+						Usuario buyer = null;
+						UsuarioAux buyer2 = null;
+						if (aaux.getId_buyer() != null) {
+							buyer = usuarios.buscarPorId(aaux.getId_buyer().toString());
+							loc3 = new Location(buyer.getPosX(), buyer.getPosY());
+							buyer2 = new UsuarioAux(buyer.getIdUsuario(),buyer.getGender(),buyer.getBirth_date(),
+									loc3,buyer.getRating(),buyer.getStatus(),null,buyer.getEmail(),
+									buyer.getLast_name(),buyer.getFirst_name(),buyer.getTipo(),new Picture(buyer.getIdImagen()));
+						}
+						
 						//Creo el usuario a devolver
 						UsuarioAux rUser = new UsuarioAux(u2.getIdUsuario(),u2.getGender(),u2.getBirth_date(),
 								loc2,u2.getRating(),u2.getStatus(),null,u2.getEmail(),
@@ -733,7 +744,7 @@ public class UsuarioController {
 						rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 								aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 								aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-								rUser,anuncios.selectDistance(lat, lng, id.toString()),idList,in);	
+								rUser,anuncios.selectDistance(lat, lng, id.toString()),idList,in,buyer2);	
 						
 						listWaId.add(rAnuncio);
 					}
@@ -806,6 +817,17 @@ public class UsuarioController {
 						userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 						Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 						
+						Location loc3 = null;
+						Usuario buyer = null;
+						UsuarioAux buyer2 = null;
+						if (aaux.getId_buyer() != null) {
+							buyer = usuarios.buscarPorId(aaux.getId_buyer().toString());
+							loc3 = new Location(buyer.getPosX(), buyer.getPosY());
+							buyer2 = new UsuarioAux(buyer.getIdUsuario(),buyer.getGender(),buyer.getBirth_date(),
+									loc3,buyer.getRating(),buyer.getStatus(),null,buyer.getEmail(),
+									buyer.getLast_name(),buyer.getFirst_name(),buyer.getTipo(),new Picture(buyer.getIdImagen()));
+						}
+						
 						//Creo el usuario a devolver
 						UsuarioAux rUser = new UsuarioAux(u2.getIdUsuario(),u2.getGender(),u2.getBirth_date(),
 								loc2,u2.getRating(),u2.getStatus(),null,u2.getEmail(),
@@ -816,7 +838,7 @@ public class UsuarioController {
 						rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 								aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 								aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-								rUser,anuncios.selectDistance(lat, lng, id.toString()),idList,in);	
+								rUser,anuncios.selectDistance(lat, lng, id.toString()),idList,in,buyer2);	
 						
 						listWaId.add(rAnuncio);
 					}
@@ -1258,8 +1280,19 @@ public class UsuarioController {
 				List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(u2.getIdUsuario());
 				List<ValoracionAux> vAux = new ArrayList<ValoracionAux>();
 				
-				for(Valoracion v : vList) {
-					ValoracionAux vAuxAdd = new ValoracionAux(v.getId_comprador(),v.getId_anunciante(),
+				for(Valoracion v : vList) {			
+					Location loc3 = null;
+					Usuario buyer = null;
+					UsuarioAux buyer2 = null;
+					if (v.getId_comprador() != null) {
+						buyer = usuarios.buscarPorId(v.getId_comprador().toString());
+						loc3 = new Location(buyer.getPosX(), buyer.getPosY());
+						buyer2 = new UsuarioAux(buyer.getIdUsuario(),buyer.getGender(),buyer.getBirth_date(),
+								loc3,buyer.getRating(),buyer.getStatus(),null,buyer.getEmail(),
+								buyer.getLast_name(),buyer.getFirst_name(),buyer.getTipo(),new Picture(buyer.getIdImagen()));
+					}
+
+					ValoracionAux vAuxAdd = new ValoracionAux(buyer2,v.getId_anunciante(),
 							v.getValor(),v.getComentario(),v.getId_subasta(),v.getId_producto());
 					vAux.add(vAuxAdd);
 				}
@@ -1295,8 +1328,10 @@ public class UsuarioController {
 		if (TokenCheck.checkAccess(token, u)) {
 			Usuario u2 = new Usuario();
 			u2 = usuarios.buscarPorId(user_id);
+			
+			
 			//Se comprueba si existe el usuario
-			if((u2!=null && !u2.getIdUsuario().equals(u.getIdUsuario())) || (u2!=null && u.getTipo().contentEquals("administrador"))) {
+			if((u2!=null && u.getIdUsuario().equals(valoracion.getId_comprador()) && !u2.getIdUsuario().equals(u.getIdUsuario())) || (u2!=null && u.getTipo().contentEquals("administrador"))) {
 
 					Valoracion v = new Valoracion(valoracion.getId_comprador(),valoracion.getId_anunciante(),
 							valoracion.getValor(),valoracion.getComentario(),valoracion.getId_subasta(),valoracion.getId_producto());
@@ -1321,25 +1356,41 @@ public class UsuarioController {
 							}
 						}
 					}
+					
 					if(guardar) {
 						Anuncio a = null;
 						Subasta s = null;
 						if(valoracion.getId_producto() != null) {
 							 a = anuncios.buscarPorId(valoracion.getId_producto().toString());
-							 if(!a.getId_owner().equals(u2.getIdUsuario())) {
-								 guardar = false;
-							 }
+							 if(a!= null) {
+								 if(a.getId_buyer() ==  null) {
+									 guardar = false;
+								 }
+								 else if(a.getStatus().contentEquals("en venta") || !a.getId_buyer().equals(u.getIdUsuario())) {
+									 guardar = false;
+								 }
+							 }				
 						}
 						if(valoracion.getId_subasta() != null) {
-							 s = subastas.buscarPorId(valoracion.getId_subasta().toString());
-							 if(!s.getId_owner().equals(u2.getIdUsuario())) {
-								 guardar = false;
-							 }
+							s = subastas.buscarPorId(valoracion.getId_subasta().toString());
+							if(s != null) {
+								List<Bid> pujas2 =  pujas.findById_subasta(s.getIdSubasta(), Sort.by("fecha").descending());
+								if (pujas2.isEmpty()) {									
+									 if(s.getStatus().contentEquals("en venta")) {
+										 guardar = false;
+									 }
+								} else {
+									Bid puja = pujas2.get(0);			
+									 if(s.getStatus().contentEquals("en venta") || !puja.getClave().getUsuario_id_usuario().equals(u2.getIdUsuario())) {
+										 guardar = false;
+									 }
+								}
+							}
+												
+							 
 						}
 										
-						if((a != null || s  != null) && guardar) {
-						
-							
+						if((a != null || s  != null) && guardar) {			
 							int num = vList.size();
 							float valoracionAux = valoracion.getValor();
 							
@@ -1357,8 +1408,14 @@ public class UsuarioController {
 							
 						}
 						else {
-							String error = "The product doesn´t exist or is not a product of the user.";
-							response.sendError(404, error);
+							if(a == null && s  == null) {
+								String error = "The product doesn´t exist or is not a product of the user.";
+								response.sendError(404, error);
+							}
+							else {
+								String error = "The product has not been sold yet or it has not been sold to you.";
+								response.sendError(412, error);
+							}
 							return null;
 						}
 						
@@ -1371,7 +1428,7 @@ public class UsuarioController {
 					
 			}
 			else {
-				String error = "The user can´t be found or you are the user.";
+				String error = "The user can´t be found or you are not the user.";
 				response.sendError(404, error);
 				return null;
 			}
