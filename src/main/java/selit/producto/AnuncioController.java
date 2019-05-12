@@ -658,35 +658,7 @@ public class AnuncioController {
 					return null;
 				} else {
 					if(anuncio3.getStatus().equals("en venta")) {
-						if (u.getTipo().equals("administrador") || anuncio3.getId_owner() == u.getIdUsuario()) {
-							List<BigInteger> listIds = pictures.findIdImages(product_id);
-							List<Long> auxIds = new ArrayList<Long>();
-							List<Long> realIds = new ArrayList<Long>();
-							
-							for(BigInteger id: listIds) {
-								auxIds.add(id.longValue());
-							}
-							
-													
-							List<Picture> picL = anuncio.getMedia();
-							for(Picture pi : picL) {
-								Long idIm = pi.getIdImagen();
-								
-								if(idIm == null) {
-									pi.setIdProducto(Long.parseLong(product_id));
-									pictures.save(pi);
-								}
-								else {
-									realIds.add(idIm);
-								}
-							}
-							
-							for(Long idAux : auxIds) {
-								if(!realIds.contains(idAux)) {
-									pictures.deleteById(idAux);
-								}
-							}
-							
+						if (u.getTipo().equals("administrador") || anuncio3.getId_owner() == u.getIdUsuario()) {													
 							// Se actualiza el producto.
 							anuncios.actualizarVendido(anuncio.getBuyer_id(),Long.parseLong(product_id));
 							
