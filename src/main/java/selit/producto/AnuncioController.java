@@ -267,8 +267,18 @@ public class AnuncioController {
 				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
 				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
 				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
-
+				Location loc3 = null;
+				Usuario buyer = null;
+				UsuarioAux buyer2 = null;
+				if (aaux.getId_buyer() != null) {
+					buyer = usuarios.buscarPorId(aaux.getId_buyer().toString());
+					loc3 = new Location(buyer.getPosX(), buyer.getPosY());
+					buyer2 = new UsuarioAux(buyer.getIdUsuario(),buyer.getGender(),buyer.getBirth_date(),
+							loc3,buyer.getRating(),buyer.getStatus(),null,buyer.getEmail(),
+							buyer.getLast_name(),buyer.getFirst_name(),buyer.getTipo(),new Picture(buyer.getIdImagen()));
+				}
 				
+			
 				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 						loc2,userFind.getRating(),userFind.getStatus(),null,userFind.getEmail(),
 						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
@@ -325,13 +335,13 @@ public class AnuncioController {
 					rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 							aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-							rUser,anuncios.selectDistance(lat, lng, product_id),idList,in);
+							rUser,anuncios.selectDistance(lat, lng, product_id),idList,in, buyer2);
 				}
 				else {
 					rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 							aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 							aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-							rUser,idList,in);
+							rUser,idList,in, buyer2);
 				}
 	
 				
@@ -529,6 +539,12 @@ public class AnuncioController {
 				Location loc = new Location(aaux.getPosX(),aaux.getPosY());
 				Usuario userFind = usuarios.buscarPorId(aaux.getId_owner().toString());
 				userFind = usuarios.buscarPorEmailCommon(userFind.getEmail());
+				Usuario buyer = null;
+				Location loc3 = null;
+				if (aaux.getId_buyer() != null) {
+					buyer = usuarios.buscarPorId(aaux.getId_buyer().toString());
+					loc3 = new Location(buyer.getPosX(), buyer.getPosY());
+				}
 				Location loc2 = new Location(userFind.getPosX(),userFind.getPosY());
 				
 				//Obtengo los id de las imagenes
@@ -578,12 +594,20 @@ public class AnuncioController {
 				UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
 						loc2,userFind.getRating(),userFind.getStatus(),null,userFind.getEmail(),
 						userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
-				
+				UsuarioAux buyer2;
+				if (buyer == null) {
+					buyer2 = null;
+				} else {
+					buyer2 = new UsuarioAux(buyer.getIdUsuario(), buyer.getGender(), buyer.getBirth_date(),
+							loc3, buyer.getRating(), buyer.getStatus(), null, buyer.getEmail(),
+							buyer.getLast_name(), buyer.getFirst_name(), buyer.getTipo(), new Picture(buyer.getIdImagen()));
+				}
 				AnuncioAux2 rAnuncio;	
+				
 				rAnuncio = new AnuncioAux2(aaux.getId_producto(),aaux.getPublicate_date(),aaux.getDescription(),
 						aaux.getTitle(),loc,aaux.getPrice(),aaux.getCurrency(),
 						aaux.getNfav(),aaux.getNvis(),aaux.getCategory(),aaux.getStatus(),
-						rUser,anuncios.selectDistance(lat, lng, id.toString()),idList,in);	
+						rUser,anuncios.selectDistance(lat, lng, id.toString()),idList,in, buyer2);	
 				
 				rListAn.add(rAnuncio);
 				
