@@ -85,4 +85,9 @@ public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Subasta set nvisitas=:nvisitas where id_subasta=:id_subasta")
 	public void actualizarNVis(@Param("nvisitas") Long nvis, @Param("id_subasta") Long id_subasta);	
+	
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Subasta set status=:status where id_subasta=:id_subasta")
+	public void actualizarStatus(@Param("status") String status, @Param("id_subasta") Long id_subasta);	
 }	

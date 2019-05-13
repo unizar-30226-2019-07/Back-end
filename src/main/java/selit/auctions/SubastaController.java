@@ -11,10 +11,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -717,5 +722,61 @@ public class SubastaController {
 			response.sendError(401, error);
 			return null;
 		}
+	}
+	
+	@PutMapping(path="/{auction_id}/sell")
+	public @ResponseBody BidAux2 finSubasta(@PathVariable Long auction_id, HttpServletRequest request, HttpServletResponse response) throws IOException, ParseException { 
+		Optional<Subasta> a = subastas.findSubastaCommon(auction_id);
+		Subasta saux;
+		saux = a.get();
+		
+		Boolean devolver = false;
+		
+		if(!saux.getStatus().contentEquals("vendido")) {
+			Calendar c = new GregorianCalendar();
+			String dia = Integer.toString(c.get(Calendar.DATE));
+			String mes = Integer.toString(c.get(Calendar.MONTH));
+			String annio = Integer.toString(c.get(Calendar.YEAR));
+			String actualDate = annio + "-" + mes + "-" + dia;
+			
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+			
+			Date d1 = sdf.parse(actualDate);
+			Date d2 = sdf.parse(saux.getFecha_finalizacion());
+			
+			if(d2.before(d1)) {
+				subastas.actualizarStatus("vendido",saux.getIdSubasta());
+				devolver = true;
+			}
+		}
+		else {
+			devolver = true;
+		}
+		
+		
+		List<Bid> pujas2 =  pujas.findById_subasta(saux.getIdSubasta(), Sort.by("fecha").descending());
+		BidAux2 puja2;
+		if (pujas2.isEmpty()) {
+			puja2 = null;
+		} else {
+			Bid puja = pujas2.get(0);
+			Usuario usuarioPuja = usuarios.buscarPorId(puja.getClave().getUsuario_id_usuario().toString());
+			usuarioPuja.setPassword(null);
+			
+			Location locUsuario2 = new Location(usuarioPuja.getPosX(), usuarioPuja.getPosY());
+			UsuarioAux usuarioPujaAux = new UsuarioAux(usuarioPuja.getIdUsuario(), usuarioPuja.getGender(), 
+					usuarioPuja.getBirth_date(), locUsuario2, usuarioPuja.getRating(), usuarioPuja.getStatus(), 
+					null, usuarioPuja.getEmail(), usuarioPuja.getLast_name(), usuarioPuja.getFirst_name(), 
+					usuarioPuja.getTipo(), new Picture(usuarioPuja.getIdImagen()));
+			
+			puja2 = new BidAux2(puja.getPuja(), usuarioPujaAux, puja.getFecha());
+		}
+		if(devolver) {
+			return puja2;
+		}
+		else{
+			return null;
+		}
+		
 	}
 }
