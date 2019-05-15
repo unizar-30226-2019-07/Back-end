@@ -8,6 +8,7 @@ import static selit.security.Constants.PRODUCTOS_URL;
 import static selit.security.Constants.SUBASTA_URL;
 import static selit.security.Constants.SUBASTAS_URL;
 import static selit.security.Constants.IMAGES_URL;
+import static selit.security.Constants.SUBASTAS_SELL_URL;
 import selit.security.customAuthenticationManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,7 +59,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 			.authorizeRequests().antMatchers(HttpMethod.GET, PRODUCTO_URL).permitAll().and()
 			.authorizeRequests().antMatchers(HttpMethod.GET, SUBASTAS_URL).permitAll().and()
 			.authorizeRequests().antMatchers(HttpMethod.GET, SUBASTA_URL).permitAll().and()
-			.authorizeRequests().antMatchers(HttpMethod.GET, IMAGES_URL).permitAll()
+			.authorizeRequests().antMatchers(HttpMethod.GET, IMAGES_URL).permitAll().and()
+			.authorizeRequests().antMatchers(HttpMethod.PUT, SUBASTAS_SELL_URL).permitAll()
 			.anyRequest().authenticated().and()
 				.addFilter(new JWTAuthenticationFilter( new customAuthenticationManager()))
 				.addFilter(new JWTAuthorizationFilter( new customAuthenticationManager()));
