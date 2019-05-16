@@ -18,6 +18,10 @@ public class BidAux2 {
 		this.date = date;
 	}
 
+	public BidAux2() {
+
+	}
+
 	public float getAmount() {
 		return amount;
 	}

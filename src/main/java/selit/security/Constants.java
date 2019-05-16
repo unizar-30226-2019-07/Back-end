@@ -12,6 +12,7 @@ public class Constants {
 	public static final String SUBASTA_URL = "/auctions/{auction_id}";
 	public static final String SUBASTAS_URL = "/auctions";
 	public static final String IMAGES_URL = "/pictures/{picture_id}";
+	public static final String SUBASTAS_SELL_URL = "/auctions/{auction_id}/sell";
 	public static final String HEADER_AUTHORIZACION_KEY = "Authorization";
 	public static final String TOKEN_BEARER_PREFIX = "Bearer ";
 

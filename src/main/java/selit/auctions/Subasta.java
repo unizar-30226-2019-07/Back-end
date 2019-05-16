@@ -94,7 +94,7 @@ public class Subasta {
 	}
 	
 	public Subasta(Long idSubasta, String publicate_date, String description, String title, String fecha_finalizacion,
-			Float startPrice, Long id_owner, String category, float posX, float posY, String currency, Long nfav, Long nvis) {
+			Float startPrice, Long id_owner, String category, float posX, float posY, String currency, Long nfav, Long nvis, String status) {
 		this.idSubasta = idSubasta;
 		this.publicate_date = publicate_date;
 		this.description = description;
@@ -108,6 +108,7 @@ public class Subasta {
 		this.currency = currency;
 		this.nfav = nfav;
 		this.nvis = nvis;
+		this.status = status;
 	}
 
 

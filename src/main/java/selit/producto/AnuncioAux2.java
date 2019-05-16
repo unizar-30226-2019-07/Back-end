@@ -37,6 +37,8 @@ public class AnuncioAux2 {
     
     private boolean in_wishlist;
     
+    private UsuarioAux buyer;
+    
 
 	public AnuncioAux2() {
     	
@@ -98,6 +100,47 @@ public class AnuncioAux2 {
 		this.owner = owner;
 		this.media = media;
 		this.in_wishlist = in_wishlist;
+	} 
+    
+    public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
+    		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, double distance, List<Media> media,boolean in_wishlist, UsuarioAux buyer) {
+		super();
+		this.idProducto = idProducto;
+		this.publicate_date = publicate_date;
+		this.description = description;
+		this.title = title;
+		this.location = location;
+		this.price = price;
+		this.currency = currency;
+		this.nfav = nfav;
+		this.nvis = nvis;
+		this.category = category;
+		this.status = status;
+		this.owner = owner;
+		this.distance = distance;
+		this.media = media;
+		this.in_wishlist = in_wishlist;
+		this.buyer = buyer;
+	} 
+    
+    public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
+    		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, List<Media> media,boolean in_wishlist, UsuarioAux buyer) {
+		super();
+		this.idProducto = idProducto;
+		this.publicate_date = publicate_date;
+		this.description = description;
+		this.title = title;
+		this.location = location;
+		this.price = price;
+		this.currency = currency;
+		this.nfav = nfav;
+		this.nvis = nvis;
+		this.category = category;
+		this.status = status;
+		this.owner = owner;
+		this.media = media;
+		this.in_wishlist = in_wishlist;
+		this.buyer = buyer;
 	} 
     
 	public AnuncioAux2(String publicate_date,String description,String title,float price){
@@ -227,6 +270,14 @@ public class AnuncioAux2 {
 
 	public void setI_wishlistn(boolean in_wishlist) {
 		this.in_wishlist = in_wishlist;
+	}
+
+	public UsuarioAux getBuyer() {
+		return buyer;
+	}
+
+	public void setBuyer(UsuarioAux buyer) {
+		this.buyer = buyer;
 	}
 
 }

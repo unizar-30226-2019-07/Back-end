@@ -12,13 +12,13 @@ import org.springframework.data.repository.query.Param;
 
 public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 	
-	@Query("select new Subasta(idSubasta, publicate_date, description, title, fecha_finalizacion, startPrice, id_owner, category, posX, posY, currency, nfav, nvis)"
+	@Query("select new Subasta(idSubasta, publicate_date, description, title, fecha_finalizacion, startPrice, id_owner, category, posX, posY, currency, nfav, nvis, status)"
 			+ " from Subasta where idSubasta=:id_subasta")
 	public Optional<Subasta> findSubastaCommon(@Param("id_subasta") Long id_subasta);
 	
 	//public Optional<Subasta> findSubastaByIdSubasta(@Param("idSubasta") Long id_subasta);
 	
-	@Query(value = "select id_subasta,fecha_publicacion, fecha_finalizacion, descripcion,titulo,posX,posY,moneda,usuario_id_usuario,nombre_categoria,estado, precio_salida,nfavoritos,nvisitas, "+ "( 6371 * acos( cos( radians(?1) ) * cos( radians( subasta.posX ) )" +
+	@Query(value = "select id_subasta,fecha_publicacion, fecha_finalizacion, descripcion,titulo,posX,posY,moneda,usuario_id_usuario,nombre_categoria,estado, precio_salida,nfavoritos,nvisitas,estado, "+ "( 6371 * acos( cos( radians(?1) ) * cos( radians( subasta.posX ) )" +
 			   "* cos( radians(subasta.posY) - radians(?2)) + sin(radians(?1))" +
 			   "* sin( radians(subasta.posX)))) AS distancia " + "FROM subasta " +
 			"WHERE ( 6371 * acos( cos( radians(?1) ) * cos( radians( subasta.posX ) )" +
@@ -85,4 +85,9 @@ public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Subasta set nvisitas=:nvisitas where id_subasta=:id_subasta")
 	public void actualizarNVis(@Param("nvisitas") Long nvis, @Param("id_subasta") Long id_subasta);	
+	
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Subasta set status=:status where id_subasta=:id_subasta")
+	public void actualizarStatus(@Param("status") String status, @Param("id_subasta") Long id_subasta);	
 }	

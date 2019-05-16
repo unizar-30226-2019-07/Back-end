@@ -39,6 +39,8 @@ public class SubastaAux2 {
 	private Long nvis;
 	
 	private boolean in_wishlist;
+	
+    private String status;
    
 
 	public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
@@ -59,7 +61,7 @@ public class SubastaAux2 {
     }
 	
 	public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
-    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist,double distance,String currency) {
+    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist,double distance,String currency, String status) {
     	this.idSubasta = idSubasta; 
     	this.published = published;
     	this.description = description;
@@ -76,10 +78,11 @@ public class SubastaAux2 {
 		this.in_wishlist = in_wishlist;
 		this.distance = distance;
 		this.currency = currency;
+		this.status = status;
     }
 	
 	public SubastaAux2(Long idSubasta,String published,String description, String title,Location location,float startPrice,String endDate,
-    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist,String currency) {
+    		String category, UsuarioAux owner, BidAux2 lastBid, Long nfav, Long nvis, List<Media> media, boolean in_wishlist,String currency, String status) {
     	this.idSubasta = idSubasta; 
     	this.published = published;
     	this.description = description;
@@ -95,6 +98,7 @@ public class SubastaAux2 {
 		this.media = media;
 		this.in_wishlist = in_wishlist;
 		this.currency = currency;
+		this.status = status;
     }
     
     // Con id_usuario en vez del usuario
@@ -264,6 +268,14 @@ public class SubastaAux2 {
 
 	public void setIn_wishlist(boolean in_wishlist) {
 		this.in_wishlist = in_wishlist;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
     
 }

@@ -1,5 +1,7 @@
 package selit.valoracion;
 
+import selit.usuario.UsuarioAux;
+
 public class ValoracionAux {
 
     private Long id_comprador;
@@ -14,15 +16,17 @@ public class ValoracionAux {
 	
 	private Long id_producto;
 	
+	private UsuarioAux buyer;
+	
 	public ValoracionAux() {
 		
 	}
 
 	
-	public ValoracionAux(Long id_comprador, Long id_anunciante, float valor, String comentario,
+	public ValoracionAux(UsuarioAux buyer, Long id_anunciante, float valor, String comentario,
 			Long id_subasta, Long id_producto) {
 		super();
-		this.id_comprador = id_comprador;
+		this.buyer = buyer;
 		this.id_anunciante = id_anunciante;
 		this.valor = valor;
 		this.comentario = comentario;

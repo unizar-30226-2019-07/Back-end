@@ -11,10 +11,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -354,12 +359,12 @@ public class SubastaController {
 			if(lat != null && lng != null) {
 				rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
 						saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
-						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, auction_id),saux.getCurrency());
+						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, auction_id),saux.getCurrency(),saux.getStatus());
 			}
 			else {
 				rSubasta = new SubastaAux2(saux.getIdSubasta(),saux.getPublicate_date(),saux.getDescription(),
 						saux.getTitle(),loc,saux.getStartPrice(),saux.getFecha_finalizacion(),saux.getCategory(),
-						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,saux.getCurrency());
+						rUser, puja2,saux.getNfav(),saux.getNvis(),idList,in,saux.getCurrency(),saux.getStatus());
 			}
 
 			
@@ -545,7 +550,7 @@ public class SubastaController {
 			SubastaAux2 subastaDevolver;	
 			subastaDevolver = new SubastaAux2(saux.getIdSubasta(), saux.getPublicate_date(), saux.getDescription(), 
 					saux.getTitle(), loc2, saux.getStartPrice(), saux.getFecha_finalizacion(), saux.getCategory(), 
-					usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id.toString()),saux.getCurrency());	
+					usuarioSubasta2, puja2,saux.getNfav(),saux.getNvis(),idList,in,subastas.selectDistance(lat, lng, id.toString()),saux.getCurrency(),saux.getStatus());	
 			
 			ListaSubastasDevolver.add(subastaDevolver);
 			
@@ -717,5 +722,67 @@ public class SubastaController {
 			response.sendError(401, error);
 			return null;
 		}
+	}
+	
+	@PutMapping(path="/{auction_id}/sell")
+	public @ResponseBody BidAux2 finSubasta(@PathVariable Long auction_id, HttpServletRequest request, HttpServletResponse response) throws IOException, ParseException { 
+		Optional<Subasta> a = subastas.findSubastaCommon(auction_id);
+		Subasta saux;
+		if(a.isPresent()) {
+			saux = a.get();
+			
+			Boolean devolver = false;
+			
+			if(!saux.getStatus().contentEquals("vendido")) {
+				Calendar c = new GregorianCalendar();
+				String dia = Integer.toString(c.get(Calendar.DATE));
+				String mes = Integer.toString(c.get(Calendar.MONTH) + 1);
+				String annio = Integer.toString(c.get(Calendar.YEAR));
+				String actualDate = annio + "-" + mes + "-" + dia;
+				
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+				
+				Date d1 = sdf.parse(actualDate);
+				Date d2 = sdf.parse(saux.getFecha_finalizacion());
+				
+				if(d2.before(d1)) {
+					subastas.actualizarStatus("vendido",saux.getIdSubasta());
+					devolver = true;
+				}
+			}
+			else {
+				devolver = true;
+			}
+			
+			if(devolver) {
+				List<Bid> pujas2 =  pujas.findById_subasta(saux.getIdSubasta(), Sort.by("fecha").descending());
+				BidAux2 puja2 = new BidAux2();
+				if (!pujas2.isEmpty()) {
+					Bid puja = pujas2.get(0);
+					Usuario usuarioPuja = usuarios.buscarPorId(puja.getClave().getUsuario_id_usuario().toString());
+					usuarioPuja.setPassword(null);
+					
+					Location locUsuario2 = new Location(usuarioPuja.getPosX(), usuarioPuja.getPosY());
+					UsuarioAux usuarioPujaAux = new UsuarioAux(usuarioPuja.getIdUsuario(), usuarioPuja.getGender(), 
+							usuarioPuja.getBirth_date(), locUsuario2, usuarioPuja.getRating(), usuarioPuja.getStatus(), 
+							null, usuarioPuja.getEmail(), usuarioPuja.getLast_name(), usuarioPuja.getFirst_name(), 
+							usuarioPuja.getTipo(), new Picture(usuarioPuja.getIdImagen()));
+					
+					puja2 = new BidAux2(puja.getPuja(), usuarioPujaAux, puja.getFecha());
+				}
+				
+				return puja2;
+			}
+			else{
+				return null;
+			}
+		}
+		else {
+			String error = "The auction doesn´t exist.";
+			response.sendError(412, error);
+			return null;
+		}
+		
+		
 	}
 }
