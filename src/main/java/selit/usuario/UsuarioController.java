@@ -59,47 +59,73 @@ import selit.report.ReportRepository;
 import selit.security.TokenCheck;
 import io.jsonwebtoken.Jwts;
 
+/**
+ * Controlador de las operaciones relacionadas con usuarios
+ */
 @RestController   
 @RequestMapping(path="/users") 
 public class UsuarioController {
 	
+	/** Repositorio de usuarios */
 	@Autowired
 	public static UsuarioRepository usuarios;	
 	
+	/** Repositorio de anuncios */
 	@Autowired public 
 	AnuncioRepository anuncios;	
 	
+	/** Repositorio de subastas */
 	@Autowired public 
 	SubastaRepository subastas;	
 	
+	/** Repositorio de verificaciones */
 	@Autowired public 
 	VerificacionRepository verificaciones;	
 	
+	/** Repositorio de imagenes */
 	@Autowired public 
 	PictureRepository pictures;	
 	
+	// TODO: wishesA, wishesS?
+	/** Repositorio de wishesA */
 	@Autowired public 
 	WishesARepository wishesA;	
 	
+	/** Repositorio de wishesS */
 	@Autowired public 
 	WishesSRepository wishesS;	
 	
+	/** Repositorio de pujas */
 	@Autowired public
 	BidRepository pujas;
 	
+	/** Repositorio de valoraciones */
 	@Autowired public
 	ValoracionesRepository valoraciones;
 	
+	/** Reposiciones de informes */
 	@Autowired public
 	ReportRepository informes;
 	
+	/** Cifrador de contrasenyas */
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
 
+	/**
+	 * Constructor del controlador de operaciones relacionadas con usuarios.
+	 * @param usuarios Repositorio de usuarios inicial.
+	 * @param bCryptPasswordEncoder Cifrador de contrasenyas.
+	 */
 	public UsuarioController(UsuarioRepository usuarios, BCryptPasswordEncoder bCryptPasswordEncoder) {
 		UsuarioController.usuarios = usuarios;
 		UsuarioController.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
 	
+	/**
+	 * Devuelve el nombre del atributo contenido en parametro por el que 
+	 * ordenador o null si no coincide con ninguno.
+	 * @param parametro Nombre del parametro por el que ordenar.
+	 * @return Nombre del atributo por el que ordenar o null si no coincide.
+	 */
 	private String elegirAtributo(String parametro) {
 		if (parametro.equals("id")) {
 			return "id_usuario";
@@ -122,6 +148,16 @@ public class UsuarioController {
 		}
 	}
 
+	
+	// TODO: excepciones?
+	/**
+	 * Anyade un nuevo usuario a la base de datos.
+	 * @param usuario Usuario a anyadir.
+	 * @param response Respuesta http: 201 si se a creado con exito o 409 si
+	 * ya existe el correo electronico del usuario a crear.
+	 * @return "Nuevo usuario creado".
+	 * @throws IOException
+	 */
 	@PostMapping(path="")
 	public @ResponseBody String anyadirUsuario (@RequestBody UsuarioAux usuario, HttpServletResponse response) throws IOException {
 		
@@ -175,8 +211,20 @@ public class UsuarioController {
 		return "Nuevo usuario creado";
 	}
 
-	
-	/* sort page y size ?? */
+	// TODO: mostrar los valores de sort?
+	/**
+	 * Devuelve una lista de los usuarios contenidos en la base de datos.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param response Respuesta http: 412 si algun parametro de la peticion es
+	 * incorrecta o 401 si el token es incorrecto.
+	 * @param sort Atributo por el que ordenar la lista.
+	 * @param email Correo electronico del usuario a buscar.
+	 * @param page Pagina de la lista.
+	 * @param size Tamanyo de la pagina.
+	 * @return Lista de usuarios contenidos en la base de datos.
+	 * @throws IOException
+	 */
 	@GetMapping(path="")
 	public @ResponseBody List<UsuarioAux> obtenerUsuarios(HttpServletRequest request, 
 			HttpServletResponse response, @RequestParam (name = "$sort", required = false) 
@@ -329,7 +377,16 @@ public class UsuarioController {
 		
 	}
 
-
+	/**
+	 * Devuelve el usuario con identificador user_id
+	 * @param user_id Identificador del usuario
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param response Respuesta http: 401 si el token no es correcto o 404 si 
+	 * no existe un usuario con el identificador user_id
+	 * @return Usuario con identificador user_id
+	 * @throws IOException
+	 */
 	@GetMapping(path="/{user_id}")
 	public @ResponseBody UsuarioAux obtenerUsuario(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//Obtengo que usuario es el que realiza la petición
@@ -380,6 +437,20 @@ public class UsuarioController {
 				}
 	}
 	
+	/**
+	 * Actualiza la informacion del usuario con identificador user_id en la base
+	 * de datos.
+	 * @param user_id Identificador del usuario.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param usuario Usuario actualizado.
+	 * @param response Respuesta http: 500 si la imagen no se puede guardar, 
+	 * 402 si el usuario que realiza la peticion no coincide con el que se 
+	 * quiere actualizar o no es el administrador, 404 si no existe un usuario 
+	 * identificado con user_id o 401 si el token es incorrecto.
+	 * @return "OK" si se ha podido actualizar o null en caso contrario.
+	 * @throws IOException
+	 */
 	@PutMapping(path="/{user_id}")
 	public @ResponseBody String actualizarUsuario(@PathVariable String user_id, 
 						HttpServletRequest request, @RequestBody UsuarioAux usuario, 
@@ -476,6 +547,17 @@ public class UsuarioController {
 		return "OK";
 	}
 	
+	/**
+	 * Elimina el usuario con identificador user_id de la base de datos.
+	 * @param user_id Identificador del usuario.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param response Respuesta http: 404 si no existe el usuario identificado 
+	 * con user_id, 402 si no coincide el usuario que realiza la peticion con el
+	 * que se quiere eliminar o 401 si el token es incorrecto.
+	 * @return "OK" si se ha podido eliminar o null en caso contrario.
+	 * @throws IOException
+	 */
 	@DeleteMapping(path="/{user_id}")
 	public @ResponseBody String eliminarUsuario(@PathVariable String user_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
@@ -525,6 +607,21 @@ public class UsuarioController {
 		return "OK";	
 	}
 	
+	/**
+	 * Cambia la contrasenya del usuario con identificador user_id.
+	 * @param user_id Identificador del usuario.
+	 * @param oldPass Contrasenya antigua del usuario.
+	 * @param newPass Contrasenya nueva del usuario.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param response Respuesta http: 412 si no coinciden las contrasenyas, 
+	 * 402 si el usuario que realiza la peticion no es el que se quiere cambiar
+	 * la contrasenya o no es el administrador, 404 si no existe el usuario con
+	 * identificador user_id o 401 si el token es incorrecto.
+	 * @return "OK" si se ha podido cambiar la contrasenya o null en caso
+	 * contrario.
+	 * @throws IOException
+	 */
 	@PostMapping(path="/{user_id}/change_password")
 	public @ResponseBody String changePass(@PathVariable String user_id, 
 						@RequestParam (name = "old", required = false) String oldPass, @RequestParam(name = "new") String newPass,
