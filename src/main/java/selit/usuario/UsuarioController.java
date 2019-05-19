@@ -1681,4 +1681,36 @@ public class UsuarioController {
 		}	
 	}
 	
+	@GetMapping(path="/{user_id}/reviews_count")
+	public @ResponseBody Integer getUserNumberOfReviews(@PathVariable String user_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Usuario u2 = new Usuario();
+			u2 = usuarios.buscarPorId(user_id);
+			//Se comprueba si existe el usuario
+			if(u2!=null) {
+				List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(u2.getIdUsuario());
+				return vList.size();
+			}
+			else {
+				String error = "The user can´t be found.";
+				response.sendError(404, error);
+				return null;
+			}
+		}
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}	
+	}
+	
 }
