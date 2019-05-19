@@ -305,6 +305,7 @@ public class AnuncioController {
 		}
 		
 	}
+	
 	/**
 	 * Devuelve el anuncio con identificador product_id
 	 * @param product_id Identificador del producto
@@ -429,7 +430,7 @@ public class AnuncioController {
 	 * @param response Respuesta http: 500 si la imagen no se puede guardar, 
 	 * 402 si el usuario que realiza la peticion no coincide con el propietario
 	 * del anuncio que se quiere actualizar o no es el administrador, 404 si no 
-	 * existe el anuncio identificado con user_id, 401 si el token es 
+	 * existe el anuncio identificado con product_id, 401 si el token es 
 	 * incorrecto o 409 si ya se ha vendido el producto.
 	 * @return "Anuncio actualizado" si se ha podido actualizar o null en caso 
 	 * contrario.

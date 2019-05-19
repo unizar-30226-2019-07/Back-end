@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -1681,6 +1680,18 @@ public class UsuarioController {
 		}	
 	}
 	
+	/**
+	 * Devuelve el numero de calificaciones del usuario identificado con
+	 * user_id.
+	 * @param user_id Identificador del usuario.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param response Respuesta http: 404 si no existe el usuario identificado
+	 * con user_id o 401 si el token es incorrecto.
+	 * @return Numero de calificaciones del usuario identificado con user_id si
+	 * se ha logrado obtener el valor con exito o null en caso contrario.
+	 * @throws IOException
+	 */
 	@GetMapping(path="/{user_id}/reviews_count")
 	public @ResponseBody Integer getUserNumberOfReviews(@PathVariable String user_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
