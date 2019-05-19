@@ -679,6 +679,14 @@ public class UsuarioController {
 		return "OK";
 	}
 	
+	/**
+	 * Devuelve el usuario que envia la peticion.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 401 si el token es correcto.
+	 * @return Usuario que envia la peticion.
+	 * @throws IOException
+	 */
 	@GetMapping(path="/me")
 	public @ResponseBody UsuarioAux obtenerUsuarioActual(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
@@ -707,6 +715,22 @@ public class UsuarioController {
 		}
 	}
 	
+	/**
+	 * Anyade el producto identificado con product_id a la lista de productos
+	 * deseados del usuario identificado por user_id.
+	 * @param user_id Identificador del usuario.
+	 * @param product_id Identificador del producto.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 412 si el producto ya esta en su lista,
+	 * 404 si no existe el producto identificado con product_id o el usuario con
+	 * user_id, 402 si el usuario que envia la peticion no coincide con el 
+	 * identificado con user_id o no es administrador, o 401 si el token es
+	 * incorrecto.
+	 * @return "OK" si se ha podido anyadir correctamente o null en caso
+	 * contrario.
+	 * @throws IOException
+	 */
 	@PutMapping(path="/{user_id}/wishes_products/{product_id}")
 	public @ResponseBody String anyadirDeseadoProduct(@PathVariable String user_id,@PathVariable String product_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
@@ -774,6 +798,20 @@ public class UsuarioController {
 		
 	}
 	
+	/**
+	 * Devuelve la lista de productos deseados del usuario identificado con
+	 * user_id.
+	 * @param user_id Identificador del usuario.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 404 si no existe el usuario identificado
+	 * por user_id, 402 si el usuario que envia la peticion no coincide con el
+	 * identificado por user_id o 401 si el token es incorrecto.
+	 * @param lat Latidud maxima del producto deseado.
+	 * @param lng Longitud maxima del producto deseado.
+	 * @return Lista de productos deseados del usuario identificado con user_id.
+	 * @throws IOException
+	 */
 	@GetMapping(path="/{user_id}/wishes_products")
 	public @ResponseBody List<AnuncioAux2> getDeseadosProduct(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response,
 			@RequestParam (name = "lat") String lat,@RequestParam (name = "lng") String lng) throws IOException {
@@ -867,6 +905,19 @@ public class UsuarioController {
 			
 	}
 	
+	// TODO: error 402?
+	/**
+	 * Devuelve la lista de productos deseados del usuario que envia la 
+	 * peticion.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 404 si no se encuentra el usuario o 401
+	 * si el token es incorrecto.
+	 * @param lat Latidud maxima del producto deseado.
+	 * @param lng Longitud maxima del producto deseado.
+	 * @return Lista de productos deseados del usuario que envia la peticion.
+	 * @throws IOException
+	 */
 	@GetMapping(path="/me/wishes_products")
 	public @ResponseBody List<AnuncioAux2> getMyDeseadosProduct(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam (name = "lat") String lat,@RequestParam (name = "lng") String lng) throws IOException {
@@ -961,6 +1012,21 @@ public class UsuarioController {
 			
 	}
 	
+	/**
+	 * Elimina el producto identificado con product_id de la lista de productos
+	 * deseados del usuario identificado con user_id.
+	 * @param user_id Identificador del usuario.
+	 * @param product_id Identificador del producto.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 404 si el usuario identificado con
+	 * user_id o producto identificado con product_id no existe, 402 si el
+	 * usuario que envia la peticion no coincide con el identificado con
+	 * user_id o no es el administrador, o 401 si el token es incorrecto.
+	 * @return "OK" si se ha podido eliminar correctamente o null en caso
+	 * contrario.
+	 * @throws IOException
+	 */
 	@DeleteMapping(path="/{user_id}/wishes_products/{product_id}")
 	public @ResponseBody String deleteDeseadosProduct(@PathVariable String user_id, @PathVariable String product_id, HttpServletRequest request , HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
@@ -1010,7 +1076,22 @@ public class UsuarioController {
 		return "OK";
 	}
 	
-	
+	/**
+	 * Anyade la subasta identificada con product_id a la lista de subastas
+	 * deseadas del usuario identificado por user_id.
+	 * @param user_id Identificador del usuario.
+	 * @param product_id Identificador de la subasta.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 412 si la subasta ya esta en su lista,
+	 * 404 si no existe la subasta identificada con product_id o el usuario con
+	 * user_id, 402 si el usuario que envia la peticion no coincide con el 
+	 * identificado con user_id o no es administrador, o 401 si el token es
+	 * incorrecto.
+	 * @return "OK" si se ha podido anyadir correctamente o null en caso
+	 * contrario.
+	 * @throws IOException
+	 */
 	@PutMapping(path="/{user_id}/wishes_auctions/{product_id}")
 	public @ResponseBody String anyadirDeseadoAuction(@PathVariable String user_id,@PathVariable String product_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
@@ -1078,6 +1159,20 @@ public class UsuarioController {
 		
 	}
 	
+	/**
+	 * Devuelve la lista de subastas deseadas del usuario identificado con
+	 * user_id.
+	 * @param user_id Identificador del usuario.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 404 si no existe el usuario identificado
+	 * por user_id, 402 si el usuario que envia la peticion no coincide con el
+	 * identificado por user_id o 401 si el token es incorrecto.
+	 * @param lat Latidud maxima de la subasta deseada.
+	 * @param lng Longitud maxima de la subasta deseada.
+	 * @return Lista de subastas deseadas del usuario identificado con user_id.
+	 * @throws IOException
+	 */
 	@GetMapping(path="/{user_id}/wishes_auctions")
 	public @ResponseBody List<SubastaAux2> getDeseadosAuction(@PathVariable String user_id, HttpServletRequest request, HttpServletResponse response,
 			@RequestParam (name = "lat") String lat,@RequestParam (name = "lng") String lng) throws IOException {
@@ -1193,6 +1288,18 @@ public class UsuarioController {
 			
 	}
 	
+	/**
+	 * Devuelve la lista de subastas deseadas del usuario que envia la 
+	 * peticion.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 404 si no se encuentra el usuario o 401
+	 * si el token es incorrecto.
+	 * @param lat Latidud maxima de la subasta deseada.
+	 * @param lng Longitud maxima de la subasta deseada.
+	 * @return Lista de subastas deseadas del usuario que envia la peticion.
+	 * @throws IOException
+	 */
 	@GetMapping(path="/me/wishes_auctions")
 	public @ResponseBody List<SubastaAux2> getMyDeseadosAuction(HttpServletRequest request, HttpServletResponse response,
 			@RequestParam (name = "lat") String lat,@RequestParam (name = "lng") String lng) throws IOException {
@@ -1309,6 +1416,21 @@ public class UsuarioController {
 			
 	}
 	
+	/**
+	 * Elimina la subasta identificado con product_id de la lista de productos
+	 * deseados del usuario identificado con user_id.
+	 * @param user_id Identificador del usuario.
+	 * @param product_id Identificador de la subsata.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 404 si el usuario identificado con
+	 * user_id o subasta identificada con product_id no existe, 402 si el
+	 * usuario que envia la peticion no coincide con el identificado con
+	 * user_id o no es el administrador, o 401 si el token es incorrecto.
+	 * @return "OK" si se ha podido eliminar correctamente o null en caso
+	 * contrario.
+	 * @throws IOException
+	 */
 	@DeleteMapping(path="/{user_id}/wishes_auctions/{product_id}")
 	public @ResponseBody String deleteDeseadosAuctions(@PathVariable String user_id, @PathVariable String product_id, HttpServletRequest request , HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
@@ -1358,6 +1480,16 @@ public class UsuarioController {
 		return "OK";
 	}
 	
+	/**
+	 * Devuelve la lista de valoraciones del usuario identificado con user_id.
+	 * @param user_id Identificador del usuario.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 404 si no se encuentra al usuario o 401
+	 * si el token es incorrecto.
+	 * @return Lista de valoraciones del usuario identificado con user_id. 
+	 * @throws IOException
+	 */
 	@GetMapping(path="/{user_id}/reviews")
 	public @ResponseBody List<ValoracionAux> getUserReviews(@PathVariable String user_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
@@ -1410,6 +1542,18 @@ public class UsuarioController {
 		}	
 	}
 	
+	/**
+	 * Anyade la valoracion valoracion al usuario identificado con user_id. 
+	 * @param user_id Identificador del usuario.
+	 * @param valoracion Valoracion a anyadir.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 412 si la valoracion es incorrecta, 404
+	 * si no existe el usuario identificado con user_id o 401 si el token es
+	 * incorrecto.
+	 * @return "OK" si se ha podido anyadir con exito o null en caso contrario.
+	 * @throws IOException
+	 */
 	@PostMapping(path="/{user_id}/reviews")
 	public @ResponseBody String addUserReviews(@PathVariable String user_id, @RequestBody ValoracionAux valoracion,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
