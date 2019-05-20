@@ -36,4 +36,3 @@ test-output/
 .orig
 # End of https://www.gitignore.io/api/java
 src/main/resources/application.properties
-src/main/resources/Spring-Mail.xml
