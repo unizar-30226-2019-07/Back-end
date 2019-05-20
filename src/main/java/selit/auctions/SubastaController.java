@@ -50,38 +50,59 @@ import selit.bid.ClavePrimaria;
 import selit.media.Media;
 import io.jsonwebtoken.Jwts;
 
+/** 
+ * Clase controladora de las operaciones relacionadas con subastas 
+ */
 @RestController   
 @RequestMapping(path="/auctions"
 		+ "") 
 public class SubastaController {
 	
+	/** Repositorio de usuarios */
 	@Autowired
 	public 
 	UsuarioRepository usuarios;
 	
+	/** Repositorio de subastas */
 	@Autowired
 	private SubastaRepository subastas;	
 	
+	/** Repositorio de imagenes */
 	@Autowired public 
 	PictureRepository pictures;
 	
+	/** Repositorio de verificaciones */
 	@Autowired public 
 	VerificacionRepository verificaciones;	
 	
+	/** Repositorio de pujas */
 	@Autowired public
 	BidRepository pujas;
 	
+	/** TODO: ??? */
 	@Autowired public
 	WishesSRepository wishesS;
 
-	
+	/** Cifrador de contrasenyas */
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
 
+	/**
+	 * Constructor.
+	 * @param usuarios Repositorio de usuarios.
+	 * @param bCryptPasswordEncoder Cifrador de constrasenyas.
+	 */
 	public SubastaController(UsuarioRepository usuarios, BCryptPasswordEncoder bCryptPasswordEncoder) {
 		UsuarioController.usuarios = usuarios;
 		UsuarioController.bCryptPasswordEncoder = bCryptPasswordEncoder;
 	}
 	
+	/**
+	 * Devuelve la interseccion entre dos listas list1 y list2 de tipo T.
+	 * @param <T> Tipo de la lista
+	 * @param list1 Lista 1
+	 * @param list2 Lista 2
+	 * @return Interseccion entre las dos listas list1 y list2.
+	 */
 	private <T> List<T> intersection(List<T> list1, List<T> list2) {
         List<T> list = new ArrayList<T>();
 
@@ -94,6 +115,12 @@ public class SubastaController {
         return list;
     }
 	
+	/**
+	 * Devuelve el nombre del atributo contenido en parametro por el que 
+	 * ordenador o null si no coincide con ninguno.
+	 * @param parametro Nombre del parametro por el que ordenar.
+	 * @return Nombre del atributo por el que ordenar o null si no coincide.
+	 */
 	private String elegirAtributo(String parametro) {
 		if (parametro.equals("id")) {
 			return "id_subasta";
@@ -118,6 +145,14 @@ public class SubastaController {
 		}
 	}
 	
+	/**
+	 * Devuelve la pagina page de tamanyo size de la lista list1 de tipo T.
+	 * @param <T> Tipo de la lista.
+	 * @param list1 Lista que paginar.
+	 * @param page Pagina de la lista.
+	 * @param size Tamanyo de la pagina.
+	 * @return Pagina page de tamanyo size de la lista list1 de tipo T.
+	 */
 	private <T> List<T> paginar(List<T> list1, Integer page, Integer size) {
         
 		List<T> list = new ArrayList<T>();
@@ -139,6 +174,19 @@ public class SubastaController {
         return list;
     }
 	
+	/**
+	 * Anyade una nueva subasta a la base de datos.
+	 * @param subastaAux Subasta a anyadir.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param response Respuesta http: 201 si se a creado con exito, 402 si el
+	 * usuario que envia la peticion no coincide con el identificado en la
+	 * subasta subastaAux, 500 si no se han podido guardar las imagenes o 401 si
+	 * el token es incorrecto.
+	 * @return "Nueva subastas creada" si se ha podido insertar con exito o null
+	 * en caso contrario.
+	 * @throws IOException
+	 */
 	@PostMapping(path="")
 	public @ResponseBody String anyadirSubasta(@RequestBody SubastaAux subastaAux, HttpServletRequest request, HttpServletResponse response) throws IOException { 
 
@@ -203,6 +251,19 @@ public class SubastaController {
 		}
 	}
 
+	/**
+	 * Elimina la subasta con identificador auction_id de la base de datos.
+	 * @param auction_id Identificador de la subasta.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param response Respuesta http: 404 si no existe la subasta identificado 
+	 * con auction_id, 402 si no coincide el usuario que realiza la peticion con 
+	 * el propietario de la subasta que se quiere eliminar o 401 si el token es 
+	 * incorrecto.
+	 * @return "Subasta eliminada" si se ha podido eliminar o null en caso 
+	 * contrario.
+	 * @throws IOException
+	 */
 	@DeleteMapping(path="/{auction_id}")
 	public @ResponseBody String eliminarSubasta(@PathVariable String auction_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
@@ -264,6 +325,19 @@ public class SubastaController {
 		
 	}
 	
+	/**
+	 * Devuelve la subasta con identificador auction_id
+	 * @param auction_id Identificador de la subasta
+	 * @param lat Latitud de la ubicacion del que envia la peticion.
+	 * @param lng Longitud de la ubicacion del que envia la peticion.
+	 * @param tokenBool True si se envia el token.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param response Respuesta http: 401 si el token no es correcto o 404 si 
+	 * no existe una subasta identificada con auction_id.
+	 * @return Subasta con identificador auction_id.
+	 * @throws IOException
+	 */
 	@GetMapping(path="/{auction_id}")
 	public @ResponseBody SubastaAux2 obtenerSubasta(@PathVariable String auction_id, @RequestParam (name = "lat", required = false) String lat,
 			@RequestParam (name = "lng", required = false) String lng,@RequestParam (name = "token", required = false) String tokenBool, 
@@ -374,6 +448,30 @@ public class SubastaController {
 		
 	}
 	
+	/**
+	 * Devuelve la lista de todas las subastas.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 412 si hay algun parametro incorrecto o
+	 * 401 si el token enviado es incorrecto.
+	 * @param lat Latitud de la ubicacion del usuario que envia la peticion.
+	 * @param lng Longitud de la ubicacion del usuario que envia la peticion.
+	 * @param distance Distancia maxima de las subastas.
+	 * @param category Categoria del producto.
+	 * @param search Termino contenido en el titulo de la subasta.
+	 * @param priceFrom Precio minimo de la subasta.
+	 * @param priceTo Precio maximo de la subasta.
+	 * @param publishedFrom Fecha de publicacion minima de la subasta.
+	 * @param publishedTo Fecha de publicacion maxima de la subasta.
+	 * @param owner Propietario del producto.
+	 * @param status Estado (vendido o en venta) de la subasta.
+	 * @param size Tamanyo de la pagina.
+	 * @param page Pagina de la lista de subastas.
+	 * @param sort Forma de ordenar la lista de subastas.
+	 * @param tokenBool True si se envia el token.
+	 * @return Lista de todas las subastas.
+	 * @throws IOException
+	 */
 	@GetMapping(path="")
 	public @ResponseBody List<SubastaAux2> obtenerSubastas(HttpServletRequest request, 
 			HttpServletResponse response, 
@@ -562,6 +660,22 @@ public class SubastaController {
 		
 	}
 	
+	/**
+	 * Actualiza la informacion de la subasta con identificador auction_id en la 
+	 * base de datos.
+	 * @param auction_id Identificador de la subasta.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param subasta Subasta actualizada.
+	 * @param response Respuesta http: 500 si la imagen no se puede guardar, 
+	 * 402 si el usuario que realiza la peticion no coincide con el propietario
+	 * de la subasta que se quiere actualizar o no es el administrador, 404 si 
+	 * no existe el anuncio identificado con auction_id, 401 si el token es 
+	 * incorrecto o 409 si ya se ha vendido el producto.
+	 * @return "Subasta actualizada" si se ha podido actualizar o null en caso 
+	 * contrario.
+	 * @throws IOException
+	 */
 	@PutMapping(path="/{auction_id}")
 	public @ResponseBody String actualizarSubasta(@PathVariable String auction_id, HttpServletRequest request,@RequestBody SubastaAux subasta, HttpServletResponse response) throws IOException { 
 
@@ -628,7 +742,7 @@ public class SubastaController {
 								subasta.getEndDate(), subasta.getOwner_id(),subasta.getCategory(),auction_id);
 						
 						// Se devuelve mensaje de confirmacion.
-						return "Anuncio actualizado";
+						return "Subasta actualizada";
 						
 					} else {
 						
@@ -656,6 +770,20 @@ public class SubastaController {
 		}
 	}
 	
+	/**
+	 * Anyade una nueva puja a la subasta identificada por auction_id.
+	 * @param auction_id Identificador de la subasta.
+	 * @param puja Nueva puja.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 409 si la puja es incorrecta, 404 si la
+	 * subasta identificada con auction_id no existe, 402 si el usuario que
+	 * envia la peticion no es el propietario de la subasta o 401 si el token
+	 * es incorrecto.
+	 * @return "Guardada la puja correctamente" si se ha guardado con exito o
+	 * null si no se ha podido guardar correctamente.
+	 * @throws IOException
+	 */
 	@PostMapping(path="/{auction_id}/bid")
 	public @ResponseBody String anyadirPuja(@PathVariable Long auction_id, @RequestBody BidAux puja, HttpServletRequest request, HttpServletResponse response) throws IOException { 
 
@@ -724,6 +852,18 @@ public class SubastaController {
 		}
 	}
 	
+	/**
+	 * Finaliza la subasta identificado con auction_id.
+	 * @param auction_id  Identificador de la subasta.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que ha enviado la peticion.
+	 * @param response Respuesta http: 412 si no existe la subasta identficada
+	 * con auction_id.
+	 * @return Devuelve la ultima puja de la subasta identificada por 
+	 * auction_id.
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	@PutMapping(path="/{auction_id}/sell")
 	public @ResponseBody BidAux2 finSubasta(@PathVariable Long auction_id, HttpServletRequest request, HttpServletResponse response) throws IOException, ParseException { 
 		Optional<Subasta> a = subastas.findSubastaCommon(auction_id);

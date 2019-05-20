@@ -41,28 +41,46 @@ import selit.security.TokenCheck;
 
 import io.jsonwebtoken.Jwts;
 
+/**
+ * Controlador de las operaciones relacionadas con productos
+ */
 @RestController
 @RequestMapping(path="/products")
 public class AnuncioController {
 
+	/** Repositorio de productos */
 	@Autowired
 	public
 	AnuncioRepository anuncios;
 	
+	/** Repositorio de usuarios */
 	@Autowired
 	public 
 	UsuarioRepository usuarios;
 
+	/** Repositorio de imagenes */
 	@Autowired public 
 	PictureRepository pictures;	
 	
+	/** TODO: ??? */
 	@Autowired public 
 	WishesARepository wishesA;	
 	
+	/**
+	 * Constructor del controlador.
+	 * @param productos Repositorio de productos.
+	 */
 	public AnuncioController(AnuncioRepository productos) {
 		anuncios = productos;
 	}
 	
+	/**
+	 * Devuelve la interseccion entre dos listas list1 y list2 de tipo T.
+	 * @param <T> Tipo de la lista
+	 * @param list1 Lista 1
+	 * @param list2 Lista 2
+	 * @return Interseccion entre las dos listas list1 y list2.
+	 */
 	private <T> List<T> intersection(List<T> list1, List<T> list2) {
         List<T> list = new ArrayList<T>();
 
@@ -75,6 +93,12 @@ public class AnuncioController {
         return list;
     }
 	
+	/**
+	 * Devuelve el nombre del atributo contenido en parametro por el que 
+	 * ordenador o null si no coincide con ninguno.
+	 * @param parametro Nombre del parametro por el que ordenar.
+	 * @return Nombre del atributo por el que ordenar o null si no coincide.
+	 */
 	private String elegirAtributo(String parametro) {
 		if (parametro.equals("id")) {
 			return "id_producto";
@@ -103,6 +127,14 @@ public class AnuncioController {
 		}
 	}
 	
+	/**
+	 * Devuelve la pagina page de tamanyo size de la lista list1 de tipo T.
+	 * @param <T> Tipo de la lista.
+	 * @param list1 Lista que paginar.
+	 * @param page Pagina de la lista.
+	 * @param size Tamanyo de la pagina.
+	 * @return Pagina page de tamanyo size de la lista list1 de tipo T.
+	 */
 	private <T> List<T> paginar(List<T> list1, Integer page, Integer size) {
         
 		List<T> list = new ArrayList<T>();
@@ -124,6 +156,19 @@ public class AnuncioController {
         return list;
     }
 	
+	/**
+	 * Anyade un nuevo producto a la base de datos.
+	 * @param anuncio Anuncio a anyadir.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param response Respuesta http: 201 si se a creado con exito, 402 si el
+	 * usuario que envia la peticion no coincide con el identificado en el
+	 * anuncio anuncio, 500 si no se han podido guardar las imagenes o 401 si
+	 * el token es incorrecto.
+	 * @return "Nuevo producto creado" si se ha podido insertar con exito o null
+	 * en caso contrario.
+	 * @throws IOException
+	 */
 	@PostMapping(path="")
 	public @ResponseBody String anyadirAnuncio (@RequestBody AnuncioAux anuncio, HttpServletRequest request, HttpServletResponse response) throws IOException { 
 
@@ -188,6 +233,19 @@ public class AnuncioController {
 		}
 	}
 	
+	/**
+	 * Elimina el anuncio con identificador product_id de la base de datos.
+	 * @param product_id Identificador del anuncio.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param response Respuesta http: 404 si no existe el anuncio identificado 
+	 * con product_id, 402 si no coincide el usuario que realiza la peticion con el
+	 * propietario del anuncio que se quiere eliminar o 401 si el token es 
+	 * incorrecto.
+	 * @return "Anuncio eliminado" si se ha podido eliminar o null en caso 
+	 * contrario.
+	 * @throws IOException
+	 */
 	@DeleteMapping(path="/{product_id}")
 	public @ResponseBody String eliminarAnuncio(@PathVariable String product_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
@@ -247,7 +305,20 @@ public class AnuncioController {
 		}
 		
 	}
-
+	
+	/**
+	 * Devuelve el anuncio con identificador product_id
+	 * @param product_id Identificador del producto
+	 * @param lat Latitud de la ubicacion del que envia la peticion.
+	 * @param lng Longitud de la ubicacion del que envia la peticion.
+	 * @param tokenBool True si se envia el token.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param response Respuesta http: 401 si el token no es correcto o 404 si 
+	 * no existe un producto identificado con product_id.
+	 * @return Anuncio con identificador product_id.
+	 * @throws IOException
+	 */
 	@GetMapping(path="/{product_id}")
 	public @ResponseBody AnuncioAux2 obtenerAnuncio(@PathVariable String product_id, @RequestParam (name = "lat", required = false) String lat,
 			@RequestParam (name = "lng", required = false) String lng, @RequestParam (name = "token", required = false) String tokenBool,
@@ -349,6 +420,22 @@ public class AnuncioController {
 			}					 
 	}
 	
+	/**
+	 * Actualiza la informacion del anuncio con identificador product_id en la 
+	 * base de datos.
+	 * @param product_id Identificador del producto.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario.
+	 * @param anuncio Anuncio actualizado.
+	 * @param response Respuesta http: 500 si la imagen no se puede guardar, 
+	 * 402 si el usuario que realiza la peticion no coincide con el propietario
+	 * del anuncio que se quiere actualizar o no es el administrador, 404 si no 
+	 * existe el anuncio identificado con product_id, 401 si el token es 
+	 * incorrecto o 409 si ya se ha vendido el producto.
+	 * @return "Anuncio actualizado" si se ha podido actualizar o null en caso 
+	 * contrario.
+	 * @throws IOException
+	 */
 	@PutMapping(path="/{product_id}")
 	public @ResponseBody String actualizarAnuncio(@PathVariable String product_id, 
 						HttpServletRequest request, @RequestBody AnuncioAux anuncio, 
@@ -445,6 +532,30 @@ public class AnuncioController {
 		}
 	}
 	
+	/**
+	 * Devuelve la lista de todos los anuncios.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 412 si hay algun parametro incorrecto o
+	 * 401 si el token enviado es incorrecto.
+	 * @param lat Latitud de la ubicacion del usuario que envia la peticion.
+	 * @param lng Longitud de la ubicacion del usuario que envia la peticion.
+	 * @param distance Distancia maxima de los productos.
+	 * @param category Categoria de los productos.
+	 * @param search Termino contenido en el titulo de un anuncio.
+	 * @param priceFrom Precio minimo de los productos.
+	 * @param priceTo Precio maximo de los productos.
+	 * @param publishedFrom Fecha de publicacion minima de los productos.
+	 * @param publishedTo Fecha de publicacion maxima de los productos.
+	 * @param owner Propietario de los productos.
+	 * @param status Estado de los productos.
+	 * @param sort Forma de ordenar la lista de productos.
+	 * @param page Pagina de la lista de productos.
+	 * @param size Tamanyo de la pagina.
+	 * @param tokenBool True si se envia el token.
+	 * @return Lista de todos los anuncios.
+	 * @throws IOException
+	 */
 	@GetMapping(path="")
 	public @ResponseBody List<AnuncioAux2> obtenerAnuncios(HttpServletRequest request, 
 			HttpServletResponse response, 
@@ -618,6 +729,22 @@ public class AnuncioController {
 			return rListAn;		
 	}
 	
+	/**
+	 * Actualiza el estado del producto identificado con product_id a vendido y
+	 * actualiza el comprador del mismo producto.
+	 * @param product_id Identificador del producto.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param anuncio Anuncio que contiene el identificador del comprador del
+	 * producto.
+	 * @param response Respuesta http: 404 si el producto identificado con
+	 * product_id no existe, 402 si el usuario que envia la peticion no coincide
+	 * con el propietario del producto que se quiere actualizar o 409 si ya se
+	 * ha vendido el producto.
+	 * @return "Anuncio actualizado" si se ha actualizado con exito o null en
+	 * caso contrario.
+	 * @throws IOException
+	 */
 	@PutMapping(path="/{product_id}/sell")
 	public @ResponseBody String actualizarVendido(@PathVariable String product_id, 
 						HttpServletRequest request, @RequestBody AnuncioAux anuncio, 
@@ -688,7 +815,6 @@ public class AnuncioController {
 			response.sendError(401, error);
 			return null;
 		}
-	}
-	
+	}	
 	
 }

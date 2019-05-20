@@ -148,7 +148,7 @@ public class ReportController {
 					informes.save(r);
 				}
 				else {
-					String error = "The report for this product has already been done.";
+					String error = "The report for this product has not been done.";
 					response.sendError(412, error);
 					return null;
 				}
