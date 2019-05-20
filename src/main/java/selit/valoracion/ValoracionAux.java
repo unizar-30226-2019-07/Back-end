@@ -82,6 +82,16 @@ public class ValoracionAux {
 		this.id_producto = id_producto;
 	}
 
+
+	public UsuarioAux getBuyer() {
+		return buyer;
+	}
+
+
+	public void setBuyer(UsuarioAux buyer) {
+		this.buyer = buyer;
+	}
+
 	
 	
 }

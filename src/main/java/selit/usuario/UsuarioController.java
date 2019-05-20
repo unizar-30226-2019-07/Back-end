@@ -202,7 +202,7 @@ public class UsuarioController {
 		ApplicationContext context = 
 	             new ClassPathXmlApplicationContext("Spring-Mail.xml");
 		MailMail mm = (MailMail) context.getBean("mailMail");
-		mm.sendMail("selit@gmail.com",usuario.getEmail(),"","Para activar su cuenta acceda a la siguiente direccion: http://selit.naval.cat/verify?random=" + saltStr);
+		mm.sendMail("selitenterprise@gmail.com",usuario.getEmail(),"Activación de la cuenta","Para activar su cuenta acceda a la siguiente direccion: https://selit.naval.cat/verify?random=" + saltStr);
 		((ClassPathXmlApplicationContext) context).close();
 		
 		// Se contesta a la peticion con un mensaje de exito.
@@ -1218,30 +1218,11 @@ public class UsuarioController {
 						UsuarioAux usuarioSubasta2;
 						BidAux2 puja2;
 						if (pujas2.isEmpty()) {
-							usuarioSubasta2 = null;
 							puja2 = null;
 						} else {
 							Bid puja = pujas2.get(0);
 							Usuario usuarioPuja = usuarios.buscarPorId(puja.getClave().getUsuario_id_usuario().toString());
-							usuarioPuja.setPassword(null);
-							Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());
-							Location locUsuario = new Location(usuarioSubasta.getPosX(), usuarioSubasta.getPosY());
-							Picture picUsuario2;
-							if (usuarioSubasta.getIdImagen() != null) {
-								Optional<Picture> picUsuario;
-								picUsuario = pictures.findById(usuarioSubasta.getIdImagen());
-								if (picUsuario.isEmpty()) {
-									picUsuario2 = null;
-								} else {
-									picUsuario2 = picUsuario.get();
-								}
-							} else {
-								picUsuario2 = null;
-							}
-							usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), 
-									usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(), 
-									null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
-									usuarioSubasta.getTipo(), picUsuario2);
+							usuarioPuja.setPassword(null);					
 							
 							Location locUsuario2 = new Location(usuarioPuja.getPosX(), usuarioPuja.getPosY());
 							UsuarioAux usuarioPujaAux = new UsuarioAux(usuarioPuja.getIdUsuario(), usuarioPuja.getGender(), 
@@ -1251,6 +1232,13 @@ public class UsuarioController {
 							
 							puja2 = new BidAux2(puja.getPuja(), usuarioPujaAux, puja.getFecha());
 						}
+						
+						Usuario usuarioSubasta = usuarios.buscarPorId(saux.getId_owner().toString());
+						Location locUsuario = new Location(usuarioSubasta.getPosX(), usuarioSubasta.getPosY());
+						usuarioSubasta2 = new UsuarioAux(usuarioSubasta.getIdUsuario(), usuarioSubasta.getGender(), 
+								usuarioSubasta.getBirth_date(), locUsuario, usuarioSubasta.getRating(), usuarioSubasta.getStatus(), 
+								null, usuarioSubasta.getEmail(), usuarioSubasta.getLast_name(), usuarioSubasta.getFirst_name(), 
+								usuarioSubasta.getTipo(), null);
 							
 						
 						Location loc = new Location(saux.getPosX(),saux.getPosY());
