@@ -181,8 +181,9 @@ public class SubastaController {
 	 * del usuario.
 	 * @param response Respuesta http: 201 si se a creado con exito, 402 si el
 	 * usuario que envia la peticion no coincide con el identificado en la
-	 * subasta subastaAux, 500 si no se han podido guardar las imagenes o 401 si
-	 * el token es incorrecto.
+	 * subasta subastaAux, 500 si no se han podido guardar las imagenes, 401 si
+	 * el token es incorrecto o 412 si la fecha de creacion de la subasta es
+	 * posterior a la fecha de finalizacion.
 	 * @return "Nueva subastas creada" si se ha podido insertar con exito o null
 	 * en caso contrario.
 	 * @throws IOException
@@ -205,37 +206,41 @@ public class SubastaController {
 		//Se comrprueba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
 			if(subastaAux.getOwner_id().equals(u.getIdUsuario())) {
-				
+			
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 				LocalDateTime now = LocalDateTime.now();  
-				
-				Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getEndDate(), subastaAux.getStartPrice(),u.getIdUsuario(),subastaAux.getCategory(),
-								subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng(),"en venta",subastaAux.getCurrency(),Long.valueOf(0),Long.valueOf(0)); 
-				
-				// Se guarda la subasta.
-				subasta = subastas.save(subasta);
-				
-				List<Picture> lp = subastaAux.getMedia();
-				Long idSubasta = subasta.getIdSubasta();
-				
-				
-				for(Picture pic : lp){
-					pic.setIdSubasta(idSubasta);
-					try {
-						pictures.save(pic);
-					}
-					catch(Exception e){
-						subastas.deleteById(idSubasta);
-						String error = "The image can´t be saved.";
-						response.sendError(500, error);
-						return null;
+				if (LocalDate.parse(subastaAux.getEndDate(), dtf).isAfter(now.toLocalDate())) {	
+					Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getEndDate(), subastaAux.getStartPrice(),u.getIdUsuario(),subastaAux.getCategory(),
+									subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng(),"en venta",subastaAux.getCurrency(),Long.valueOf(0),Long.valueOf(0)); 
+					
+					// Se guarda la subasta.
+					subasta = subastas.save(subasta);
+					
+					List<Picture> lp = subastaAux.getMedia();
+					Long idSubasta = subasta.getIdSubasta();
+					
+					
+					for(Picture pic : lp){
+						pic.setIdSubasta(idSubasta);
+						try {
+							pictures.save(pic);
+						}
+						catch(Exception e){
+							subastas.deleteById(idSubasta);
+							String error = "The image can´t be saved.";
+							response.sendError(500, error);
+							return null;
+						}
+						
 					}
 					
+					// Se contesta a la peticion con un mensaje de exito.
+					response.setStatus(201);
+					return "Nueva subasta creada";
+				} else {
+					response.sendError(412, "La fecha de finalizacion es anterior a la de creacion ");
+					return null;
 				}
-				
-				// Se contesta a la peticion con un mensaje de exito.
-				response.setStatus(201);
-				return "Nueva subasta creada";
 			}
 			else {
 				String error = "The user doesn't have enough permissions.";

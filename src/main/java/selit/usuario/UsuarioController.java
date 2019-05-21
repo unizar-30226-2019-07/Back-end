@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -1710,6 +1713,51 @@ public class UsuarioController {
 			response.sendError(401, error);
 			return null;
 		}	
+	}
+	
+	/**
+	 * Envia un correo electronico al usuario que ha enviado la peticion con
+	 * toda su informacion.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 401 si el token es correcto.
+	 * @return "Correo enviado" si se ha enviado con exito o null en caso
+	 * contrario.
+	 * @throws IOException
+	 */
+	@GetMapping(path="/request")
+	public @ResponseBody String correoUsuarioActual(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Location loc = new Location(u.getPosX(), u.getPosY());
+			
+			UsuarioAux rUser = new UsuarioAux(u.getIdUsuario(),u.getGender(),u.getBirth_date(),
+											loc,u.getRating(),u.getStatus(),null,u.getEmail(),
+											u.getLast_name(),u.getFirst_name(),u.getTipo(),new Picture(u.getIdImagen()));
+			ObjectMapper mapperObj = new ObjectMapper();
+			ApplicationContext context = 
+		             new ClassPathXmlApplicationContext("Spring-Mail.xml");
+			MailMail mm = (MailMail) context.getBean("mailMail");
+			mm.sendMail("selitenterprise@gmail.com",rUser.getEmail(),"Informacion personal",mapperObj.writeValueAsString(rUser));
+			((ClassPathXmlApplicationContext) context).close();
+			
+			return "Correo enviado";
+		} 
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}
 	}
 	
 }
