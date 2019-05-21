@@ -20,4 +20,7 @@ public interface ValoracionesRepository extends JpaRepository<Valoracion, Long>{
 	 */
 	@Query("from Valoracion where id_anunciante=:id_anunciante")
 	public List<Valoracion> buscarPorIdAnunciante(@Param("id_anunciante") Long id_anunciante);
+	
+	@Query("from Valoracion where id_anunciante=:id_anunciante OR id_comprador=:id_comprador")
+	public List<Valoracion> buscarPorIdUsuario(@Param("id_anunciante") Long id_anunciante, @Param("id_comprador") Long id_comprador);
 }
