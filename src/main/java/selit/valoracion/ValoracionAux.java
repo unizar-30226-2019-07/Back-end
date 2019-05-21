@@ -56,32 +56,32 @@ public class ValoracionAux {
 	}
 
 	/**
-	 * Devuelve el identificador de la valoracion.
-	 * @return Identificador de la valoracion.
+	 * Devuelve el identificador del usuario comprador.
+	 * @return Identificador del usuario comprador.
 	 */
 	public Long getId_comprador() {
 		return id_comprador;
 	}
 
 	/**
-	 * Cambia el identificador de la valoracion a id_valoracion.
-	 * @param id_valoracion Nuevo identificador de la valoracion.
+	 * Cambia el identificador del usuario comprador a id_comprador.
+	 * @param id_comprador Nuevo identificador del usuario comprador.
 	 */
 	public void setId_comprador(Long id_comprador) {
 		this.id_comprador = id_comprador;
 	}
 
 	/**
-	 * Devuelve el identificador del usuario comprador.
-	 * @return Identificador del usuario comprador.
+	 * Devuelve el identificador del usuario anunciante.
+	 * @return Identificador del usuario anunciante.
 	 */
 	public Long getId_anunciante() {
 		return id_anunciante;
 	}
 
 	/**
-	 * Cambia el identificador del usuario comprador a id_comprador.
-	 * @param id_comprador Nuevo identificador del usuario comprador.
+	 * Cambia el identificador del usuario anunciante a id_anunciante.
+	 * @param id_anunciante Nuevo identificador del usuario anunciante.
 	 */
 	public void setId_anunciante(Long id_anunciante) {
 		this.id_anunciante = id_anunciante;
