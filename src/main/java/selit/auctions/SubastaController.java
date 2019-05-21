@@ -784,7 +784,7 @@ public class SubastaController {
 	 * @param response Respuesta http: 409 si la puja es incorrecta, 404 si la
 	 * subasta identificada con auction_id no existe, 402 si el usuario que
 	 * envia la peticion no es el propietario de la subasta o 401 si el token
-	 * es incorrecto.
+	 * es incorrecto, 412 si el precio es menor a 0.
 	 * @return "Guardada la puja correctamente" si se ha guardado con exito o
 	 * null si no se ha podido guardar correctamente.
 	 * @throws IOException
@@ -824,23 +824,30 @@ public class SubastaController {
 					} else {
 						puja3.setClave(new ClavePrimaria(puja.getBidder_id(), puja2.getClave().getSubasta_id_producto(), puja2.getClave().getSubasta_id_usuario()));
 					}
-					if ( puja2 == null || puja2.getPuja() < puja.getAmount()) {
-						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
-						LocalDateTime now = LocalDateTime.now(); 
-						if (LocalDate.parse(subasta.getFecha_finalizacion(), dtf).isAfter(now.toLocalDate())) {
-							puja3.setPuja(puja.getAmount());
-							puja3.setFecha(dtf.format(now));
-							pujas.save(puja3);
-							response.setStatus(201);
-							return "Guardada la puja correctamente";
+					if(puja.getAmount() >= 0) {
+						if (puja2 == null || puja2.getPuja() < puja.getAmount()) {
+							DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
+							LocalDateTime now = LocalDateTime.now(); 
+							if (LocalDate.parse(subasta.getFecha_finalizacion(), dtf).isAfter(now.toLocalDate())) {
+								puja3.setPuja(puja.getAmount());
+								puja3.setFecha(dtf.format(now));
+								pujas.save(puja3);
+								response.setStatus(201);
+								return "Guardada la puja correctamente";
+							} else {
+								response.sendError(409, "La subasta termino " + subasta.getFecha_finalizacion());
+								return null;
+							}
 						} else {
-							response.sendError(409, "La subasta termino " + subasta.getFecha_finalizacion());
+							response.sendError(409, "No se ha superado el precio actual de " + puja2.getPuja());
 							return null;
-						}
-					} else {
-						response.sendError(409, "No se ha superado el precio actual de " + puja2.getPuja());
+						} 
+					}
+					else {
+						String error = "The price should be 0 or higher.";
+						response.sendError(412, error);
 						return null;
-					} 
+					}
 				} else {
 					response.sendError(404, "No existe la subasta con id " + auction_id);
 					return null;
