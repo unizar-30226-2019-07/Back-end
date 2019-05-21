@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Optional;
 import java.lang.Float;
 import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -186,15 +189,20 @@ public class AnuncioController {
 		
 		//Se comrprueba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
-			if(anuncio.getOwner_id().equals(u.getIdUsuario())) {
+			if(anuncio.getOwner_id().equals(u.getIdUsuario()) || u.getTipo().contentEquals("administrador")) {
 				// Se definen los valores por defecto de las columnas obligatorias.
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 				LocalDateTime now = LocalDateTime.now();  
 
 				if(anuncio.getPrice() >= 0) {
+					Float lat = (float) Math.round(anuncio.getLocation().getLat()*1000)/1000f;
+					Float lng = (float) Math.round(anuncio.getLocation().getLng()*1000)/1000f;
+					
+					
+					
 					Anuncio anun = new Anuncio(dtf.format(now).toString(),anuncio.getDescription(),anuncio.getTitle(),
-							anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),anuncio.getPrice(),
-							anuncio.getCurrency(),Long.valueOf(0),Long.valueOf(0),u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
+							lat,lng,anuncio.getPrice(),anuncio.getCurrency(),Long.valueOf(0),Long.valueOf(0),
+							u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
 					// Se guarda el anuncio.
 					Anuncio an = anuncios.save(anun);
 					
@@ -506,10 +514,12 @@ public class AnuncioController {
 								}
 							}
 							
+							Float lat = (float) Math.round(anuncio.getLocation().getLat()*1000)/1000f;
+							Float lng = (float) Math.round(anuncio.getLocation().getLng()*1000)/1000f;
+							
 							// Se actualiza el producto.
 							anuncios.actualizarAnuncio(anuncio3.getPublicate_date(),anuncio.getDescription(),
-									anuncio.getTitle(),anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),
-									anuncio.getPrice(),anuncio.getCurrency(),
+									anuncio.getTitle(),lat,lng,anuncio.getPrice(),anuncio.getCurrency(),
 									anuncio3.getId_owner(),anuncio.getCategory(),product_id,anuncio.getStatus());
 							
 							// Se devuelve mensaje de confirmacion.

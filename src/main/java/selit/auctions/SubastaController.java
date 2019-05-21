@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -210,8 +212,11 @@ public class SubastaController {
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 				LocalDateTime now = LocalDateTime.now();  
 				if (LocalDate.parse(subastaAux.getEndDate(), dtf).isAfter(now.toLocalDate())) {	
+					Float lat = (float) Math.round(subastaAux.getLocation().getLat()*1000)/1000f;
+					Float lng = (float) Math.round(subastaAux.getLocation().getLng()*1000)/1000f;
+					
 					Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getEndDate(), subastaAux.getStartPrice(),u.getIdUsuario(),subastaAux.getCategory(),
-									subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng(),"en venta",subastaAux.getCurrency(),Long.valueOf(0),Long.valueOf(0)); 
+							lat,lng,"en venta",subastaAux.getCurrency(),Long.valueOf(0),Long.valueOf(0)); 
 					
 					// Se guarda la subasta.
 					subasta = subastas.save(subasta);
