@@ -194,7 +194,7 @@ public class AnuncioController {
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 				LocalDateTime now = LocalDateTime.now();  
 
-				if(anuncio.getPrice() >= 0) {
+				if(anuncio.getPrice() >= 0 && anuncio.getPrice() <= 1000000) {
 					Float lat = (float) Math.round(anuncio.getLocation().getLat()*1000)/1000f;
 					Float lng = (float) Math.round(anuncio.getLocation().getLng()*1000)/1000f;
 					
@@ -229,7 +229,7 @@ public class AnuncioController {
 					return "Nuevo producto creado";
 				}
 				else {
-					String error = "The price should be 0 or higher.";
+					String error = "The price should be 0 or higher or higher or lesser than 1000000.";
 					response.sendError(412, error);
 					return null;
 				}
@@ -291,7 +291,7 @@ public class AnuncioController {
 				// Se comprueba que el usuario que realiza la peticion de eliminar es un administrador
 				// o es el propietario del producto.
 				Anuncio anuncio2 = anuncio.get();
-				if (u.getTipo().equals("administrador") || anuncio2.getId_owner() == u.getIdUsuario()) {
+				if (u.getTipo().equals("administrador") || anuncio2.getId_owner().equals(u.getIdUsuario())) {
 					List<BigInteger> listPic = pictures.findIdImages(product_id);
 					for(BigInteger idP : listPic) {
 						pictures.deleteById(idP.longValue());
@@ -484,8 +484,8 @@ public class AnuncioController {
 				Anuncio anuncio3 = anuncio2.get();
 				
 				if(anuncio3.getStatus().equals("en venta")) {
-					if (u.getTipo().equals("administrador") || anuncio3.getId_owner() == u.getIdUsuario()) {
-						if(anuncio.getPrice() >= 0) {
+					if (u.getTipo().equals("administrador") || anuncio3.getId_owner().equals(u.getIdUsuario())) {
+						if(anuncio.getPrice() >= 0 && anuncio.getPrice() <= 1000000) {
 							List<BigInteger> listIds = pictures.findIdImages(product_id);
 							List<Long> auxIds = new ArrayList<Long>();
 							List<Long> realIds = new ArrayList<Long>();
@@ -526,7 +526,7 @@ public class AnuncioController {
 							return "Anuncio actualizado";
 						}
 						else {
-							String error = "The price should be 0 or higher.";
+							String error = "The price should be 0 or higher or higher or lesser than 1000000.";
 							response.sendError(412, error);
 							return null;
 						}
@@ -810,7 +810,7 @@ public class AnuncioController {
 					return null;
 				} else {
 					if(anuncio3.getStatus().equals("en venta")) {
-						if (u.getTipo().equals("administrador") || anuncio3.getId_owner() == u.getIdUsuario()) {													
+						if (u.getTipo().equals("administrador") || anuncio3.getId_owner().equals(u.getIdUsuario())) {													
 							// Se actualiza el producto.
 							anuncios.actualizarVendido(anuncio.getBuyer_id(),Long.parseLong(product_id));
 							

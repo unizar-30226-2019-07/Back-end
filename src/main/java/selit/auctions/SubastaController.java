@@ -304,7 +304,7 @@ public class SubastaController {
 				// Se comprueba que el usuario que realiza la peticion de eliminar es un administrador
 				// o es el propietario del producto.
 				Subasta subasta2 = subasta.get();
-				if (u.getTipo().equals("administrador") || subasta2.getId_owner() == u.getIdUsuario()) {
+				if (u.getTipo().equals("administrador") || subasta2.getId_owner().equals(u.getIdUsuario())) {
 					
 					List<BigInteger> listPic = pictures.findIdImagesSub(auction_id);
 					for(BigInteger idP : listPic) {
@@ -716,7 +716,7 @@ public class SubastaController {
 				Subasta subasta3 = subasta2.get();
 				
 				if(subasta3.getStatus().equals("en venta")) {
-					if (u.getTipo().equals("administrador") || subasta3.getId_owner() == u.getIdUsuario()) {
+					if (u.getTipo().equals("administrador") || subasta3.getId_owner().equals(u.getIdUsuario())) {
 						
 						List<BigInteger> listIds = pictures.findIdImagesSub(auction_id);
 						List<Long> auxIds = new ArrayList<Long>();
@@ -808,7 +808,7 @@ public class SubastaController {
 		
 		//Se comrprueba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
-			if (u.getIdUsuario() == puja.bidder_id) {
+			if (u.getIdUsuario().equals(puja.bidder_id)) {
 				
 				Optional<Subasta> subastaOp = subastas.findById(auction_id);
 				if (subastaOp.isPresent()) {
@@ -829,7 +829,7 @@ public class SubastaController {
 					} else {
 						puja3.setClave(new ClavePrimaria(puja.getBidder_id(), puja2.getClave().getSubasta_id_producto(), puja2.getClave().getSubasta_id_usuario()));
 					}
-					if(puja.getAmount() >= 0) {
+					if(puja.getAmount() >= 0 && puja.getAmount() <= 1000000) {
 						if (puja2 == null || puja2.getPuja() < puja.getAmount()) {
 							DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 							LocalDateTime now = LocalDateTime.now(); 
@@ -849,7 +849,7 @@ public class SubastaController {
 						} 
 					}
 					else {
-						String error = "The price should be 0 or higher.";
+						String error = "The price should be 0 or higher or lesser than 1000000.";
 						response.sendError(412, error);
 						return null;
 					}
