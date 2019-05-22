@@ -88,12 +88,11 @@ public class UsuarioController {
 	@Autowired public 
 	PictureRepository pictures;	
 	
-	// TODO: wishesA, wishesS?
-	/** Repositorio de wishesA */
+	/** Repositorio de anuncios deseados */
 	@Autowired public 
 	WishesARepository wishesA;	
 	
-	/** Repositorio de wishesS */
+	/** Repositorio de subastas deseadas */
 	@Autowired public 
 	WishesSRepository wishesS;	
 	
@@ -213,7 +212,6 @@ public class UsuarioController {
 		return "Nuevo usuario creado";
 	}
 
-	// TODO: mostrar los valores de sort?
 	/**
 	 * Devuelve una lista de los usuarios contenidos en la base de datos.
 	 * @param request Peticion http: contiene el token con el correo electronico
@@ -907,7 +905,6 @@ public class UsuarioController {
 			
 	}
 	
-	// TODO: error 402?
 	/**
 	 * Devuelve la lista de productos deseados del usuario que envia la 
 	 * peticion.

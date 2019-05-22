@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -81,7 +79,7 @@ public class SubastaController {
 	@Autowired public
 	BidRepository pujas;
 	
-	/** TODO: ??? */
+	/** Repositorio de subastas deseadas */
 	@Autowired public
 	WishesSRepository wishesS;
 
@@ -527,7 +525,6 @@ public class SubastaController {
 				try {
 					response.sendError(412, "Valores incorrectos en el parametro $sort");
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -948,7 +945,6 @@ public class SubastaController {
 			response.sendError(412, error);
 			return null;
 		}
-		
-		
 	}
+	
 }

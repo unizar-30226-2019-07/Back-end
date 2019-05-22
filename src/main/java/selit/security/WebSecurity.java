@@ -24,16 +24,28 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+/**
+ * Configura la seguridad http
+ */
 @Configuration
 @EnableWebSecurity
 public class WebSecurity extends WebSecurityConfigurerAdapter {
 
+	/** Servicio de datos de usuarios */
 	private UserDetailsService userDetailsService;
 
+	/**
+	 * Constructor.
+	 * @param userDetailsService Nuevo servicio de datos de usuarios.
+	 */
 	public WebSecurity(UserDetailsService userDetailsService) {
 		this.userDetailsService = userDetailsService;
 	}
 
+	/**
+	 * Devuelve un nuevo cifrador de contrasenyas.
+	 * @return Nuevo cifrador de contrasenyas.
+	 */
 	@Bean
 	public BCryptPasswordEncoder bCryptPasswordEncoder() {
 		return new BCryptPasswordEncoder();
@@ -73,6 +85,10 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 		auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
 	}
 
+	/**
+	 * Devuelve una nueva configuracion CORS (Cross-Origin Resource Sharing).
+	 * @return Nueva configuracion CORS (Cross-Origin Resource Sharing).
+	 */
 	@Bean
 	CorsConfigurationSource corsConfigurationSource() {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

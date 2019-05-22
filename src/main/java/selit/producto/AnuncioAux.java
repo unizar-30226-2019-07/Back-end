@@ -50,7 +50,7 @@ public class AnuncioAux {
     /** Propietario del producto */
     private Usuario owner;
     
-    // TODO: distance?
+    /** Distancia al anuncio */
     private double distance;
     
     /** Lista de imagenes del producto */
@@ -84,7 +84,7 @@ public class AnuncioAux {
      * @param category Categoria del producto.
      * @param status Estado (en venta o vendido) del producto.
      * @param owner Propietario del producto.
-     * @param distance ???
+     * @param distance Distancia al anuncio.
      */
     public AnuncioAux(Long idProducto,String publicate_date,String description,String title,Location location,
     		float price,String currency,Long nfav,Long nvis,Long owner_id,String category, String status, Usuario owner, double distance) {
@@ -120,7 +120,7 @@ public class AnuncioAux {
      * @param category Categoria del producto.
      * @param status Estado (en venta o vendido) del producto.
      * @param buyer_id Identificador del comprador del producto.
-     * @param distance ???
+     * @param distance Distancia al anuncio.
      */
     public AnuncioAux(Long idProducto,String publicate_date,String description,String title,Location location,
     		float price,String currency,Long nfav,Long nvis,Long owner_id,String category, String status, Long buyer_id, double distance) {
@@ -396,16 +396,16 @@ public class AnuncioAux {
 	}
 	
 	/**
-	 * ???
-	 * @return ??
+	 * Devuelve la distancia al anuncio 
+	 * @return Distancia al anuncio 
 	 */
 	public double getDistance() {
 		return distance;
 	}
 
 	/**
-	 * ???
-	 * @param distance ???
+	 * Cambia la distancia al anuncio a distance.
+	 * @param distance Nueva distancia al anuncio 
 	 */
 	public void setDistance(double distance) {
 		this.distance = distance;
