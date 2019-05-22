@@ -5,11 +5,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
 import static selit.security.Constants.HEADER_AUTHORIZACION_KEY;
 import static selit.security.Constants.SUPER_SECRET_KEY;
 import static selit.security.Constants.TOKEN_BEARER_PREFIX;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,9 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.lang.Float;
 import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +60,7 @@ public class AnuncioController {
 	@Autowired public 
 	PictureRepository pictures;	
 	
-	/** TODO: ??? */
+	/** Repositorio de anuncios deseados */
 	@Autowired public 
 	WishesARepository wishesA;	
 	
@@ -197,11 +192,11 @@ public class AnuncioController {
 				if(anuncio.getPrice() >= 0 && anuncio.getPrice() <= 1000000) {
 					Float lat = (float) Math.round(anuncio.getLocation().getLat()*1000)/1000f;
 					Float lng = (float) Math.round(anuncio.getLocation().getLng()*1000)/1000f;
-					
+					Float fPrice = Math.round(anuncio.getPrice()*100)/100f;
 					
 					
 					Anuncio anun = new Anuncio(dtf.format(now).toString(),anuncio.getDescription(),anuncio.getTitle(),
-							lat,lng,anuncio.getPrice(),anuncio.getCurrency(),Long.valueOf(0),Long.valueOf(0),
+							lat,lng,fPrice,anuncio.getCurrency(),Long.valueOf(0),Long.valueOf(0),
 							u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
 					// Se guarda el anuncio.
 					Anuncio an = anuncios.save(anun);
@@ -516,10 +511,11 @@ public class AnuncioController {
 							
 							Float lat = (float) Math.round(anuncio.getLocation().getLat()*1000)/1000f;
 							Float lng = (float) Math.round(anuncio.getLocation().getLng()*1000)/1000f;
+							Float fPrice = Math.round(anuncio.getPrice()*100)/100f;
 							
 							// Se actualiza el producto.
 							anuncios.actualizarAnuncio(anuncio3.getPublicate_date(),anuncio.getDescription(),
-									anuncio.getTitle(),lat,lng,anuncio.getPrice(),anuncio.getCurrency(),
+									anuncio.getTitle(),lat,lng,fPrice,anuncio.getCurrency(),
 									anuncio3.getId_owner(),anuncio.getCategory(),product_id,anuncio.getStatus());
 							
 							// Se devuelve mensaje de confirmacion.

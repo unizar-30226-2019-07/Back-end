@@ -56,7 +56,7 @@ public class SubastaAux2 {
 	/** Numero de visitas de la subasta */
 	private Long nvis;
 	
-	/** TODO: ??? */
+	/** True si esta en una lista de subastas deseadas */
 	private boolean in_wishlist;
 	
     /** Estado de la subasta (vendido o en venta) */
@@ -110,7 +110,7 @@ public class SubastaAux2 {
 	 * @param nfav Numero de favoritos de la subasta.
 	 * @param nvis Numero de visitas de la subasta.
 	 * @param media Lista de imagenes del producto.
-	 * @param in_wishlist ???
+	 * @param in_wishlist True si esta en una lista de subastas deseadas.
 	 * @param distance Distancia a la subasta.
 	 * @param currency Moneda del precio de la subasta.
 	 * @param status Estado (vendido o en venta) de la subasta.
@@ -151,7 +151,7 @@ public class SubastaAux2 {
 	 * @param nfav Numero de favoritos de la subasta.
 	 * @param nvis Numero de visitas de la subasta.
 	 * @param media Lista de imagenes del producto.
-	 * @param in_wishlist ???
+	 * @param in_wishlist True si esta en una lista de subastas deseadas.
 	 * @param currency Moneda del precio de la subasta.
 	 * @param status Estado (vendido o en venta) de la subasta.
 	 */
@@ -220,7 +220,7 @@ public class SubastaAux2 {
 	 * @param nfav Numero de favoritos de la subasta.
 	 * @param nvis Numero de visitas de la subasta.
 	 * @param media Lista de imagenes del producto.
-	 * @param in_wishlist ???
+	 * @param in_wishlist True si esta en una lista de subastas deseadas.
 	 * @param distance Distancia a la subasta.
 	 * @param currency Moneda del precio de la subasta.
 	 */
@@ -491,16 +491,17 @@ public class SubastaAux2 {
 	}
 	
 	/**
-	 * ???
-	 * @return ???
+	 * Deuvelve true si esta en una lista de subastas deseadas.
+	 * @return True si esta en una lista de subastas deseadas.
 	 */
     public boolean getIn_wishlist() {
 		return in_wishlist;
 	}
 
     /**
-     * ???
-     * @param in_wishlist ???
+     * Cambia a in_wishlist si esta o no en una lista de subastas deseadas.
+     * @param in_wishlist Nuevo valor de si esta o no en una lista de subastas 
+     * deseadas.
      */
 	public void setIn_wishlist(boolean in_wishlist) {
 		this.in_wishlist = in_wishlist;

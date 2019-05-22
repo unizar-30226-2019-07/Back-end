@@ -221,7 +221,21 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 	@Query("update Anuncio set id_comprador=:buyer_id, estado='vendido' where id_producto=:id_producto")
 	public void actualizarVendido(@Param("buyer_id") Long buyer_id, @Param("id_producto") Long id_producto);
 	
+	/**
+	 * Devuelve los anuncios cuyo usuario propietario es identificado con id.
+	 * @param id Usuario propietario.
+	 * @return Anuncios cuyo usuario propietario es identificado con id.
+	 */
 	@Query("from Anuncio where usuario_id_usuario=:id")
 	public List<Anuncio> findByUsuarioIdUsuario(@Param("id") Long id);
+	
+	/**
+	 * Elimina los anuncios cuyo propietario es identificado con id.
+	 * @param id Identificador del propietario.
+	 */
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("delete from Anuncio where usuario_id_usuario=:id")
+	public void deleteByUsuario(@Param("id") Long id);
 	
 }

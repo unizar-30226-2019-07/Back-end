@@ -16,8 +16,13 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 import io.jsonwebtoken.Jwts;
 
+/** Representa el filtro de autorizaciones */
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
+	/**
+	 * Constructor.
+	 * @param authManager Nuevo controlador de autentificaciones.
+	 */
 	public JWTAuthorizationFilter(customAuthenticationManager authManager) {
 		super(authManager);
 	}
@@ -35,6 +40,14 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 		chain.doFilter(req, res);
 	}
 
+	/**
+	 * Devuelve un objeto de tipo UsernamePasswordAuthenticationToken si el
+	 * token es correcto y contiene el correo electronico de un usuario.
+	 * @param request Peticion http: Contiene el token con el correo electronico 
+	 * del usuario que envia la peticion.
+	 * @return Objeto de tipo UsernamePasswordAuthenticationToken si el
+	 * token es correcto y contiene el correo electronico de un usuario.
+	 */
 	private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		if (token != null) {
