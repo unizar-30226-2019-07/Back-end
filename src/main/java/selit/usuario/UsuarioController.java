@@ -1793,4 +1793,38 @@ public class UsuarioController {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param request
+	 * @param response
+	 * @param email
+	 * @return
+	 * @throws IOException
+	 */
+	@GetMapping(path="/forgot")
+	public @ResponseBody String recuperarContrasenya(HttpServletRequest request, HttpServletResponse response, @RequestBody String email) throws IOException {
+		Usuario u = usuarios.buscarPorEmail(email);
+		if (u != null) {
+			//Generar RANDOM
+			String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+	        StringBuilder salt = new StringBuilder();
+	        Random rnd = new Random();
+	        while (salt.length() < 18) { // length of the random string.
+	            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+	            salt.append(SALTCHARS.charAt(index));
+	        }		
+	        String saltStr = salt.toString();
+			ApplicationContext context = 
+		             new ClassPathXmlApplicationContext("Spring-Mail.xml");
+			MailMail mm = (MailMail) context.getBean("mailMail");
+			mm.sendMail("accounts@selit.naval.cat",email,"Recuperación de la cuenta","Nueva contrasenya: " + saltStr);
+			((ClassPathXmlApplicationContext) context).close();
+			usuarios.changePassword(bCryptPasswordEncoder.encode(saltStr), u.getIdUsuario().toString());
+			return "OK";
+		} else {
+			return null;
+		}
+	}
+
+	
 }
