@@ -575,14 +575,28 @@ public class UsuarioController {
 			u2 = usuarios.buscarPorId(user_id);
 			if(u2!=null) {
 				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
-					//Se eliminar el usuario
-					usuarios.deleteById(Long.parseLong(user_id));
-					
-					// Se elimina la imagen
 					Long idIm = u.getIdImagen();					
 					if(idIm != null) {
 						pictures.deleteById(idIm);
 					}
+					wishesA.deleteByUsuario(Long.parseLong(user_id));
+					wishesS.deleteByUsuario(Long.parseLong(user_id));
+					List<Anuncio> la = anuncios.findByUsuarioIdUsuario(Long.parseLong(user_id));
+					for (Anuncio a: la) {
+						pictures.deleteByProducto(a.getId_producto());
+					}
+					List<Subasta> ls = subastas.findByUsuarioIdUsuario(Long.parseLong(user_id));
+					for (Subasta s: ls) {
+						pictures.deleteBySubasta(s.getIdSubasta());
+					}
+					anuncios.deleteByUsuario(Long.parseLong(user_id));
+					subastas.deleteByUsuario(Long.parseLong(user_id));
+					informes.deleteByUsuario(Long.parseLong(user_id));
+					valoraciones.deleteByUsuario(Long.parseLong(user_id));
+					pujas.deleteByUsuario(Long.parseLong(user_id));
+
+					usuarios.deleteById(Long.parseLong(user_id));
+
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";
@@ -1794,15 +1808,15 @@ public class UsuarioController {
 	}
 	
 	/**
-	 * 
-	 * @param request
-	 * @param response
-	 * @param email
-	 * @return
+	 * Reestablece la contrasenya al usuario que tiene como correo electronico
+	 * email y le envia al usuario su nueva contrasenya.
+	 * @param email Correo electronico del usuario.
+	 * @return "OK" si existe el correo electronico existe en la base de datos o
+	 * null.
 	 * @throws IOException
 	 */
 	@GetMapping(path="/forgot")
-	public @ResponseBody String recuperarContrasenya(HttpServletRequest request, HttpServletResponse response, @RequestBody String email) throws IOException {
+	public @ResponseBody String recuperarContrasenya(@RequestBody String email) throws IOException {
 		Usuario u = usuarios.buscarPorEmail(email);
 		if (u != null) {
 			//Generar RANDOM
@@ -1825,6 +1839,5 @@ public class UsuarioController {
 			return null;
 		}
 	}
-
 	
 }

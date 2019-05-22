@@ -207,7 +207,21 @@ public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Subasta set status=:status where id_subasta=:id_subasta")
 	public void actualizarStatus(@Param("status") String status, @Param("id_subasta") Long id_subasta);	
-	
+
+	/**
+	 * Devuelve las subastas cuyo propietario se identifica con id.
+	 * @param id Identificador del propietario.
+	 * @return Subastas cuyo propietario se identifica con id.
+	 */
 	@Query("from Subasta where usuario_id_usuario=:id")
 	public List<Subasta> findByUsuarioIdUsuario(@Param("id") Long id);
+	
+	/**
+	 * Elimina las subastas cuyo propietario se identifica con id.
+	 * @param id Identificador del propietario.
+	 */
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("delete from Subasta where usuario_id_usuario=:id")
+	public void deleteByUsuario(@Param("id") Long id);
 }	
