@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import selit.producto.Anuncio;
+
 /**
  * Repositorio de las subastas de la base de datos.
  */
@@ -207,4 +209,7 @@ public interface SubastaRepository extends JpaRepository<Subasta, Long>{
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Subasta set status=:status where id_subasta=:id_subasta")
 	public void actualizarStatus(@Param("status") String status, @Param("id_subasta") Long id_subasta);	
+	
+	@Query("from Subasta where usuario_id_usuario=:id")
+	public List<Subasta> findByUsuarioIdUsuario(@Param("id") Long id);
 }	

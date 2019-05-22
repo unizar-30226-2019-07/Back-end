@@ -220,4 +220,8 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Anuncio set id_comprador=:buyer_id, estado='vendido' where id_producto=:id_producto")
 	public void actualizarVendido(@Param("buyer_id") Long buyer_id, @Param("id_producto") Long id_producto);
+	
+	@Query("from Anuncio where usuario_id_usuario=:id")
+	public List<Anuncio> findByUsuarioIdUsuario(@Param("id") Long id);
+	
 }

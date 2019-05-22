@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Optional;
 import java.lang.Float;
 import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -164,7 +167,7 @@ public class AnuncioController {
 	 * @param response Respuesta http: 201 si se a creado con exito, 402 si el
 	 * usuario que envia la peticion no coincide con el identificado en el
 	 * anuncio anuncio, 500 si no se han podido guardar las imagenes o 401 si
-	 * el token es incorrecto.
+	 * el token es incorrecto,412 si el precio es menor a 0.
 	 * @return "Nuevo producto creado" si se ha podido insertar con exito o null
 	 * en caso contrario.
 	 * @throws IOException
@@ -186,38 +189,50 @@ public class AnuncioController {
 		
 		//Se comrprueba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
-			if(anuncio.getOwner_id().equals(u.getIdUsuario())) {
+			if(anuncio.getOwner_id().equals(u.getIdUsuario()) || u.getTipo().contentEquals("administrador")) {
 				// Se definen los valores por defecto de las columnas obligatorias.
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 				LocalDateTime now = LocalDateTime.now();  
 
-				Anuncio anun = new Anuncio(dtf.format(now).toString(),anuncio.getDescription(),anuncio.getTitle(),
-								anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),anuncio.getPrice(),
-								anuncio.getCurrency(),Long.valueOf(0),Long.valueOf(0),u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
-				// Se guarda el anuncio.
-				Anuncio an = anuncios.save(anun);
-				
-				List<Picture> lp = anuncio.getMedia();
-				Long idProducto = an.getId_producto();
-				
-				
-				for(Picture pic : lp){
-					pic.setIdProducto(idProducto);
-					try {
-						pictures.save(pic);
-					}
-					catch(Exception e){
-						anuncios.deleteById(idProducto);
-						String error = "The image can´t be saved.";
-						response.sendError(500, error);
-						return null;
+				if(anuncio.getPrice() >= 0 && anuncio.getPrice() <= 1000000) {
+					Float lat = (float) Math.round(anuncio.getLocation().getLat()*1000)/1000f;
+					Float lng = (float) Math.round(anuncio.getLocation().getLng()*1000)/1000f;
+					
+					
+					
+					Anuncio anun = new Anuncio(dtf.format(now).toString(),anuncio.getDescription(),anuncio.getTitle(),
+							lat,lng,anuncio.getPrice(),anuncio.getCurrency(),Long.valueOf(0),Long.valueOf(0),
+							u.getIdUsuario(),anuncio.getCategory(),"en venta"); 
+					// Se guarda el anuncio.
+					Anuncio an = anuncios.save(anun);
+					
+					List<Picture> lp = anuncio.getMedia();
+					Long idProducto = an.getId_producto();
+					
+					
+					for(Picture pic : lp){
+						pic.setIdProducto(idProducto);
+						try {
+							pictures.save(pic);
+						}
+						catch(Exception e){
+							anuncios.deleteById(idProducto);
+							String error = "The image can´t be saved.";
+							response.sendError(500, error);
+							return null;
+						}
+						
 					}
 					
+					// Se contesta a la peticion con un mensaje de exito.
+					response.setStatus(201);
+					return "Nuevo producto creado";
 				}
-				
-				// Se contesta a la peticion con un mensaje de exito.
-				response.setStatus(201);
-				return "Nuevo producto creado";
+				else {
+					String error = "The price should be 0 or higher or higher or lesser than 1000000.";
+					response.sendError(412, error);
+					return null;
+				}
 			}
 			else {
 				String error = "The user doesn't have enough permissions.";
@@ -276,7 +291,7 @@ public class AnuncioController {
 				// Se comprueba que el usuario que realiza la peticion de eliminar es un administrador
 				// o es el propietario del producto.
 				Anuncio anuncio2 = anuncio.get();
-				if (u.getTipo().equals("administrador") || anuncio2.getId_owner() == u.getIdUsuario()) {
+				if (u.getTipo().equals("administrador") || anuncio2.getId_owner().equals(u.getIdUsuario())) {
 					List<BigInteger> listPic = pictures.findIdImages(product_id);
 					for(BigInteger idP : listPic) {
 						pictures.deleteById(idP.longValue());
@@ -431,7 +446,8 @@ public class AnuncioController {
 	 * 402 si el usuario que realiza la peticion no coincide con el propietario
 	 * del anuncio que se quiere actualizar o no es el administrador, 404 si no 
 	 * existe el anuncio identificado con product_id, 401 si el token es 
-	 * incorrecto o 409 si ya se ha vendido el producto.
+	 * incorrecto o 409 si ya se ha vendido el producto, 412 si el precio 
+	 * es menor a 0.
 	 * @return "Anuncio actualizado" si se ha podido actualizar o null en caso 
 	 * contrario.
 	 * @throws IOException
@@ -468,43 +484,52 @@ public class AnuncioController {
 				Anuncio anuncio3 = anuncio2.get();
 				
 				if(anuncio3.getStatus().equals("en venta")) {
-					if (u.getTipo().equals("administrador") || anuncio3.getId_owner() == u.getIdUsuario()) {
-						List<BigInteger> listIds = pictures.findIdImages(product_id);
-						List<Long> auxIds = new ArrayList<Long>();
-						List<Long> realIds = new ArrayList<Long>();
-						
-						for(BigInteger id: listIds) {
-							auxIds.add(id.longValue());
-						}
-						
-												
-						List<Picture> picL = anuncio.getMedia();
-						for(Picture pi : picL) {
-							Long idIm = pi.getIdImagen();
+					if (u.getTipo().equals("administrador") || anuncio3.getId_owner().equals(u.getIdUsuario())) {
+						if(anuncio.getPrice() >= 0 && anuncio.getPrice() <= 1000000) {
+							List<BigInteger> listIds = pictures.findIdImages(product_id);
+							List<Long> auxIds = new ArrayList<Long>();
+							List<Long> realIds = new ArrayList<Long>();
 							
-							if(idIm == null) {
-								pi.setIdProducto(Long.parseLong(product_id));
-								pictures.save(pi);
+							for(BigInteger id: listIds) {
+								auxIds.add(id.longValue());
 							}
-							else {
-								realIds.add(idIm);
+							
+													
+							List<Picture> picL = anuncio.getMedia();
+							for(Picture pi : picL) {
+								Long idIm = pi.getIdImagen();
+								
+								if(idIm == null) {
+									pi.setIdProducto(Long.parseLong(product_id));
+									pictures.save(pi);
+								}
+								else {
+									realIds.add(idIm);
+								}
 							}
+							
+							for(Long idAux : auxIds) {
+								if(!realIds.contains(idAux)) {
+									pictures.deleteById(idAux);
+								}
+							}
+							
+							Float lat = (float) Math.round(anuncio.getLocation().getLat()*1000)/1000f;
+							Float lng = (float) Math.round(anuncio.getLocation().getLng()*1000)/1000f;
+							
+							// Se actualiza el producto.
+							anuncios.actualizarAnuncio(anuncio3.getPublicate_date(),anuncio.getDescription(),
+									anuncio.getTitle(),lat,lng,anuncio.getPrice(),anuncio.getCurrency(),
+									anuncio3.getId_owner(),anuncio.getCategory(),product_id,anuncio.getStatus());
+							
+							// Se devuelve mensaje de confirmacion.
+							return "Anuncio actualizado";
 						}
-						
-						for(Long idAux : auxIds) {
-							if(!realIds.contains(idAux)) {
-								pictures.deleteById(idAux);
-							}
+						else {
+							String error = "The price should be 0 or higher or higher or lesser than 1000000.";
+							response.sendError(412, error);
+							return null;
 						}
-						
-						// Se actualiza el producto.
-						anuncios.actualizarAnuncio(anuncio3.getPublicate_date(),anuncio.getDescription(),
-								anuncio.getTitle(),anuncio.getLocation().getLat(),anuncio.getLocation().getLng(),
-								anuncio.getPrice(),anuncio.getCurrency(),
-								anuncio3.getId_owner(),anuncio.getCategory(),product_id,anuncio.getStatus());
-						
-						// Se devuelve mensaje de confirmacion.
-						return "Anuncio actualizado";
 						
 					} else {
 						
@@ -785,7 +810,7 @@ public class AnuncioController {
 					return null;
 				} else {
 					if(anuncio3.getStatus().equals("en venta")) {
-						if (u.getTipo().equals("administrador") || anuncio3.getId_owner() == u.getIdUsuario()) {													
+						if (u.getTipo().equals("administrador") || anuncio3.getId_owner().equals(u.getIdUsuario())) {													
 							// Se actualiza el producto.
 							anuncios.actualizarVendido(anuncio.getBuyer_id(),Long.parseLong(product_id));
 							

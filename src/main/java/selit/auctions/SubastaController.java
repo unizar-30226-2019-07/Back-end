@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -181,8 +183,9 @@ public class SubastaController {
 	 * del usuario.
 	 * @param response Respuesta http: 201 si se a creado con exito, 402 si el
 	 * usuario que envia la peticion no coincide con el identificado en la
-	 * subasta subastaAux, 500 si no se han podido guardar las imagenes o 401 si
-	 * el token es incorrecto.
+	 * subasta subastaAux, 500 si no se han podido guardar las imagenes, 401 si
+	 * el token es incorrecto o 412 si la fecha de creacion de la subasta es
+	 * posterior a la fecha de finalizacion.
 	 * @return "Nueva subastas creada" si se ha podido insertar con exito o null
 	 * en caso contrario.
 	 * @throws IOException
@@ -205,37 +208,44 @@ public class SubastaController {
 		//Se comrprueba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
 			if(subastaAux.getOwner_id().equals(u.getIdUsuario())) {
-				
+			
 				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 				LocalDateTime now = LocalDateTime.now();  
-				
-				Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getEndDate(), subastaAux.getStartPrice(),u.getIdUsuario(),subastaAux.getCategory(),
-								subastaAux.getLocation().getLat(),subastaAux.getLocation().getLng(),"en venta",subastaAux.getCurrency(),Long.valueOf(0),Long.valueOf(0)); 
-				
-				// Se guarda la subasta.
-				subasta = subastas.save(subasta);
-				
-				List<Picture> lp = subastaAux.getMedia();
-				Long idSubasta = subasta.getIdSubasta();
-				
-				
-				for(Picture pic : lp){
-					pic.setIdSubasta(idSubasta);
-					try {
-						pictures.save(pic);
-					}
-					catch(Exception e){
-						subastas.deleteById(idSubasta);
-						String error = "The image can´t be saved.";
-						response.sendError(500, error);
-						return null;
+				if (LocalDate.parse(subastaAux.getEndDate(), dtf).isAfter(now.toLocalDate())) {	
+					Float lat = (float) Math.round(subastaAux.getLocation().getLat()*1000)/1000f;
+					Float lng = (float) Math.round(subastaAux.getLocation().getLng()*1000)/1000f;
+					
+					Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getEndDate(), subastaAux.getStartPrice(),u.getIdUsuario(),subastaAux.getCategory(),
+							lat,lng,"en venta",subastaAux.getCurrency(),Long.valueOf(0),Long.valueOf(0)); 
+					
+					// Se guarda la subasta.
+					subasta = subastas.save(subasta);
+					
+					List<Picture> lp = subastaAux.getMedia();
+					Long idSubasta = subasta.getIdSubasta();
+					
+					
+					for(Picture pic : lp){
+						pic.setIdSubasta(idSubasta);
+						try {
+							pictures.save(pic);
+						}
+						catch(Exception e){
+							subastas.deleteById(idSubasta);
+							String error = "The image can´t be saved.";
+							response.sendError(500, error);
+							return null;
+						}
+						
 					}
 					
+					// Se contesta a la peticion con un mensaje de exito.
+					response.setStatus(201);
+					return "Nueva subasta creada";
+				} else {
+					response.sendError(412, "La fecha de finalizacion es anterior a la de creacion ");
+					return null;
 				}
-				
-				// Se contesta a la peticion con un mensaje de exito.
-				response.setStatus(201);
-				return "Nueva subasta creada";
 			}
 			else {
 				String error = "The user doesn't have enough permissions.";
@@ -294,7 +304,7 @@ public class SubastaController {
 				// Se comprueba que el usuario que realiza la peticion de eliminar es un administrador
 				// o es el propietario del producto.
 				Subasta subasta2 = subasta.get();
-				if (u.getTipo().equals("administrador") || subasta2.getId_owner() == u.getIdUsuario()) {
+				if (u.getTipo().equals("administrador") || subasta2.getId_owner().equals(u.getIdUsuario())) {
 					
 					List<BigInteger> listPic = pictures.findIdImagesSub(auction_id);
 					for(BigInteger idP : listPic) {
@@ -706,7 +716,7 @@ public class SubastaController {
 				Subasta subasta3 = subasta2.get();
 				
 				if(subasta3.getStatus().equals("en venta")) {
-					if (u.getTipo().equals("administrador") || subasta3.getId_owner() == u.getIdUsuario()) {
+					if (u.getTipo().equals("administrador") || subasta3.getId_owner().equals(u.getIdUsuario())) {
 						
 						List<BigInteger> listIds = pictures.findIdImagesSub(auction_id);
 						List<Long> auxIds = new ArrayList<Long>();
@@ -779,7 +789,7 @@ public class SubastaController {
 	 * @param response Respuesta http: 409 si la puja es incorrecta, 404 si la
 	 * subasta identificada con auction_id no existe, 402 si el usuario que
 	 * envia la peticion no es el propietario de la subasta o 401 si el token
-	 * es incorrecto.
+	 * es incorrecto, 412 si el precio es menor a 0.
 	 * @return "Guardada la puja correctamente" si se ha guardado con exito o
 	 * null si no se ha podido guardar correctamente.
 	 * @throws IOException
@@ -798,7 +808,7 @@ public class SubastaController {
 		
 		//Se comrprueba si el token es valido.
 		if(TokenCheck.checkAccess(token,u)) {
-			if (u.getIdUsuario() == puja.bidder_id) {
+			if (u.getIdUsuario().equals(puja.bidder_id)) {
 				
 				Optional<Subasta> subastaOp = subastas.findById(auction_id);
 				if (subastaOp.isPresent()) {
@@ -819,23 +829,30 @@ public class SubastaController {
 					} else {
 						puja3.setClave(new ClavePrimaria(puja.getBidder_id(), puja2.getClave().getSubasta_id_producto(), puja2.getClave().getSubasta_id_usuario()));
 					}
-					if ( puja2 == null || puja2.getPuja() < puja.getAmount()) {
-						DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
-						LocalDateTime now = LocalDateTime.now(); 
-						if (LocalDate.parse(subasta.getFecha_finalizacion(), dtf).isAfter(now.toLocalDate())) {
-							puja3.setPuja(puja.getAmount());
-							puja3.setFecha(dtf.format(now));
-							pujas.save(puja3);
-							response.setStatus(201);
-							return "Guardada la puja correctamente";
+					if(puja.getAmount() >= 0 && puja.getAmount() <= 1000000) {
+						if (puja2 == null || puja2.getPuja() < puja.getAmount()) {
+							DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
+							LocalDateTime now = LocalDateTime.now(); 
+							if (LocalDate.parse(subasta.getFecha_finalizacion(), dtf).isAfter(now.toLocalDate())) {
+								puja3.setPuja(puja.getAmount());
+								puja3.setFecha(dtf.format(now));
+								pujas.save(puja3);
+								response.setStatus(201);
+								return "Guardada la puja correctamente";
+							} else {
+								response.sendError(409, "La subasta termino " + subasta.getFecha_finalizacion());
+								return null;
+							}
 						} else {
-							response.sendError(409, "La subasta termino " + subasta.getFecha_finalizacion());
+							response.sendError(409, "No se ha superado el precio actual de " + puja2.getPuja());
 							return null;
-						}
-					} else {
-						response.sendError(409, "No se ha superado el precio actual de " + puja2.getPuja());
+						} 
+					}
+					else {
+						String error = "The price should be 0 or higher or lesser than 1000000.";
+						response.sendError(412, error);
 						return null;
-					} 
+					}
 				} else {
 					response.sendError(404, "No existe la subasta con id " + auction_id);
 					return null;

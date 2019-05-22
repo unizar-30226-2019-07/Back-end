@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -202,7 +205,7 @@ public class UsuarioController {
 		ApplicationContext context = 
 	             new ClassPathXmlApplicationContext("Spring-Mail.xml");
 		MailMail mm = (MailMail) context.getBean("mailMail");
-		mm.sendMail("selitenterprise@gmail.com",usuario.getEmail(),"Activación de la cuenta","Para activar su cuenta acceda a la siguiente direccion: https://selit.naval.cat/verify?random=" + saltStr);
+		mm.sendMail("accounts@selit.naval.cat",usuario.getEmail(),"Activación de la cuenta","Para activar su cuenta acceda a la siguiente direccion: https://selit.naval.cat/verify?random=" + saltStr);
 		((ClassPathXmlApplicationContext) context).close();
 		
 		// Se contesta a la peticion con un mensaje de exito.
@@ -1710,6 +1713,87 @@ public class UsuarioController {
 			response.sendError(401, error);
 			return null;
 		}	
+	}
+	
+	/**
+	 * Envia un correo electronico al usuario que ha enviado la peticion con
+	 * toda su informacion.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que envia la peticion.
+	 * @param response Respuesta http: 401 si el token es correcto.
+	 * @return "Correo enviado" si se ha enviado con exito o null en caso
+	 * contrario.
+	 * @throws IOException
+	 */
+	@GetMapping(path="/request")
+	public @ResponseBody String correoUsuarioActual(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+		u = usuarios.buscarPorEmail(user);
+		
+		// Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			Location loc = new Location(u.getPosX(), u.getPosY());
+			
+			UsuarioAux rUser = new UsuarioAux(u.getIdUsuario(),u.getGender(),u.getBirth_date(),
+											loc,u.getRating(),u.getStatus(),null,u.getEmail(),
+											u.getLast_name(),u.getFirst_name(),u.getTipo(),new Picture(u.getIdImagen()));
+			
+			ObjectMapper mapperObj = new ObjectMapper();
+			ApplicationContext context = 
+		             new ClassPathXmlApplicationContext("Spring-Mail.xml");
+			MailMail mm = (MailMail) context.getBean("mailMail");
+			List<Anuncio> anuns = anuncios.findByUsuarioIdUsuario(rUser.getIdUsuario());
+			String as = "";
+			for (Anuncio a: anuns) {
+				as += mapperObj.writeValueAsString(a);
+			}
+			List<Subasta> subs = subastas.findByUsuarioIdUsuario(rUser.getIdUsuario());
+			String ss = "";
+			for (Subasta s: subs) {
+				ss += mapperObj.writeValueAsString(s);
+			}
+			
+			List<Bid> bds = pujas.findByIdUsuario(rUser.getIdUsuario());
+			String bs = "";
+			for (Bid b: bds) {
+				bs += mapperObj.writeValueAsString(b);
+			}
+			List<Valoracion> vls = valoraciones.buscarPorIdUsuario(rUser.getIdUsuario(), rUser.getIdUsuario());
+			String vs = "";
+			for (Valoracion v: vls) {
+				vs += mapperObj.writeValueAsString(v);
+			}
+			
+			List<WishA> wa = wishesA.buscarPorIdUsuario(rUser.getIdUsuario());
+			String wa2 = "";
+			for (WishA wa3: wa) {
+				wa2 += mapperObj.writeValueAsString(wa3);
+			}
+			
+			List<WishS> ws = wishesS.buscarPorIdUsuario(rUser.getIdUsuario());
+			String ws2 = "";
+			for (WishS ws3: ws) {
+				ws2 += mapperObj.writeValueAsString(ws3);
+			}
+			
+			mm.sendMail2("privacy@selit.naval.cat",rUser.getEmail(),"Informacion personal",mapperObj.writeValueAsString(rUser),as,ss, bs, vs, wa2, ws2);
+			((ClassPathXmlApplicationContext) context).close();
+			
+			return "Correo enviado";
+			
+		} 
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}
 	}
 	
 }
