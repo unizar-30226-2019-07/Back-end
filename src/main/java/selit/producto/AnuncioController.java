@@ -197,7 +197,7 @@ public class AnuncioController {
 				if(anuncio.getPrice() >= 0 && anuncio.getPrice() <= 1000000) {
 					Float lat = (float) Math.round(anuncio.getLocation().getLat()*1000)/1000f;
 					Float lng = (float) Math.round(anuncio.getLocation().getLng()*1000)/1000f;
-					Float fPrice = anuncio.getPrice()*100/100f;
+					Float fPrice = Math.round(anuncio.getPrice()*100)/100f;
 					
 					
 					Anuncio anun = new Anuncio(dtf.format(now).toString(),anuncio.getDescription(),anuncio.getTitle(),
@@ -516,7 +516,7 @@ public class AnuncioController {
 							
 							Float lat = (float) Math.round(anuncio.getLocation().getLat()*1000)/1000f;
 							Float lng = (float) Math.round(anuncio.getLocation().getLng()*1000)/1000f;
-							Float fPrice = anuncio.getPrice()*100/100f;
+							Float fPrice = Math.round(anuncio.getPrice()*100)/100f;
 							
 							// Se actualiza el producto.
 							anuncios.actualizarAnuncio(anuncio3.getPublicate_date(),anuncio.getDescription(),

@@ -831,7 +831,7 @@ public class SubastaController {
 					}
 					if(puja.getAmount() >= subasta.getStartPrice()) {
 						if(puja.getAmount() >= 0 && puja.getAmount() <= 1000000) {
-							float pricePuja = puja.getAmount()*100/100f;
+							float pricePuja = Math.round(puja.getAmount()*100)/100f;
 							if (puja2 == null || puja2.getPuja() < pricePuja) {
 								DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
 								LocalDateTime now = LocalDateTime.now(); 
