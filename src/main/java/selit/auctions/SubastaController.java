@@ -214,8 +214,8 @@ public class SubastaController {
 				if (LocalDate.parse(subastaAux.getEndDate(), dtf).isAfter(now.toLocalDate())) {	
 					Float lat = (float) Math.round(subastaAux.getLocation().getLat()*1000)/1000f;
 					Float lng = (float) Math.round(subastaAux.getLocation().getLng()*1000)/1000f;
-					
-					Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getEndDate(), subastaAux.getStartPrice(),u.getIdUsuario(),subastaAux.getCategory(),
+					Float startP = subastaAux.getStartPrice()*100/100f;
+					Subasta subasta = new Subasta(dtf.format(now).toString(),subastaAux.getDescription(),subastaAux.getTitle(), subastaAux.getEndDate(), startP,u.getIdUsuario(),subastaAux.getCategory(),
 							lat,lng,"en venta",subastaAux.getCurrency(),Long.valueOf(0),Long.valueOf(0)); 
 					
 					// Se guarda la subasta.
@@ -749,7 +749,7 @@ public class SubastaController {
 						// Se actualiza el producto.
 						subastas.actualizarSubasta(subasta3.getPublicate_date(),subasta.getDescription(),subasta.getTitle(), 
 								subasta.getLocation().getLat(),subasta.getLocation().getLng(),subasta.getStartPrice(),subasta.getCurrency(),
-								subasta.getEndDate(), subasta.getOwner_id(),subasta.getCategory(),auction_id);
+								subasta.getEndDate(), u.getIdUsuario(),subasta.getCategory(),auction_id);
 						
 						// Se devuelve mensaje de confirmacion.
 						return "Subasta actualizada";
@@ -829,30 +829,39 @@ public class SubastaController {
 					} else {
 						puja3.setClave(new ClavePrimaria(puja.getBidder_id(), puja2.getClave().getSubasta_id_producto(), puja2.getClave().getSubasta_id_usuario()));
 					}
-					if(puja.getAmount() >= 0 && puja.getAmount() <= 1000000) {
-						if (puja2 == null || puja2.getPuja() < puja.getAmount()) {
-							DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
-							LocalDateTime now = LocalDateTime.now(); 
-							if (LocalDate.parse(subasta.getFecha_finalizacion(), dtf).isAfter(now.toLocalDate())) {
-								puja3.setPuja(puja.getAmount());
-								puja3.setFecha(dtf.format(now));
-								pujas.save(puja3);
-								response.setStatus(201);
-								return "Guardada la puja correctamente";
+					if(puja.getAmount() >= subasta.getStartPrice()) {
+						if(puja.getAmount() >= 0 && puja.getAmount() <= 1000000) {
+							float pricePuja = puja.getAmount()*100/100f;
+							if (puja2 == null || puja2.getPuja() < pricePuja) {
+								DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
+								LocalDateTime now = LocalDateTime.now(); 
+								if (LocalDate.parse(subasta.getFecha_finalizacion(), dtf).isAfter(now.toLocalDate())) {									
+									puja3.setPuja(pricePuja);
+									puja3.setFecha(dtf.format(now));
+									pujas.save(puja3);
+									response.setStatus(201);
+									return "Guardada la puja correctamente";
+								} else {
+									response.sendError(409, "La subasta termino " + subasta.getFecha_finalizacion());
+									return null;
+								}
 							} else {
-								response.sendError(409, "La subasta termino " + subasta.getFecha_finalizacion());
+								response.sendError(409, "No se ha superado el precio actual de " + puja2.getPuja());
 								return null;
-							}
-						} else {
-							response.sendError(409, "No se ha superado el precio actual de " + puja2.getPuja());
+							} 
+						}
+						else {
+							String error = "The price should be 0 or higher or lesser than 1000000.";
+							response.sendError(412, error);
 							return null;
-						} 
+						}
 					}
 					else {
-						String error = "The price should be 0 or higher or lesser than 1000000.";
+						String error = "Bid´s price should be higher than the start price.";
 						response.sendError(412, error);
 						return null;
 					}
+					
 				} else {
 					response.sendError(404, "No existe la subasta con id " + auction_id);
 					return null;
