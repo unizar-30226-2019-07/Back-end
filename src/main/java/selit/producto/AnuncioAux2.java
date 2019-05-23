@@ -46,13 +46,13 @@ public class AnuncioAux2 {
     /** Propietario del producto */
     private UsuarioAux owner;
     
-    // TODO: distance?
+    /** Distancia al anuncio */
     private double distance;
     
     /** Lista de imagenes del producto */
     private List<Media> media;
     
-    //TODO: ???
+    /** True si esta en una lista de anuncios deseados */
     private boolean in_wishlist;
     
     /** Comprador del producto */
@@ -79,7 +79,7 @@ public class AnuncioAux2 {
 	 * @param category Categoria del producto.
 	 * @param status Estado (en venta o vendido) del producto.
 	 * @param owner Propietario del producto.
-	 * @param distance ???
+	 * @param distance Distancia al anuncio.
 	 * @param media Lista de imagenes del producto.
 	 */
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
@@ -115,9 +115,10 @@ public class AnuncioAux2 {
      * @param category Categoria del producto.
      * @param status Estado (en venta o vendido) del producto.
      * @param owner Comprador del producto.
-     * @param distance ???
+     * @param distance Distancia al anuncio.
      * @param media Lista de imagenes del producto.
-     * @param in_wishlist ???
+     * @param in_wishlist True si esta en una lista de anuncios deseados
+
      */
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
     		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, double distance, List<Media> media,boolean in_wishlist) {
@@ -154,7 +155,7 @@ public class AnuncioAux2 {
      * @param status Estado (en venta o vendido) del producto.
      * @param owner Propietario del producto.
      * @param media Lista de imagenes del producto.
-     * @param in_wishlist ???
+     * @param in_wishlist True si esta en una lista de anuncios deseados
      */
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
     		float price,String currency,Long nfav,Long nvis,String category, String status, UsuarioAux owner, List<Media> media,boolean in_wishlist) {
@@ -189,9 +190,9 @@ public class AnuncioAux2 {
      * @param category Categoria del producto.
      * @param status Estado (en venta o vendido) del producto.
      * @param owner Propietario del producto.
-     * @param distance ???
+     * @param distance Distancia al anuncio.
      * @param media Lista de imagenes del producto.
-     * @param in_wishlist ???
+     * @param in_wishlist True si esta en una lista de anuncios deseados
      * @param buyer Comprador del producto.
      */
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
@@ -230,7 +231,7 @@ public class AnuncioAux2 {
      * @param status Estado (en venta o vendido) del producto.
      * @param owner Propietario del producto.
      * @param media Lista de imagenes del producto.
-     * @param in_wishlist ???
+     * @param in_wishlist True si esta en una lista de anuncios deseados.
      * @param buyer Comprador del producto.
      */
     public AnuncioAux2(Long idProducto,String publicate_date,String description,String title,Location location,
@@ -460,16 +461,16 @@ public class AnuncioAux2 {
 	}
 
 	/**
-	 * ???
-	 * @return ??
+	 * Devuelve la distancia al anuncio.
+	 * @return Distancia al anuncio.
 	 */
 	public double getDistance() {
 		return distance;
 	}
 
 	/**
-	 * ???
-	 * @param distance ???
+	 * Cambia la distancia al anuncio a distance.
+	 * @param distance Nueva distancia al anuncio.
 	 */
 	public void setDistance(double distance) {
 		this.distance = distance;
@@ -492,16 +493,17 @@ public class AnuncioAux2 {
 	}
 	
 	/**
-	 * ???
-	 * @return ???
+	 * Devuelve true si esta en una lista de anuncios deseados.
+	 * @return rue si esta en una lista de anuncios deseados.
 	 */
     public boolean getIn_wishlist() {
 		return in_wishlist;
 	}
 
     /**
-     * ???
-     * @param in_wishlist ???
+     * Cambia a in_wishlist si esta en una lista de anuncio de deseados.
+     * @param in_wishlist Nuevo valor de si esta en una lista de anuncios
+     * deseados.
      */
 	public void setI_wishlistn(boolean in_wishlist) {
 		this.in_wishlist = in_wishlist;

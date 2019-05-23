@@ -88,12 +88,11 @@ public class UsuarioController {
 	@Autowired public 
 	PictureRepository pictures;	
 	
-	// TODO: wishesA, wishesS?
-	/** Repositorio de wishesA */
+	/** Repositorio de anuncios deseados */
 	@Autowired public 
 	WishesARepository wishesA;	
 	
-	/** Repositorio de wishesS */
+	/** Repositorio de subastas deseadas */
 	@Autowired public 
 	WishesSRepository wishesS;	
 	
@@ -213,7 +212,6 @@ public class UsuarioController {
 		return "Nuevo usuario creado";
 	}
 
-	// TODO: mostrar los valores de sort?
 	/**
 	 * Devuelve una lista de los usuarios contenidos en la base de datos.
 	 * @param request Peticion http: contiene el token con el correo electronico
@@ -577,14 +575,28 @@ public class UsuarioController {
 			u2 = usuarios.buscarPorId(user_id);
 			if(u2!=null) {
 				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
-					//Se eliminar el usuario
-					usuarios.deleteById(Long.parseLong(user_id));
-					
-					// Se elimina la imagen
 					Long idIm = u.getIdImagen();					
 					if(idIm != null) {
 						pictures.deleteById(idIm);
 					}
+					wishesA.deleteByUsuario(Long.parseLong(user_id));
+					wishesS.deleteByUsuario(Long.parseLong(user_id));
+					List<Anuncio> la = anuncios.findByUsuarioIdUsuario(Long.parseLong(user_id));
+					for (Anuncio a: la) {
+						pictures.deleteByProducto(a.getId_producto());
+					}
+					List<Subasta> ls = subastas.findByUsuarioIdUsuario(Long.parseLong(user_id));
+					for (Subasta s: ls) {
+						pictures.deleteBySubasta(s.getIdSubasta());
+					}
+					anuncios.deleteByUsuario(Long.parseLong(user_id));
+					subastas.deleteByUsuario(Long.parseLong(user_id));
+					informes.deleteByUsuario(Long.parseLong(user_id));
+					valoraciones.deleteByUsuario(Long.parseLong(user_id));
+					pujas.deleteByUsuario(Long.parseLong(user_id));
+
+					usuarios.deleteById(Long.parseLong(user_id));
+
 				}
 				else {
 					String error = "You are not an administrator or the user is not you.";
@@ -907,7 +919,6 @@ public class UsuarioController {
 			
 	}
 	
-	// TODO: error 402?
 	/**
 	 * Devuelve la lista de productos deseados del usuario que envia la 
 	 * peticion.
@@ -1792,6 +1803,39 @@ public class UsuarioController {
 		else {
 			String error = "The user credentials does not exist or are not correct.";
 			response.sendError(401, error);
+			return null;
+		}
+	}
+	
+	/**
+	 * Reestablece la contrasenya al usuario que tiene como correo electronico
+	 * email y le envia al usuario su nueva contrasenya.
+	 * @param email Correo electronico del usuario.
+	 * @return "OK" si existe el correo electronico existe en la base de datos o
+	 * null.
+	 * @throws IOException
+	 */
+	@GetMapping(path="/forgot")
+	public @ResponseBody String recuperarContrasenya(@RequestBody String email) throws IOException {
+		Usuario u = usuarios.buscarPorEmail(email);
+		if (u != null) {
+			//Generar RANDOM
+			String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+	        StringBuilder salt = new StringBuilder();
+	        Random rnd = new Random();
+	        while (salt.length() < 18) { // length of the random string.
+	            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+	            salt.append(SALTCHARS.charAt(index));
+	        }		
+	        String saltStr = salt.toString();
+			ApplicationContext context = 
+		             new ClassPathXmlApplicationContext("Spring-Mail.xml");
+			MailMail mm = (MailMail) context.getBean("mailMail");
+			mm.sendMail("accounts@selit.naval.cat",email,"Recuperación de la cuenta","Nueva contrasenya: " + saltStr);
+			((ClassPathXmlApplicationContext) context).close();
+			usuarios.changePassword(bCryptPasswordEncoder.encode(saltStr), u.getIdUsuario().toString());
+			return "OK";
+		} else {
 			return null;
 		}
 	}

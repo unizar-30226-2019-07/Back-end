@@ -1,5 +1,8 @@
 package selit.security;
 
+/**
+ * Representa a las constantes utilizadas para seguridad
+ */
 public class Constants {
 
 	// Spring Security

@@ -8,8 +8,11 @@ import org.springframework.security.core.AuthenticationException;
 import selit.usuario.Usuario;
 import selit.usuario.UsuarioController;
 
+/**
+ * Representa el controlador de autentificaciones del usuario
+ */
 public class customAuthenticationManager implements AuthenticationManager {
-		
+	
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 	    String email = authentication.getPrincipal() + "";
@@ -23,7 +26,6 @@ public class customAuthenticationManager implements AuthenticationManager {
 	    	throw new BadCredentialsException("1000");
 	    }
 	    return new UsernamePasswordAuthenticationToken(email, password);
-
 	}
 
 }

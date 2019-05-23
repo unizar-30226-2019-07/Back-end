@@ -2,7 +2,10 @@ package selit.wishes;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -31,5 +34,14 @@ public interface WishesSRepository extends JpaRepository<WishS, WishSId>{
 	 */
 	@Query("from WishS where id_subasta=:id_subasta AND id_usuario=:id_usuario")
 	public WishS buscarInWishList(@Param("id_usuario") String id_usuario,@Param("id_subasta") String id_subasta);
+	
+	/**
+	 * Elimina las subastas deseadas cuyo propietario se identifica con id.
+	 * @param id Identificador del propietario.
+	 */
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("delete from WishS where id_usuario=:id")
+	public void deleteByUsuario(@Param("id") Long id);
 	
 }

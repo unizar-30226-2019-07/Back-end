@@ -5,11 +5,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
 import static selit.security.Constants.HEADER_AUTHORIZACION_KEY;
 import static selit.security.Constants.SUPER_SECRET_KEY;
 import static selit.security.Constants.TOKEN_BEARER_PREFIX;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,9 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.lang.Float;
 import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +60,7 @@ public class AnuncioController {
 	@Autowired public 
 	PictureRepository pictures;	
 	
-	/** TODO: ??? */
+	/** Repositorio de anuncios deseados */
 	@Autowired public 
 	WishesARepository wishesA;	
 	

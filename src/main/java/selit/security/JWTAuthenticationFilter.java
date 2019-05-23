@@ -22,10 +22,18 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import selit.usuario.UsuarioController;
 
+/**
+ * Representa el filtro de autentificacion
+ */
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
+	/** Controlador de autentificaciones */
 	private customAuthenticationManager authenticationManager;
 
+	/**
+	 * Constructor.
+	 * @param authenticationManager Nuevo controlador de autentificaciones.
+	 */
 	public JWTAuthenticationFilter(customAuthenticationManager authenticationManager) {
 		this.authenticationManager = authenticationManager;
 	}
