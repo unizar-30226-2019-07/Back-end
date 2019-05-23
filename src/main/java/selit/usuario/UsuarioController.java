@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -884,9 +885,9 @@ public class UsuarioController {
 						}
 						
 						//Creo el usuario a devolver
-						UsuarioAux rUser = new UsuarioAux(u2.getIdUsuario(),u2.getGender(),u2.getBirth_date(),
-								loc2,u2.getRating(),u2.getStatus(),null,u2.getEmail(),
-								u2.getLast_name(),u2.getFirst_name(),u2.getTipo(),new Picture(u2.getIdImagen()));
+						UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
+								loc2,userFind.getRating(),userFind.getStatus(),null,userFind.getEmail(),
+								userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 						
 						
 						AnuncioAux2 rAnuncio;	
@@ -1762,12 +1763,18 @@ public class UsuarioController {
 			MailMail mm = (MailMail) context.getBean("mailMail");
 			List<Anuncio> anuns = anuncios.findByUsuarioIdUsuario(rUser.getIdUsuario());
 			String as = "";
+			List<Picture> imagenes = new LinkedList<Picture>();
+			List<Picture> imagenesAux = new LinkedList<Picture>();
 			for (Anuncio a: anuns) {
+				imagenesAux = pictures.findByAnuncio(a.getId_producto());
+				imagenes.addAll(imagenesAux);
 				as += mapperObj.writeValueAsString(a);
 			}
 			List<Subasta> subs = subastas.findByUsuarioIdUsuario(rUser.getIdUsuario());
 			String ss = "";
 			for (Subasta s: subs) {
+				imagenesAux = pictures.findBySubasta(s.getIdSubasta());
+				imagenes.addAll(imagenesAux);
 				ss += mapperObj.writeValueAsString(s);
 			}
 			
@@ -1793,8 +1800,12 @@ public class UsuarioController {
 			for (WishS ws3: ws) {
 				ws2 += mapperObj.writeValueAsString(ws3);
 			}
+			String is = "";
+			for (Picture i: imagenes) {
+				is += mapperObj.writeValueAsString(i);
+			}
 			
-			mm.sendMail2("privacy@selit.naval.cat",rUser.getEmail(),"Informacion personal",mapperObj.writeValueAsString(rUser),as,ss, bs, vs, wa2, ws2);
+			mm.sendMail2("privacy@selit.naval.cat",rUser.getEmail(),"Informacion personal",mapperObj.writeValueAsString(rUser),as,ss, bs, vs, wa2, ws2, is);
 			((ClassPathXmlApplicationContext) context).close();
 			
 			return "Correo enviado";
