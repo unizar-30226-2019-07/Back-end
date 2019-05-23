@@ -1811,12 +1811,13 @@ public class UsuarioController {
 	 * Reestablece la contrasenya al usuario que tiene como correo electronico
 	 * email y le envia al usuario su nueva contrasenya.
 	 * @param email Correo electronico del usuario.
+	 * @param response Respuesta http: 404 si no existe el correo electronico.
 	 * @return "OK" si existe el correo electronico existe en la base de datos o
 	 * null.
 	 * @throws IOException
 	 */
 	@GetMapping(path="/forgot")
-	public @ResponseBody String recuperarContrasenya(@RequestBody String email) throws IOException {
+	public @ResponseBody String recuperarContrasenya(HttpServletResponse response, @RequestParam String email) throws IOException {
 		Usuario u = usuarios.buscarPorEmail(email);
 		if (u != null) {
 			//Generar RANDOM
@@ -1836,6 +1837,7 @@ public class UsuarioController {
 			usuarios.changePassword(bCryptPasswordEncoder.encode(saltStr), u.getIdUsuario().toString());
 			return "OK";
 		} else {
+			response.sendError(404, "No hay una cuenta con el correo: "+email);
 			return null;
 		}
 	}

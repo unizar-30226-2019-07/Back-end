@@ -8,6 +8,7 @@ public class Constants {
 	// Spring Security
 
 	public static final String LOGIN_URL = "/login";
+	public static final String FORGOT_URL = "/users/forgot**";
 	public static final String REGISTER_URL = "/users";
 	public static final String VERIFY_URL = "/verify";
 	public static final String PRODUCTO_URL = "/products/{product_id}";

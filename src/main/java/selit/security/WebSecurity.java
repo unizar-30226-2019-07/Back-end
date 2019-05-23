@@ -1,6 +1,7 @@
 package selit.security;
 
 import static selit.security.Constants.LOGIN_URL;
+import static selit.security.Constants.FORGOT_URL;
 import static selit.security.Constants.REGISTER_URL;
 import static selit.security.Constants.VERIFY_URL;
 import static selit.security.Constants.PRODUCTO_URL;
@@ -65,6 +66,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 			.cors().and()
 			.csrf().disable()
 			.authorizeRequests().antMatchers(HttpMethod.POST, LOGIN_URL).permitAll().and()
+			.authorizeRequests().antMatchers(HttpMethod.GET, FORGOT_URL).permitAll().and()
 			.authorizeRequests().antMatchers(HttpMethod.POST, REGISTER_URL).permitAll().and()
 			.authorizeRequests().antMatchers(HttpMethod.POST, VERIFY_URL).permitAll().and()
 			.authorizeRequests().antMatchers(HttpMethod.GET, PRODUCTOS_URL).permitAll().and()
