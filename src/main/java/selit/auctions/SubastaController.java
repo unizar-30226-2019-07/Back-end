@@ -36,6 +36,7 @@ import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioController;
 import selit.usuario.UsuarioRepository;
 import selit.verificacion.VerificacionRepository;
+import selit.wishes.WishA;
 import selit.wishes.WishS;
 import selit.wishes.WishesSRepository;
 import selit.Location.Location;
@@ -308,6 +309,19 @@ public class SubastaController {
 					for(BigInteger idP : listPic) {
 						pictures.deleteById(idP.longValue());
 					}
+					
+					List<WishS> w = wishesS.buscarPorIdUsuario(u.getIdUsuario());
+					
+					for(WishS wAux : w) {
+						wishesS.delete(wAux);
+					}
+					
+					List<Bid> b = pujas.findById_subasta(Long.parseLong(auction_id));
+					
+					for(Bid bAux : b) {
+						pujas.delete(bAux);
+					}
+					
 					// Se elimina el producto.
 					subastas.deleteById(Long.parseLong(auction_id));
 					

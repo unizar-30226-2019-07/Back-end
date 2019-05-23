@@ -26,6 +26,16 @@ public interface BidRepository extends  JpaRepository<Bid, ClavePrimaria> {
 	@Query("from Bid where subasta_id_producto=:id_subasta")
 	public List<Bid> findById_subasta(@Param("id_subasta") Long id_subasta, Sort sort);
 	
+
+	/**
+	 * Devueve las pujas cuya subasta es identificada por id_subasta, ordenadas
+	 * por sort.
+	 * @param id_subasta Identificador de la subasta.
+	 * @return Pujas cuya subasta es identificada por id_subasta.
+	 */
+	@Query("from Bid where subasta_id_producto=:id_subasta")
+	public List<Bid> findById_subasta(@Param("id_subasta") Long id_subasta);
+	
 	/**
 	 * Devuelve las pujas en las que ha participado el usuario identificado con
 	 * id.
