@@ -23,6 +23,9 @@ public interface BidRepository extends  JpaRepository<Bid, ClavePrimaria> {
 	@Query("from Bid where subasta_id_producto=:id_subasta")
 	public List<Bid> findById_subasta(@Param("id_subasta") Long id_subasta, Sort sort);
 	
+	@Query("from Bid where subasta_id_producto=:id_subasta")
+	public List<Bid> findById_subasta(@Param("id_subasta") Long id_subasta);
+	
 	@Query("from Bid where usuario_id_usuario=:id")
 	public List<Bid> findByIdUsuario(@Param("id") Long id);
 	

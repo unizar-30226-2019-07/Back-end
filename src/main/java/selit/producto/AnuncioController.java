@@ -296,6 +296,11 @@ public class AnuncioController {
 					for(BigInteger idP : listPic) {
 						pictures.deleteById(idP.longValue());
 					}
+					List<WishA> w = wishesA.buscarPorIdUsuario(u.getIdUsuario());
+					
+					for(WishA wAux : w) {
+						wishesA.delete(wAux);
+					}
 					// Se elimina el producto.
 					anuncios.deleteById(Long.parseLong(product_id));
 					

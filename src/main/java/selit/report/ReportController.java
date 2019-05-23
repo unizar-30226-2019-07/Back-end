@@ -23,8 +23,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.jsonwebtoken.Jwts;
+import selit.Location.Location;
+import selit.picture.Picture;
 import selit.security.TokenCheck;
 import selit.usuario.Usuario;
+import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioRepository;
 
 /**
@@ -110,7 +113,7 @@ public class ReportController {
 	 * @throws IOException
 	 */
 	@GetMapping(path="")
-	public @ResponseBody List<Report> getReports(HttpServletRequest request, HttpServletResponse response,@RequestParam (name = "status", required = false) String status) throws IOException {
+	public @ResponseBody List<ReportAux2> getReports(HttpServletRequest request, HttpServletResponse response,@RequestParam (name = "status", required = false) String status) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
 				.setSigningKey(SUPER_SECRET_KEY)
@@ -124,18 +127,53 @@ public class ReportController {
 			//Se comprueba que sea administrador
 			if(u.getTipo().contentEquals("administrador")) {
 				List<Report> reportList = informes.findAll();
-				List<Report> reportListAux = new ArrayList<Report> ();
+				List<ReportAux2> reportListAux = new ArrayList<ReportAux2> ();
+				List<ReportAux2> reportListAux2 = new ArrayList<ReportAux2> ();
 				
 				if(status != null) {
 					for(Report r :  reportList) {
 						if(r.getEstado_informe().contentEquals(status)) {
-							reportListAux.add(r);
+							Usuario u1 = usuarios.buscarPorId(r.getReportId().getId_evaluado().toString());
+							Usuario u2 = usuarios.buscarPorId(r.getReportId().getId_informador().toString());
+							
+							
+							Location loc = new Location(u1.getPosX(),u1.getPosY());				
+							UsuarioAux ua1 = new UsuarioAux(u1.getIdUsuario(),u1.getGender(),u1.getBirth_date(),
+									loc,u1.getRating(),u1.getStatus(),null,u1.getEmail(),
+									u1.getLast_name(),u1.getFirst_name(),u1.getTipo(),new Picture(u1.getIdImagen()));
+							
+							Location loc2 = new Location(u2.getPosX(),u2.getPosY());				
+							UsuarioAux ua2 = new UsuarioAux(u2.getIdUsuario(),u2.getGender(),u2.getBirth_date(),
+									loc2,u2.getRating(),u2.getStatus(),null,u2.getEmail(),
+									u2.getLast_name(),u2.getFirst_name(),u2.getTipo(),new Picture(u2.getIdImagen()));
+							
+							ReportAux2 r2 = new ReportAux2(ua1,ua2,r.getDescripcion(),r.getFecha_realizacion(),r.getEstado_informe(),r.getAsunto());
+							reportListAux.add(r2);
 						}
 					}
 					return reportListAux;
 				}
 				else {
-					return reportList;
+					for(Report r :  reportList) {
+						Usuario u1 = usuarios.buscarPorId(r.getReportId().getId_evaluado().toString());
+						Usuario u2 = usuarios.buscarPorId(r.getReportId().getId_informador().toString());
+						
+						
+						Location loc = new Location(u1.getPosX(),u1.getPosY());				
+						UsuarioAux ua1 = new UsuarioAux(u1.getIdUsuario(),u1.getGender(),u1.getBirth_date(),
+								loc,u1.getRating(),u1.getStatus(),null,u1.getEmail(),
+								u1.getLast_name(),u1.getFirst_name(),u1.getTipo(),new Picture(u1.getIdImagen()));
+						
+						Location loc2 = new Location(u2.getPosX(),u2.getPosY());				
+						UsuarioAux ua2 = new UsuarioAux(u2.getIdUsuario(),u2.getGender(),u2.getBirth_date(),
+								loc2,u2.getRating(),u2.getStatus(),null,u2.getEmail(),
+								u2.getLast_name(),u2.getFirst_name(),u2.getTipo(),new Picture(u2.getIdImagen()));
+						
+						ReportAux2 r2 = new ReportAux2(ua1,ua2,r.getDescripcion(),r.getFecha_realizacion(),r.getEstado_informe(),r.getAsunto());
+						reportListAux2.add(r2);				
+					}
+					
+					return reportListAux2;
 				}
 				
 			}
