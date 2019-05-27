@@ -36,6 +36,22 @@ public interface PictureRepository extends JpaRepository<Picture, Long>{
 	public List<BigInteger> findIdImagesSub( @Param("id_subasta") String id_subasta);
 	
 	/**
+	 * Devuelve la lista de imagenes del anuncio identificado con id.
+	 * @param id Identificador del anuncio.
+	 * @return Lista de imagenes del anuncio identificado con id.
+	 */
+	@Query(value = " from Picture where id_producto=:id")
+	public List<Picture> findByAnuncio(@Param("id") Long id);
+	
+	/**
+	 * Devuelve la lista de imagenes de la subasta identificado con id.
+	 * @param id Identificador de la subasta.
+	 * @return Lista de imagenes de la subasta identificado con id.
+	 */
+	@Query(value = " from Picture where id_subasta=:id")
+	public List<Picture> findBySubasta(@Param("id") Long id);
+	
+	/**
 	 * Elimina las imagenes relacionadas con el anuncio identificado con id.
 	 * @param id Identificador del anuncio.
 	 */

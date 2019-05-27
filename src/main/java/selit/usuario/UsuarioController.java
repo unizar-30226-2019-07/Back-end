@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -575,8 +576,9 @@ public class UsuarioController {
 			u2 = usuarios.buscarPorId(user_id);
 			if(u2!=null) {
 				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
-					Long idIm = u.getIdImagen();					
+					Long idIm = u2.getIdImagen();					
 					if(idIm != null) {
+						usuarios.setImagenNull(user_id);
 						pictures.deleteById(idIm);
 					}
 					wishesA.deleteByUsuario(Long.parseLong(user_id));
@@ -884,9 +886,9 @@ public class UsuarioController {
 						}
 						
 						//Creo el usuario a devolver
-						UsuarioAux rUser = new UsuarioAux(u2.getIdUsuario(),u2.getGender(),u2.getBirth_date(),
-								loc2,u2.getRating(),u2.getStatus(),null,u2.getEmail(),
-								u2.getLast_name(),u2.getFirst_name(),u2.getTipo(),new Picture(u2.getIdImagen()));
+						UsuarioAux rUser = new UsuarioAux(userFind.getIdUsuario(),userFind.getGender(),userFind.getBirth_date(),
+								loc2,userFind.getRating(),userFind.getStatus(),null,userFind.getEmail(),
+								userFind.getLast_name(),userFind.getFirst_name(),userFind.getTipo(),new Picture(userFind.getIdImagen()));
 						
 						
 						AnuncioAux2 rAnuncio;	
@@ -1508,19 +1510,21 @@ public class UsuarioController {
 			//Se comprueba si existe el usuario
 			if(u2!=null) {
 				List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(u2.getIdUsuario());
+				List<Valoracion> vList2 = valoraciones.buscarPorIdComprador(u2.getIdUsuario());
+				vList.addAll(vList2);
 				List<ValoracionAux> vAux = new ArrayList<ValoracionAux>();
 				
 				for(Valoracion v : vList) {			
 					Location loc3 = null;
 					Usuario buyer = null;
 					UsuarioAux buyer2 = null;
-					if (v.getId_comprador() != null) {
-						buyer = usuarios.buscarPorId(v.getId_comprador().toString());
-						loc3 = new Location(buyer.getPosX(), buyer.getPosY());
-						buyer2 = new UsuarioAux(buyer.getIdUsuario(),buyer.getGender(),buyer.getBirth_date(),
-								loc3,buyer.getRating(),buyer.getStatus(),null,buyer.getEmail(),
-								buyer.getLast_name(),buyer.getFirst_name(),buyer.getTipo(),new Picture(buyer.getIdImagen()));
-					}
+
+					buyer = usuarios.buscarPorId(v.getId_comprador().toString());
+					loc3 = new Location(buyer.getPosX(), buyer.getPosY());
+					buyer2 = new UsuarioAux(buyer.getIdUsuario(),buyer.getGender(),buyer.getBirth_date(),
+							loc3,buyer.getRating(),buyer.getStatus(),null,buyer.getEmail(),
+							buyer.getLast_name(),buyer.getFirst_name(),buyer.getTipo(),new Picture(buyer.getIdImagen()));
+
 
 					ValoracionAux vAuxAdd = new ValoracionAux(buyer2,v.getId_anunciante(),
 							v.getValor(),v.getComentario(),v.getId_subasta(),v.getId_producto());
@@ -1573,7 +1577,8 @@ public class UsuarioController {
 			
 			
 			//Se comprueba si existe el usuario
-			if((u2!=null && u.getIdUsuario().equals(valoracion.getId_comprador()) && !u2.getIdUsuario().equals(u.getIdUsuario())) || (u2!=null && u.getTipo().contentEquals("administrador"))) {
+			if((u2!=null && (u.getIdUsuario().equals(valoracion.getId_comprador()) || u.getIdUsuario().equals(valoracion.getId_anunciante()))
+					&& !u2.getIdUsuario().equals(u.getIdUsuario())) || (u2!=null && u.getTipo().contentEquals("administrador"))) {
 
 					Valoracion v = new Valoracion(valoracion.getId_comprador(),valoracion.getId_anunciante(),
 							valoracion.getValor(),valoracion.getComentario(),valoracion.getId_subasta(),valoracion.getId_producto());
@@ -1602,34 +1607,34 @@ public class UsuarioController {
 					if(guardar) {
 						Anuncio a = null;
 						Subasta s = null;
+
 						if(valoracion.getId_producto() != null) {
 							 a = anuncios.buscarPorId(valoracion.getId_producto().toString());
 							 if(a!= null) {
 								 if(a.getId_buyer() ==  null) {
 									 guardar = false;
 								 }
-								 else if(a.getStatus().contentEquals("en venta") || !a.getId_buyer().equals(u.getIdUsuario())) {
+								 else if(a.getStatus().contentEquals("en venta") || (!a.getId_buyer().equals(u.getIdUsuario()) 
+										 && (!a.getId_owner().equals(u.getIdUsuario()) && a.getId_buyer() != null))) {
 									 guardar = false;
 								 }
 							 }				
 						}
+
 						if(valoracion.getId_subasta() != null) {
 							s = subastas.buscarPorId(valoracion.getId_subasta().toString());
 							if(s != null) {
 								List<Bid> pujas2 =  pujas.findById_subasta(s.getIdSubasta(), Sort.by("fecha").descending());
 								if (pujas2.isEmpty()) {									
-									 if(s.getStatus().contentEquals("en venta")) {
-										 guardar = false;
-									 }
+									guardar = false;
 								} else {
 									Bid puja = pujas2.get(0);			
-									 if(s.getStatus().contentEquals("en venta") || !puja.getClave().getUsuario_id_usuario().equals(u2.getIdUsuario())) {
+									 if(s.getStatus().contentEquals("en venta") || (!puja.getClave().getUsuario_id_usuario().equals(u2.getIdUsuario())
+											 && !s.getId_owner().equals(u2.getIdUsuario()))) {
 										 guardar = false;
 									 }
 								}
-							}
-												
-							 
+							}														 
 						}
 										
 						if((a != null || s  != null) && guardar) {			
@@ -1638,6 +1643,24 @@ public class UsuarioController {
 							
 							if(valoracionAux >= 0.0 && valoracionAux <= 5.0) {
 								float valor = (valoracionAux + u2.getRating()*num)/(num + 1);
+
+								if(a != null) {
+									if(a.getId_owner().equals(u.getIdUsuario())) {
+										v.setValorador("vendedor");
+									}
+									else {
+										v.setValorador("comprador");
+									}
+								}
+								else if(s != null) {
+									if(s.getId_owner().equals(u.getIdUsuario())) {
+										v.setValorador("vendedor");
+									}
+									else {
+										v.setValorador("comprador");
+									}
+								}
+								
 								valoraciones.save(v);	
 								usuarios.updateRating(user_id, valor);
 								return "OK";
@@ -1762,12 +1785,18 @@ public class UsuarioController {
 			MailMail mm = (MailMail) context.getBean("mailMail");
 			List<Anuncio> anuns = anuncios.findByUsuarioIdUsuario(rUser.getIdUsuario());
 			String as = "";
+			List<Picture> imagenes = new LinkedList<Picture>();
+			List<Picture> imagenesAux = new LinkedList<Picture>();
 			for (Anuncio a: anuns) {
+				imagenesAux = pictures.findByAnuncio(a.getId_producto());
+				imagenes.addAll(imagenesAux);
 				as += mapperObj.writeValueAsString(a);
 			}
 			List<Subasta> subs = subastas.findByUsuarioIdUsuario(rUser.getIdUsuario());
 			String ss = "";
 			for (Subasta s: subs) {
+				imagenesAux = pictures.findBySubasta(s.getIdSubasta());
+				imagenes.addAll(imagenesAux);
 				ss += mapperObj.writeValueAsString(s);
 			}
 			
@@ -1793,8 +1822,12 @@ public class UsuarioController {
 			for (WishS ws3: ws) {
 				ws2 += mapperObj.writeValueAsString(ws3);
 			}
+			String is = "";
+			for (Picture i: imagenes) {
+				is += mapperObj.writeValueAsString(i);
+			}
 			
-			mm.sendMail2("privacy@selit.naval.cat",rUser.getEmail(),"Informacion personal",mapperObj.writeValueAsString(rUser),as,ss, bs, vs, wa2, ws2);
+			mm.sendMail2("privacy@selit.naval.cat",rUser.getEmail(),"Informacion personal",mapperObj.writeValueAsString(rUser),as,ss, bs, vs, wa2, ws2, is);
 			((ClassPathXmlApplicationContext) context).close();
 			
 			return "Correo enviado";
@@ -1811,12 +1844,13 @@ public class UsuarioController {
 	 * Reestablece la contrasenya al usuario que tiene como correo electronico
 	 * email y le envia al usuario su nueva contrasenya.
 	 * @param email Correo electronico del usuario.
+	 * @param response Respuesta http: 404 si no existe el correo electronico.
 	 * @return "OK" si existe el correo electronico existe en la base de datos o
 	 * null.
 	 * @throws IOException
 	 */
 	@GetMapping(path="/forgot")
-	public @ResponseBody String recuperarContrasenya(@RequestBody String email) throws IOException {
+	public @ResponseBody String recuperarContrasenya(HttpServletResponse response, @RequestParam String email) throws IOException {
 		Usuario u = usuarios.buscarPorEmail(email);
 		if (u != null) {
 			//Generar RANDOM
@@ -1836,6 +1870,7 @@ public class UsuarioController {
 			usuarios.changePassword(bCryptPasswordEncoder.encode(saltStr), u.getIdUsuario().toString());
 			return "OK";
 		} else {
+			response.sendError(404, "No hay una cuenta con el correo: "+email);
 			return null;
 		}
 	}

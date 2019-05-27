@@ -45,7 +45,7 @@ public class MailMail
 	}
 	
 	
-	public void sendMail2(String from, String to, String subject, String personal, String anuncios, String subastas, String pujas, String valoraciones, String wishesA, String wishesS) {
+	public void sendMail2(String from, String to, String subject, String personal, String anuncios, String subastas, String pujas, String valoraciones, String wishesA, String wishesS, String imagenes) {
 		MimeMessage message = mailSender.createMimeMessage();
 		try {
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -78,6 +78,10 @@ public class MailMail
 			if (!wishesS.isEmpty()) {
 				is= new ByteArrayInputStream(wishesS.getBytes(StandardCharsets.UTF_8));
 				helper.addAttachment("SubastasDeseadas.json",new ByteArrayResource(IOUtils.toByteArray(is)));
+			}
+			if (!imagenes.isEmpty()) {
+				is= new ByteArrayInputStream(imagenes.getBytes(StandardCharsets.UTF_8));
+				helper.addAttachment("imagenes.json",new ByteArrayResource(IOUtils.toByteArray(is)));
 			}
 			mailSender.send(message);
 

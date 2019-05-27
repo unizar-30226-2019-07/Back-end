@@ -34,8 +34,8 @@ public class ReportAux2 {
 	
 	/**
 	 * Constructor.
-	 * @param id_evaluado Identificador del usuario evaluado.
-	 * @param id_informador Identificador del usuario informador.
+	 * @param Evaluado  Usuario evaluado.
+	 * @param Informador Usuario informador.
 	 * @param descripcion Descripcion del informe.
 	 * @param fecha_realizacion Fecha de realizacion del informe.
 	 * @param estado_informe Estado (pendiente o resuelto) del informe.
@@ -62,7 +62,7 @@ public class ReportAux2 {
 
 	/**
 	 * Cambia el usuario evaluador.
-	 * @param Informador Nuevo usuario evaluador.
+	 * @param Evaluado Nuevo usuario evaluador.
 	 */
 	public void setEvaluado(UsuarioAux Evaluado) {
 		this.Evaluado = Evaluado;

@@ -45,6 +45,10 @@ public class Valoracion {
 	@Column(name="id_producto")
 	private Long id_producto;
 	
+	/** Identificador del anuncio de la valoracion */
+	@Column(name="valorador")
+	private String valorador;
+	
 	/**
 	 * Constructor por defecto.
 	 */
@@ -182,6 +186,25 @@ public class Valoracion {
 	 */
 	public void setId_producto(Long id_producto) {
 		this.id_producto = id_producto;
+	}
+
+	/**
+	 * Devuelve quien ha realizado la valoracion.
+	 * @return Comprador o vendedor segun quien ha realizado la valoracón.
+	 */
+	public String getValorador() {
+		return valorador;
+	}
+
+
+	/**
+	 * Cambia quien ha realizado la valoracion.
+	 * @param valorador Comprador o vendedor segun quien ha realizado la valoracón.
+	 */
+	public void setValorador(String valorador) {
+		this.valorador = valorador;
 	}	
+	
+	
 	
 }

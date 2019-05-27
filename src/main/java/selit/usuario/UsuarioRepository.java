@@ -164,6 +164,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
 	public void updateStatus(@Param("id_usuario") Long id_usuario,@Param("status") String status);
 	
 	/**
+	 * Cambia idImagen a null para un usuario
+	 * @param id_usuario Identificador del usuario.
+	 */
+	@Transactional
+	@Modifying(flushAutomatically = true, clearAutomatically = true)
+	@Query("update Usuario set idImagen=null where id_usuario=:id_usuario")
+	public void setImagenNull(@Param("id_usuario") String id_usuario);
+	
+	/**
 	 * Cambia la valoracion del usuario identificado con id_usuario.
 	 * @param id_usuario Identificador del usuario.
 	 * @param calificacion Nueva calificacion del usuario.

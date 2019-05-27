@@ -24,11 +24,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.jsonwebtoken.Jwts;
 import selit.Location.Location;
+import selit.auctions.Subasta;
+import selit.auctions.SubastaRepository;
+import selit.bid.BidRepository;
 import selit.picture.Picture;
+import selit.picture.PictureRepository;
+import selit.producto.Anuncio;
+import selit.producto.AnuncioRepository;
 import selit.security.TokenCheck;
 import selit.usuario.Usuario;
 import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioRepository;
+import selit.valoracion.ValoracionesRepository;
+import selit.verificacion.VerificacionRepository;
+import selit.wishes.WishesARepository;
+import selit.wishes.WishesSRepository;
 
 /**
  * Controlador de las operaciones relacionadas con informes
@@ -36,10 +46,42 @@ import selit.usuario.UsuarioRepository;
 @RestController   
 @RequestMapping(path="/reports") 
 public class ReportController {
-
+	
 	/** Repositorio de usuarios */
-	@Autowired
-	public UsuarioRepository usuarios;	
+	@Autowired public 
+	UsuarioRepository usuarios;	
+	
+	/** Repositorio de anuncios */
+	@Autowired public 
+	AnuncioRepository anuncios;	
+	
+	/** Repositorio de subastas */
+	@Autowired public 
+	SubastaRepository subastas;	
+	
+	/** Repositorio de verificaciones */
+	@Autowired public 
+	VerificacionRepository verificaciones;	
+	
+	/** Repositorio de imagenes */
+	@Autowired public 
+	PictureRepository pictures;	
+	
+	/** Repositorio de anuncios deseados */
+	@Autowired public 
+	WishesARepository wishesA;	
+	
+	/** Repositorio de subastas deseadas */
+	@Autowired public 
+	WishesSRepository wishesS;	
+	
+	/** Repositorio de pujas */
+	@Autowired public
+	BidRepository pujas;
+	
+	/** Repositorio de valoraciones */
+	@Autowired public
+	ValoracionesRepository valoraciones;
 	
 	/** Repositorio de informes */
 	@Autowired public
@@ -232,7 +274,7 @@ public class ReportController {
 				}
 			}
 			else {
-				String error = "The user can´t be found or you are the user.";
+				String error = "The user can´t be found or you are not an administrator.";
 				response.sendError(404, error);
 				return null;
 			}
@@ -244,5 +286,69 @@ public class ReportController {
 		}	
 		return "OK";
 	}
+	
+	@PutMapping(path="/{user_id}/report_block")
+	public @ResponseBody String bloquearUserReport(@PathVariable String user_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
+		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
+		String user = Jwts.parser()
+				.setSigningKey(SUPER_SECRET_KEY)
+				.parseClaimsJws(token.replace(TOKEN_BEARER_PREFIX, ""))
+				.getBody()
+				.getSubject();
+		Usuario u = new Usuario();
+
+		System.out.println(user);
+		System.out.println("Uusarios: " + usuarios);		
+
+		u = usuarios.buscarPorEmail(user);
+		//Se comprueba si el token es válido
+		if (TokenCheck.checkAccess(token, u)) {
+			//Se comprueba si existe el usuario
+			if(u.getTipo().contentEquals("administrador")) {
+				List<Report> r = informes.buscarPorIdEvaluado(Long.parseLong(user_id));	
+				Usuario u2 = usuarios.buscarPorId(user_id);
+				
+				Long idIm = u2.getIdImagen();		
+
+				if(idIm != null) {
+					usuarios.setImagenNull(user_id);
+					pictures.deleteById(idIm);
+				}
+				wishesA.deleteByUsuario(Long.parseLong(user_id));
+				wishesS.deleteByUsuario(Long.parseLong(user_id));
+				List<Anuncio> la = anuncios.findByUsuarioIdUsuario(Long.parseLong(user_id));
+				for (Anuncio a: la) {
+					pictures.deleteByProducto(a.getId_producto());
+				}
+				List<Subasta> ls = subastas.findByUsuarioIdUsuario(Long.parseLong(user_id));
+				for (Subasta s: ls) {
+					pictures.deleteBySubasta(s.getIdSubasta());
+				}
+				anuncios.deleteByUsuario(Long.parseLong(user_id));
+				subastas.deleteByUsuario(Long.parseLong(user_id));
+				for(Report rAux : r){
+					informes.delete(rAux);
+				}
+
+				valoraciones.deleteByUsuario(Long.parseLong(user_id));
+				pujas.deleteByUsuario(Long.parseLong(user_id));
+				usuarios.updateStatus(Long.parseLong(user_id),"bloqueada");
+
+			}
+			else {
+				String error = "The user can´t be found or you are not an administrator.";
+				response.sendError(404, error);
+				return null;
+			}
+		}
+		else {
+			String error = "The user credentials does not exist or are not correct.";
+			response.sendError(401, error);
+			return null;
+		}	
+		return "OK";
+	}
+
+		
 	
 }

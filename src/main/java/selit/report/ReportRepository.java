@@ -1,5 +1,7 @@
 package selit.report;
 
+import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,5 +33,15 @@ public interface ReportRepository extends JpaRepository<Report, ReportId>{
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("delete from Report where id_evaluado=:id or id_informador=:id")
 	public void deleteByUsuario(@Param("id") Long id);
+	
+	/**
+	 *  Devuelve una lista de informes cuyo identificador del usuario 
+	 *  evaluado es id_evaluado.
+	 * @param id_evaluado Identificador del usuario evaluado.
+	 * @return Lista de informes cuyo identificador del usuario 
+	 * evaluado es id_evaluado.
+	 */
+	@Query("from Report where id_evaluado=:id_evaluado")
+	public List<Report> buscarPorIdEvaluado(@Param("id_evaluado") Long id_evaluado);
 	
 }
