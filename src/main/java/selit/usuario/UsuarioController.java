@@ -1510,19 +1510,21 @@ public class UsuarioController {
 			//Se comprueba si existe el usuario
 			if(u2!=null) {
 				List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(u2.getIdUsuario());
+				List<Valoracion> vList2 = valoraciones.buscarPorIdComprador(u2.getIdUsuario());
+				vList.addAll(vList2);
 				List<ValoracionAux> vAux = new ArrayList<ValoracionAux>();
 				
 				for(Valoracion v : vList) {			
 					Location loc3 = null;
 					Usuario buyer = null;
 					UsuarioAux buyer2 = null;
-					if (v.getId_comprador() != null) {
-						buyer = usuarios.buscarPorId(v.getId_comprador().toString());
-						loc3 = new Location(buyer.getPosX(), buyer.getPosY());
-						buyer2 = new UsuarioAux(buyer.getIdUsuario(),buyer.getGender(),buyer.getBirth_date(),
-								loc3,buyer.getRating(),buyer.getStatus(),null,buyer.getEmail(),
-								buyer.getLast_name(),buyer.getFirst_name(),buyer.getTipo(),new Picture(buyer.getIdImagen()));
-					}
+
+					buyer = usuarios.buscarPorId(v.getId_comprador().toString());
+					loc3 = new Location(buyer.getPosX(), buyer.getPosY());
+					buyer2 = new UsuarioAux(buyer.getIdUsuario(),buyer.getGender(),buyer.getBirth_date(),
+							loc3,buyer.getRating(),buyer.getStatus(),null,buyer.getEmail(),
+							buyer.getLast_name(),buyer.getFirst_name(),buyer.getTipo(),new Picture(buyer.getIdImagen()));
+
 
 					ValoracionAux vAuxAdd = new ValoracionAux(buyer2,v.getId_anunciante(),
 							v.getValor(),v.getComentario(),v.getId_subasta(),v.getId_producto());
@@ -1575,7 +1577,8 @@ public class UsuarioController {
 			
 			
 			//Se comprueba si existe el usuario
-			if((u2!=null && u.getIdUsuario().equals(valoracion.getId_comprador()) && !u2.getIdUsuario().equals(u.getIdUsuario())) || (u2!=null && u.getTipo().contentEquals("administrador"))) {
+			if((u2!=null && (u.getIdUsuario().equals(valoracion.getId_comprador()) || u.getIdUsuario().equals(valoracion.getId_anunciante()))
+					&& !u2.getIdUsuario().equals(u.getIdUsuario())) || (u2!=null && u.getTipo().contentEquals("administrador"))) {
 
 					Valoracion v = new Valoracion(valoracion.getId_comprador(),valoracion.getId_anunciante(),
 							valoracion.getValor(),valoracion.getComentario(),valoracion.getId_subasta(),valoracion.getId_producto());
@@ -1604,34 +1607,34 @@ public class UsuarioController {
 					if(guardar) {
 						Anuncio a = null;
 						Subasta s = null;
+
 						if(valoracion.getId_producto() != null) {
 							 a = anuncios.buscarPorId(valoracion.getId_producto().toString());
 							 if(a!= null) {
 								 if(a.getId_buyer() ==  null) {
 									 guardar = false;
 								 }
-								 else if(a.getStatus().contentEquals("en venta") || !a.getId_buyer().equals(u.getIdUsuario())) {
+								 else if(a.getStatus().contentEquals("en venta") || (!a.getId_buyer().equals(u.getIdUsuario()) 
+										 && (!a.getId_owner().equals(u.getIdUsuario()) && a.getId_buyer() != null))) {
 									 guardar = false;
 								 }
 							 }				
 						}
+
 						if(valoracion.getId_subasta() != null) {
 							s = subastas.buscarPorId(valoracion.getId_subasta().toString());
 							if(s != null) {
 								List<Bid> pujas2 =  pujas.findById_subasta(s.getIdSubasta(), Sort.by("fecha").descending());
 								if (pujas2.isEmpty()) {									
-									 if(s.getStatus().contentEquals("en venta")) {
-										 guardar = false;
-									 }
+									guardar = false;
 								} else {
 									Bid puja = pujas2.get(0);			
-									 if(s.getStatus().contentEquals("en venta") || !puja.getClave().getUsuario_id_usuario().equals(u2.getIdUsuario())) {
+									 if(s.getStatus().contentEquals("en venta") || (!puja.getClave().getUsuario_id_usuario().equals(u2.getIdUsuario())
+											 && !s.getId_owner().equals(u2.getIdUsuario()))) {
 										 guardar = false;
 									 }
 								}
-							}
-												
-							 
+							}														 
 						}
 										
 						if((a != null || s  != null) && guardar) {			
@@ -1640,6 +1643,24 @@ public class UsuarioController {
 							
 							if(valoracionAux >= 0.0 && valoracionAux <= 5.0) {
 								float valor = (valoracionAux + u2.getRating()*num)/(num + 1);
+
+								if(a != null) {
+									if(a.getId_owner().equals(u.getIdUsuario())) {
+										v.setValorador("vendedor");
+									}
+									else {
+										v.setValorador("comprador");
+									}
+								}
+								else if(s != null) {
+									if(s.getId_owner().equals(u.getIdUsuario())) {
+										v.setValorador("vendedor");
+									}
+									else {
+										v.setValorador("comprador");
+									}
+								}
+								
 								valoraciones.save(v);	
 								usuarios.updateRating(user_id, valor);
 								return "OK";

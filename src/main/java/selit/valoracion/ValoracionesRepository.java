@@ -21,8 +21,18 @@ public interface ValoracionesRepository extends JpaRepository<Valoracion, Long>{
 	 * @return Listado de valoraciones del anunciante identificado por
 	 * id_anunciante.
 	 */
-	@Query("from Valoracion where id_anunciante=:id_anunciante")
+	@Query("from Valoracion where id_anunciante=:id_anunciante and valorador='comprador'")
 	public List<Valoracion> buscarPorIdAnunciante(@Param("id_anunciante") Long id_anunciante);
+
+	/**
+	 * Devuelve el listado de valoraciones del anunciante identificado por
+	 * id_comprador.
+	 * @param id_comprador Identificador del comprador.
+	 * @return Listado de valoraciones del anunciante identificado por
+	 * id_comprador.
+	 */
+	@Query("from Valoracion where id_comprador=:id_comprador and valorador='vendedor'")
+	public List<Valoracion> buscarPorIdComprador(@Param("id_comprador") Long id_comprador);
 	
 	/**
 	 * Devuelve la lista de valoraciones que estan relacionadas con el usuario
