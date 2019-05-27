@@ -141,6 +141,8 @@ public class SubastaController {
 			return "precio_salida";
 		} else if (parametro.equals("currency")) {
 			return "moneda";
+		} else if (parametro.equals("views")) {
+			return "nvisitas";
 		} else {
 			return null;
 		}
