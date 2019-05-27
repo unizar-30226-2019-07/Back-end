@@ -296,8 +296,11 @@ public class ReportController {
 				.getBody()
 				.getSubject();
 		Usuario u = new Usuario();
+
+		System.out.println(user);
+		System.out.println("Uusarios: " + usuarios);		
+
 		u = usuarios.buscarPorEmail(user);
-		
 		//Se comprueba si el token es válido
 		if (TokenCheck.checkAccess(token, u)) {
 			//Se comprueba si existe el usuario
