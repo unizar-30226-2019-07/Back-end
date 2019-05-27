@@ -325,7 +325,7 @@ public class ReportController {
 
 				valoraciones.deleteByUsuario(Long.parseLong(user_id));
 				pujas.deleteByUsuario(Long.parseLong(user_id));
-				usuarios.updateStatus(u.getIdUsuario(),"bloqueada");
+				usuarios.updateStatus(Long.parseLong(user_id),"bloqueada");
 
 			}
 			else {
