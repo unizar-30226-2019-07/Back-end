@@ -576,8 +576,9 @@ public class UsuarioController {
 			u2 = usuarios.buscarPorId(user_id);
 			if(u2!=null) {
 				if(u.getTipo().contentEquals("administrador") || u.getEmail().equals(u2.getEmail())) {
-					Long idIm = u.getIdImagen();					
+					Long idIm = u2.getIdImagen();					
 					if(idIm != null) {
+						usuarios.setImagenNull(user_id);
 						pictures.deleteById(idIm);
 					}
 					wishesA.deleteByUsuario(Long.parseLong(user_id));

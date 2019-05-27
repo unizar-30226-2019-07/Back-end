@@ -48,8 +48,8 @@ import selit.wishes.WishesSRepository;
 public class ReportController {
 	
 	/** Repositorio de usuarios */
-	@Autowired
-	public static UsuarioRepository usuarios;	
+	@Autowired public 
+	UsuarioRepository usuarios;	
 	
 	/** Repositorio de anuncios */
 	@Autowired public 
@@ -303,8 +303,12 @@ public class ReportController {
 			//Se comprueba si existe el usuario
 			if(u.getTipo().contentEquals("administrador")) {
 				List<Report> r = informes.buscarPorIdEvaluado(Long.parseLong(user_id));	
-				Long idIm = u.getIdImagen();					
+				Usuario u2 = usuarios.buscarPorId(user_id);
+				
+				Long idIm = u2.getIdImagen();		
+
 				if(idIm != null) {
+					usuarios.setImagenNull(user_id);
 					pictures.deleteById(idIm);
 				}
 				wishesA.deleteByUsuario(Long.parseLong(user_id));
