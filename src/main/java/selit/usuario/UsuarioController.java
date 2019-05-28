@@ -35,6 +35,7 @@ import selit.usuario.Usuario;
 import selit.usuario.UsuarioRepository;
 import selit.valoracion.Valoracion;
 import selit.valoracion.ValoracionAux;
+import selit.valoracion.ValoracionAux2;
 import selit.valoracion.ValoracionesRepository;
 import selit.verificacion.Verificacion;
 import selit.verificacion.VerificacionRepository;
@@ -1494,7 +1495,7 @@ public class UsuarioController {
 	 * @throws IOException
 	 */
 	@GetMapping(path="/{user_id}/reviews")
-	public @ResponseBody List<ValoracionAux> getUserReviews(@PathVariable String user_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody List<ValoracionAux2> getUserReviews(@PathVariable String user_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
 		String user = Jwts.parser()
 				.setSigningKey(SUPER_SECRET_KEY)
@@ -1512,7 +1513,7 @@ public class UsuarioController {
 				List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(u2.getIdUsuario());
 				List<Valoracion> vList2 = valoraciones.buscarPorIdComprador(u2.getIdUsuario());
 				vList.addAll(vList2);
-				List<ValoracionAux> vAux = new ArrayList<ValoracionAux>();
+				List<ValoracionAux2> vAux = new ArrayList<ValoracionAux2>();
 				
 				for(Valoracion v : vList) {			
 					Location loc3 = null;
@@ -1524,9 +1525,21 @@ public class UsuarioController {
 					buyer2 = new UsuarioAux(buyer.getIdUsuario(),buyer.getGender(),buyer.getBirth_date(),
 							loc3,buyer.getRating(),buyer.getStatus(),null,buyer.getEmail(),
 							buyer.getLast_name(),buyer.getFirst_name(),buyer.getTipo(),new Picture(buyer.getIdImagen()));
+					
+					Location loc4 = null;
+					Usuario buyer3 = null;
+					UsuarioAux buyer4 = null;
+
+					buyer3 = usuarios.buscarPorId(v.getId_anunciante().toString());
+					loc4 = new Location(buyer3.getPosX(), buyer3.getPosY());
+					buyer4 = new UsuarioAux(buyer3.getIdUsuario(),buyer3.getGender(),buyer3.getBirth_date(),
+							loc4,buyer3.getRating(),buyer3.getStatus(),null,buyer3.getEmail(),
+							buyer3.getLast_name(),buyer3.getFirst_name(),buyer3.getTipo(),new Picture(buyer3.getIdImagen()));
+					
+					
 
 
-					ValoracionAux vAuxAdd = new ValoracionAux(buyer2,v.getId_anunciante(),
+					ValoracionAux2 vAuxAdd = new ValoracionAux2(buyer2,buyer4,
 							v.getValor(),v.getComentario(),v.getId_subasta(),v.getId_producto());
 					vAux.add(vAuxAdd);
 				}
@@ -1583,17 +1596,50 @@ public class UsuarioController {
 					Valoracion v = new Valoracion(valoracion.getId_comprador(),valoracion.getId_anunciante(),
 							valoracion.getValor(),valoracion.getComentario(),valoracion.getId_subasta(),valoracion.getId_producto());
 					
-					List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(valoracion.getId_anunciante());
+					List<Valoracion> vList = valoraciones.buscarPorIdAnunciante(Long.parseLong(user_id));
+					List<Valoracion> vList2 = valoraciones.buscarPorIdComprador(Long.parseLong(user_id));
+					vList.addAll(vList2);
 					
 					Boolean guardar = true;
 					
+					Anuncio a = null;
+					Subasta s = null;
+					
+					if(valoracion.getId_producto() != null) {
+						 a = anuncios.buscarPorId(valoracion.getId_producto().toString());
+					}
+					
+					if(valoracion.getId_subasta() != null) {
+						s = subastas.buscarPorId(valoracion.getId_subasta().toString());
+					}
+					
+					if(a != null) {
+						if(a.getId_owner().equals(u.getIdUsuario())) {
+							v.setValorador("vendedor");
+						}
+						else {
+							v.setValorador("comprador");
+						}
+					}
+					else if(s != null) {
+						if(s.getId_owner().equals(u.getIdUsuario())) {
+							v.setValorador("vendedor");
+						}
+						else {
+							v.setValorador("comprador");
+						}
+					}
+					
 					for(Valoracion vAux : vList) {
-						if(vAux.getId_anunciante().equals(Long.valueOf(user_id)) && vAux.getId_comprador().equals(u.getIdUsuario())) {
-							if(vAux.getId_producto() != null) {
+						if((v.getValorador().contentEquals("vendedor") && vAux.getId_comprador().equals(Long.valueOf(user_id)) 
+								&& vAux.getId_anunciante().equals(u.getIdUsuario())) || (v.getValorador().contentEquals("comprador") 
+								&& vAux.getId_comprador().equals(u.getIdUsuario()) && vAux.getId_anunciante().equals(Long.valueOf(user_id)))) {
+							if(vAux.getId_producto() != null) {						
 								if(vAux.getId_producto().equals(valoracion.getId_producto())) {
 									guardar = false;
 									break;
 								}
+
 							}
 							if(vAux.getId_subasta() != null) {
 								if(vAux.getId_subasta().equals(valoracion.getId_subasta())) {
@@ -1605,11 +1651,7 @@ public class UsuarioController {
 					}
 					
 					if(guardar) {
-						Anuncio a = null;
-						Subasta s = null;
-
 						if(valoracion.getId_producto() != null) {
-							 a = anuncios.buscarPorId(valoracion.getId_producto().toString());
 							 if(a!= null) {
 								 if(a.getId_buyer() ==  null) {
 									 guardar = false;
@@ -1639,27 +1681,11 @@ public class UsuarioController {
 										
 						if((a != null || s  != null) && guardar) {			
 							int num = vList.size();
+
 							float valoracionAux = valoracion.getValor();
 							
 							if(valoracionAux >= 0.0 && valoracionAux <= 5.0) {
 								float valor = (valoracionAux + u2.getRating()*num)/(num + 1);
-
-								if(a != null) {
-									if(a.getId_owner().equals(u.getIdUsuario())) {
-										v.setValorador("vendedor");
-									}
-									else {
-										v.setValorador("comprador");
-									}
-								}
-								else if(s != null) {
-									if(s.getId_owner().equals(u.getIdUsuario())) {
-										v.setValorador("vendedor");
-									}
-									else {
-										v.setValorador("comprador");
-									}
-								}
 								
 								valoraciones.save(v);	
 								usuarios.updateRating(user_id, valor);
