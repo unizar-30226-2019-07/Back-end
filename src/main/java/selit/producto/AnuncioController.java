@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import selit.usuario.Usuario;
 import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioRepository;
+import selit.valoracion.Valoracion;
+import selit.valoracion.ValoracionesRepository;
 import selit.wishes.WishA;
 import selit.wishes.WishesARepository;
 import selit.Location.Location;
@@ -62,7 +64,11 @@ public class AnuncioController {
 	
 	/** Repositorio de anuncios deseados */
 	@Autowired public 
-	WishesARepository wishesA;	
+	WishesARepository wishesA;
+	
+	/** Repositorio de valoraciones */
+	@Autowired public
+	ValoracionesRepository valoraciones;
 	
 	/**
 	 * Constructor del controlador.
@@ -296,6 +302,13 @@ public class AnuncioController {
 					for(WishA wAux : w) {
 						wishesA.delete(wAux);
 					}
+					
+					List<Valoracion> vList = valoraciones.buscarPorIdProducto(Long.parseLong(product_id));
+					
+					for(Valoracion v : vList) {
+						valoraciones.delete(v);
+					}
+					
 					// Se elimina el producto.
 					anuncios.deleteById(Long.parseLong(product_id));
 					
