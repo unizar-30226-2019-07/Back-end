@@ -35,6 +35,8 @@ import selit.usuario.Usuario;
 import selit.usuario.UsuarioAux;
 import selit.usuario.UsuarioController;
 import selit.usuario.UsuarioRepository;
+import selit.valoracion.Valoracion;
+import selit.valoracion.ValoracionesRepository;
 import selit.verificacion.VerificacionRepository;
 import selit.wishes.WishA;
 import selit.wishes.WishS;
@@ -83,6 +85,10 @@ public class SubastaController {
 	/** Repositorio de subastas deseadas */
 	@Autowired public
 	WishesSRepository wishesS;
+	
+	/** Repositorio de valoraciones */
+	@Autowired public
+	ValoracionesRepository valoraciones;
 
 	/** Cifrador de contrasenyas */
 	public static BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -322,6 +328,12 @@ public class SubastaController {
 					
 					for(Bid bAux : b) {
 						pujas.delete(bAux);
+					}
+					
+					List<Valoracion> vList = valoraciones.buscarPorIdSubasta(Long.parseLong(auction_id));
+					
+					for(Valoracion v : vList) {
+						valoraciones.delete(v);
 					}
 					
 					// Se elimina el producto.
