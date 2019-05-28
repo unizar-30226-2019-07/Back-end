@@ -1800,10 +1800,16 @@ public class UsuarioController {
 		// Se comprueba si el token es válido
 		if (TokenCheck.checkAccess(token, u)) {
 			Location loc = new Location(u.getPosX(), u.getPosY());
-			
+			Optional<Picture> op = pictures.findById(u.getIdImagen());
+			Picture p;
+			if (op.isPresent()) {
+				p = op.get();
+			} else {
+				p= null;
+			}
 			UsuarioAux rUser = new UsuarioAux(u.getIdUsuario(),u.getGender(),u.getBirth_date(),
 											loc,u.getRating(),u.getStatus(),null,u.getEmail(),
-											u.getLast_name(),u.getFirst_name(),u.getTipo(),new Picture(u.getIdImagen()));
+											u.getLast_name(),u.getFirst_name(),u.getTipo(),p);
 			
 			ObjectMapper mapperObj = new ObjectMapper();
 			ApplicationContext context = 

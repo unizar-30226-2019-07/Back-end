@@ -287,6 +287,16 @@ public class ReportController {
 		return "OK";
 	}
 	
+	/**
+	 * Bloquea al usuario identificado con user_id.
+	 * @param user_id Identificador del usuario.
+	 * @param request Peticion http: contiene el token con el correo electronico
+	 * del usuario que ha enviado la peticion.
+	 * @param response Respuesta http: 404 si el usuario que ha enviado la
+	 * peticion no es administrador o 401 si el token es incorrecto.
+	 * @return "OK" si se ha realizado correctamente o null en caso contrario.
+	 * @throws IOException
+	 */
 	@PutMapping(path="/{user_id}/report_block")
 	public @ResponseBody String bloquearUserReport(@PathVariable String user_id,HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String token = request.getHeader(HEADER_AUTHORIZACION_KEY);
