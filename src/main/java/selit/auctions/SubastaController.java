@@ -38,7 +38,6 @@ import selit.usuario.UsuarioRepository;
 import selit.valoracion.Valoracion;
 import selit.valoracion.ValoracionesRepository;
 import selit.verificacion.VerificacionRepository;
-import selit.wishes.WishA;
 import selit.wishes.WishS;
 import selit.wishes.WishesSRepository;
 import selit.Location.Location;

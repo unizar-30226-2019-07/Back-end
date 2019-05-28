@@ -38,7 +38,7 @@ public class ValoracionAux2 {
 	/**
 	 * Constructor.
 	 * @param buyer Usuario comprador.
-	 * @param id_anunciante Identificador del usuario anunciante.
+	 * @param seller Usuario anunciante.
 	 * @param valor Valor de la valoracion.
 	 * @param comentario Comentario de la valoracion.
 	 * @param id_subasta Identificador de la subasta de la valoracion.
@@ -72,16 +72,16 @@ public class ValoracionAux2 {
 	}
 
 	/**
-	 * Devuelve el identificador del usuario anunciante.
-	 * @return Identificador del usuario anunciante.
+	 * Devuelve el usuario anunciante.
+	 * @return Usuario anunciante.
 	 */
 	public UsuarioAux getSeller() {
 		return seller;
 	}
 
 	/**
-	 * Cambia el identificador del usuario anunciante a id_anunciante.
-	 * @param id_anunciante Nuevo identificador del usuario anunciante.
+	 * Cambia el usuario anunciante a seller.
+	 * @param seller Nuevo usuario anunciante.
 	 */
 	public void setSeller(UsuarioAux seller) {
 		this.seller = seller;
